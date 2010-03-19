@@ -17,7 +17,7 @@
  */
 -->
 
-<com.android.inputmethod.zhuyin.CandidatesContainer
+<com.googlecode.tcime.CandidatesContainer
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/candidates_container"
         android:orientation="horizontal"
@@ -35,7 +35,7 @@
         android:clickable="true"
         />
 
-    <com.android.inputmethod.zhuyin.CandidateView
+    <com.googlecode.tcime.CandidateView
         android:id="@+id/candidate_view"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/candidates_view_height"
@@ -51,4 +51,4 @@
         android:clickable="true"
         />
 
-</com.android.inputmethod.zhuyin.CandidatesContainer>
+</com.googlecode.tcime.CandidatesContainer>

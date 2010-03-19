@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.inputmethod.zhuyin;
+package com.googlecode.tcime;
 
 import android.inputmethodservice.Keyboard;
 import android.text.InputType;

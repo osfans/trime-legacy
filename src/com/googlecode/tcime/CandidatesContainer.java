@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.inputmethod.zhuyin;
+package com.googlecode.tcime;
 
 import android.content.Context;
 import android.util.AttributeSet;

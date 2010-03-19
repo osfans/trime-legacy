@@ -18,7 +18,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
-        package="com.android.inputmethod.zhuyin"
+        package="com.googlecode.tcime"
         android:versionCode="112"
         android:versionName="1.0"
         >
