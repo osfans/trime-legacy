@@ -23,7 +23,7 @@
         android:versionName="1.0"
         >
     <uses-sdk android:minSdkVersion="3"  android:targetSdkVersion="4"/>
-    <application android:label="@string/ime_name">
+    <application android:label="@string/ime_name" android:icon="@drawable/icon">
 
         <service android:name="ZhuyinIME" android:label="@string/zhuyin_ime_name"
                 android:permission="android.permission.BIND_INPUT_METHOD">
