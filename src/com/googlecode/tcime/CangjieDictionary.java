@@ -18,6 +18,8 @@ package com.googlecode.tcime;
 
 import android.content.Context;
 
+import java.util.Arrays;
+
 /**
  * Extends WordDictionary to provide cangjie word-suggestions.
  */
@@ -56,7 +58,10 @@ public class CangjieDictionary extends WordDictionary {
     // Look up words only by the primary index for simplified-cangjie.
     int length = data.length / 2;
     if (simplified) {
-      return String.valueOf(data, length, length);
+      char sorted[] = new char[length];
+      System.arraycopy(data, length, sorted, 0, length);
+      Arrays.sort(sorted);
+      return String.valueOf(sorted);
     }
 
     // Find if any secondary index of stored words matches this index.
