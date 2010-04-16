@@ -18,7 +18,9 @@ package com.googlecode.tcime;
 
 import android.content.Context;
 
+import java.text.Collator;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Extends WordDictionary to provide cangjie word-suggestions.
@@ -27,6 +29,7 @@ public class CangjieDictionary extends WordDictionary {
 
   private static final int APPROX_DICTIONARY_SIZE = 65536;
   private boolean simplified;
+  private Collator collator = Collator.getInstance(Locale.TRADITIONAL_CHINESE);
 
   public CangjieDictionary(Context context) {
     super(context, R.raw.dict_cangjie, APPROX_DICTIONARY_SIZE);
@@ -55,20 +58,35 @@ public class CangjieDictionary extends WordDictionary {
       return "";
     }
 
-    // Look up words only by the primary index for simplified-cangjie.
-    int length = data.length / 2;
     if (simplified) {
-      char sorted[] = new char[length];
-      System.arraycopy(data, length, sorted, 0, length);
-      Arrays.sort(sorted);
-      return String.valueOf(sorted);
+      // Sort words of this primary index for simplified-cangjie.
+      return sortWords(data);
     }
 
-    // Find if any secondary index of stored words matches this index.
     int secondaryIndex = CangjieTable.getSecondaryIndex(input);
     if (secondaryIndex < 0) {
       return "";
     }
+    // Find words match this secondary index for cangjie.
+    return searchWords(secondaryIndex, data);
+  }
+
+  private String sortWords(char[] data) {
+    int length = data.length / 2;
+    String[] keys = new String[length];
+    for (int i = 0; i < length; i++) {
+      keys[i] = String.valueOf(data[length + i]);
+    }
+    Arrays.sort(keys, collator);
+    char[] sorted = new char[length];
+    for (int i = 0; i < length; i++) {
+      sorted[i] = keys[i].charAt(0);
+    }
+    return String.valueOf(sorted);
+  }
+
+  private String searchWords(int secondaryIndex, char[] data) {
+    int length = data.length / 2;
     int i = binarySearch(data, 0, length, (char) secondaryIndex);
     if (i < 0) {
       return "";
@@ -83,7 +101,7 @@ public class CangjieDictionary extends WordDictionary {
       start--;
     }
     int end = i + 1;
-    while (end < data.length) {
+    while (end < length) {
       if (data[end] != (char) secondaryIndex) {
         break;
       }
