@@ -28,6 +28,10 @@
     <string name="label_chinese">中文</string>
     <string name="label_simplified">速成</string>
 
-    <!-- Information for about dialog -->
-    <string name="about_licensing">Licensing</string>
+    <!-- Preference settings -->
+    <string name="prefs_licensing">授權資訊</string>
+    <string name="prefs_vibrate_title">按鍵震動</string>
+    <string name="prefs_vibrate_key">prefs_vibrate</string>
+    <string name="prefs_sound_title">按鍵音效</string>
+    <string name="prefs_sound_key">prefs_sound</string>
 </resources>

@@ -38,7 +38,7 @@ public abstract class AbstractIME extends InputMethodService implements
   private Editor editor;
   private WordDictionary wordDictionary;
   private PhraseDictionary phraseDictionary;
-  private About about;
+  private SoundMotionEffect effect;
   private int orientation;
 
   protected abstract KeyboardSwitch createKeyboardSwitch(Context context);
@@ -48,12 +48,11 @@ public abstract class AbstractIME extends InputMethodService implements
   @Override
   public void onCreate() {
     super.onCreate();
-
     keyboardSwitch = createKeyboardSwitch(this);
     editor = createEditor();
     wordDictionary = createWordDictionary(this);
     phraseDictionary = new PhraseDictionary(this);
-    about = new About(this);
+    effect = new SoundMotionEffect(this);
 
     orientation = getResources().getConfiguration().orientation;
     // Use the following line to debug IME service.
@@ -113,6 +112,7 @@ public abstract class AbstractIME extends InputMethodService implements
     // Reset editor and candidates when the input-view is just being started.
     editor.start(attribute.inputType);
     clearCandidates();
+    effect.reset();
 
     keyboardSwitch.initializeKeyboard(getMaxWidth());
     // Select a keyboard based on the input type of the editing field.
@@ -133,7 +133,6 @@ public abstract class AbstractIME extends InputMethodService implements
     editor.clearComposingText(getCurrentInputConnection());
     super.onFinishInputView(finishingInput);
     // Dismiss any pop-ups when the input-view is being finished and hidden.
-    about.dismiss();
     inputView.closing();
   }
 
@@ -193,7 +192,7 @@ public abstract class AbstractIME extends InputMethodService implements
       bindKeyboardToInputView();
       return;
     }
-    if (handleAbout(primaryCode) || handleCapsLock(primaryCode)
+    if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleEnter(primaryCode) || handleSpace(primaryCode)
         || handleDelete(primaryCode) || handleComposing(primaryCode)) {
       return;
@@ -206,7 +205,8 @@ public abstract class AbstractIME extends InputMethodService implements
   }
 
   public void onPress(int primaryCode) {
-    // no-op
+    effect.vibrate();
+    effect.playSound();
   }
 
   public void onRelease(int primaryCode) {
@@ -226,7 +226,7 @@ public abstract class AbstractIME extends InputMethodService implements
   }
 
   public void swipeDown() {
-    // no-op
+    requestHideSelf(0);
   }
 
   public void onPickCandidate(String candidate) {
@@ -250,9 +250,9 @@ public abstract class AbstractIME extends InputMethodService implements
     }
   }
 
-  private boolean handleAbout(int keyCode) {
+  private boolean handleOption(int keyCode) {
     if (keyCode == SoftKeyboard.KEYCODE_OPTIONS) {
-      about.show(inputView);
+      // TODO: Do voice input here.
       return true;
     }
     return false;
