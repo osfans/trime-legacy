@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.googlecode.tcime;
+package com.osfans.trime;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -65,10 +65,24 @@ public class SoundMotionEffect {
     }
   }
 
-  public void playSound() {
+  public void playSound(final int code) {
     if (soundOn && (audioManager != null)) {
-      audioManager.playSoundEffect(
-          AudioManager.FX_KEYPRESS_STANDARD, FX_VOLUME);
+            final int sound;
+            switch (code) {
+            case -5:
+                sound = AudioManager.FX_KEYPRESS_DELETE;
+                break;
+            case '\n':
+                sound = AudioManager.FX_KEYPRESS_RETURN;
+                break;
+            case ' ':
+                sound = AudioManager.FX_KEYPRESS_SPACEBAR;
+                break;
+            default:
+                sound = AudioManager.FX_KEYPRESS_STANDARD;
+                break;
+            }
+      audioManager.playSoundEffect(sound, FX_VOLUME);
     }
   }
 }

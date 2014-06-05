@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.googlecode.tcime;
+package com.osfans.trime;
 
 import android.app.AlertDialog;
 import android.os.Bundle;

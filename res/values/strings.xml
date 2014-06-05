@@ -19,14 +19,11 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Titles for IME  -->
-    <string name="ime_name">注音倉頡輸入法</string>
-    <string name="zhuyin_ime_name">注音輸入法</string>
-    <string name="cangjie_ime_name">倉頡輸入法</string>
+    <string name="ime_name">漢字方言輸入法</string>
 
     <!-- Labels on soft keys -->
     <string name="label_english">英文</string>
-    <string name="label_chinese">中文</string>
-    <string name="label_simplified">速成</string>
+    <string name="label_chinese">漢字</string>
 
     <!-- Preference settings -->
     <string name="prefs_licensing">授權資訊</string>
@@ -34,4 +31,18 @@
     <string name="prefs_vibrate_key">prefs_vibrate</string>
     <string name="prefs_sound_title">按鍵音效</string>
     <string name="prefs_sound_key">prefs_sound</string>
+    <string name="prefs_sc_title">輸出簡體</string>
+    <string name="prefs_sc_key">prefs_sc</string>
+    <string name="prefs_commit_py_title">輸出拼音</string>
+    <string name="prefs_commit_py_summary">出字時標出拼音，如：拼(pin)音(yin)</string>
+    <string name="prefs_commit_py_key">prefs_commit_py</string>
+    <string name="prefs_full_py_title">全拼輪入</string>
+    <string name="prefs_full_py_summary">老手機建议开啟</string>
+    <string name="prefs_full_py_key">prefs_full_py</string>
+
+    <string name="set_ime">設定輸入法</string>
+    <string name="other_ime">其他輸入法</string>
+    <string name="pronunciation">【%s】的讀音</string>
+    <string name="close">關閉</string>
+
 </resources>

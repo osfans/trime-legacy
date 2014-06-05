@@ -18,7 +18,7 @@
 -->
 
 <resources>
-    <dimen name="key_height">51dip</dimen>
+    <dimen name="key_height">38dip</dimen>
     <dimen name="key_height_bottom_row">48dip</dimen>
-    <dimen name="key_height_zhuyin">38dip</dimen>
+    <dimen name="key_height_4row">51dip</dimen>
 </resources>

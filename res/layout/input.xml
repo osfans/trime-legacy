@@ -17,7 +17,7 @@
  */
 -->
 
-<com.googlecode.tcime.SoftKeyboardView
+<com.osfans.trime.SoftKeyboardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/keyboard"
         android:layout_alignParentBottom="true"

@@ -18,10 +18,12 @@
 -->
 
 <resources>
-    <dimen name="key_height">56dip</dimen>
+    <dimen name="key_height">42dip</dimen>
     <dimen name="key_height_bottom_row">53dip</dimen>
     <dimen name="key_height_popup">50dip</dimen>
-    <dimen name="key_height_zhuyin">42dip</dimen>
-    <dimen name="candidate_font_height">28sp</dimen>
+    <dimen name="key_height_4row">56dip</dimen>
+    <dimen name="key_height_6row">38dip</dimen>
+    <dimen name="candidate_font_height">24sp</dimen>
+    <dimen name="pinyin_font_height">12sp</dimen>
     <dimen name="candidates_view_height">42sp</dimen>
 </resources>

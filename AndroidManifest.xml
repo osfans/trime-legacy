@@ -18,7 +18,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
-        package="com.googlecode.tcime"
+        package="com.osfans.trime"
         android:versionCode="113"
         android:versionName="1.0"
         >
@@ -26,15 +26,7 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <application android:label="@string/ime_name" android:icon="@drawable/icon">
 
-        <service android:name="ZhuyinIME" android:label="@string/zhuyin_ime_name"
-                android:permission="android.permission.BIND_INPUT_METHOD">
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/method" />
-        </service>
-
-        <service android:name="CangjieIME" android:label="@string/cangjie_ime_name"
+        <service android:name="TRIME" android:label="@string/ime_name"
                 android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />

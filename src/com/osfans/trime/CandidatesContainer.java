@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.googlecode.tcime;
+package com.osfans.trime;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.database.Cursor;
+
+import java.util.ArrayList;
 
 /**
  * Contains all candidates in pages where users could move forward (next page)
@@ -34,10 +37,10 @@ public class CandidatesContainer extends LinearLayout {
   private CandidateView candidateView;
   private ImageButton leftArrow;
   private ImageButton rightArrow;
-  private String words;
+  private Cursor cursor;
   private boolean highlightDefault;
-  private int currentPage;
-  private int pageCount;
+  private int currentWordCount;
+  private Dictionary dialectDictionary;
 
   public CandidatesContainer(Context context, AttributeSet attrs) {
     super(context, attrs);
@@ -52,14 +55,14 @@ public class CandidatesContainer extends LinearLayout {
     leftArrow = (ImageButton) findViewById(R.id.arrow_left);
     leftArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        showPage(currentPage - 1);
+        movePage(-1);
       }
     });
 
     rightArrow = (ImageButton) findViewById(R.id.arrow_right);
     rightArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        showPage(currentPage + 1);
+        movePage(1);
       }
     });
   }
@@ -69,53 +72,74 @@ public class CandidatesContainer extends LinearLayout {
     candidateView.setCandidateViewListener(listener);
   }
   
-  public void setCandidates(String words, boolean highlightDefault) {
+  public void setCandidates(Cursor words, boolean highlightDefault, Dictionary dialectDictionary) {
     // All the words will be split into pages and shown in the candidate-view.
-    this.words = words;
+    if (cursor != null) cursor.close();
+    cursor = words;
     this.highlightDefault = highlightDefault;
-    pageCount = getPageCount();
-    showPage(0);
+    currentWordCount = 0;
+    movePage(0);
+    this.dialectDictionary = dialectDictionary;
   }
 
   public boolean pickHighlighted() {
     return candidateView.pickHighlighted();
   }
+ 
+	private boolean isFirst() {
+		return (cursor != null) && cursor.isFirst();
+	}
 
-  private void showPage(int page) {
-    if (isPageEmpty(page)) {
-      candidateView.setCandidates("");
+	private boolean isLast() {
+		return (cursor != null) && (cursor.getPosition() + currentWordCount >= cursor.getCount());
+	}
+
+  private void movePage(int direction) {
+    if (cursor == null || cursor.getCount() == 0) {
+      candidateView.setCandidates(null);
       enableArrow(leftArrow, false);
       enableArrow(rightArrow, false);
     } else {
-      final int start = page * CandidateView.MAX_CANDIDATE_COUNT;
-      final int end = start + Math.min(
-          words.length() - start, CandidateView.MAX_CANDIDATE_COUNT);
-
-      candidateView.setCandidates(words.substring(start, end));
-      if (highlightDefault) {
-        candidateView.highlightDefault();
-      }
-      enableArrow(leftArrow, (page > 0) ? true : false);
-      enableArrow(rightArrow, (page < pageCount - 1) ? true : false);
+      candidateView.setCandidates(getCandidates(direction));
+      if (highlightDefault) candidateView.highlightDefault();
+      enableArrow(leftArrow, !isFirst());
+      enableArrow(rightArrow, !isLast());
     }
-    currentPage = page;
   }
 
-  /**
-   * Checks if it's an empty page holding no candidates.
-   */
-  private boolean isPageEmpty(int page) {
-    if (page < 0 || page >= pageCount) {
-      return true;
+  private String[] getCandidates(int direction) {
+    if ((direction > 0 && isLast()) || (direction < 0 && isFirst()) ) {
+            currentWordCount = 0;
+            return null;
     }
-
-    // There are candidates in this page. 
-    return false;
-  }
-
-  private int getPageCount() {
-    return (int) Math.ceil(
-        (double) words.length() / CandidateView.MAX_CANDIDATE_COUNT);
+    
+    int p = 0;
+    if (direction > 0 && currentWordCount > 0)  {
+        cursor.move(currentWordCount);
+        p = cursor.getPosition();
+    } else if (direction < 0) cursor.move(-1);
+    
+    int n = 0;
+    ArrayList<String> candidates = new ArrayList<String>();
+    do {
+        String word = cursor.getString(0);
+        String py = cursor.getColumnCount() > 1 ? dialectDictionary.ipa2py(cursor.getString(1)) : "";
+        String s = String.format("%s\t%s", word, py);
+        n += word.codePointCount(0,word.length());
+        if (n > CandidateView.MAX_CANDIDATE_COUNT) {
+            if(direction < 0) cursor.move(1);
+            break;
+        }
+        if(direction < 0) candidates.add(0, s);
+        else candidates.add(s);
+        if (n == CandidateView.MAX_CANDIDATE_COUNT) break;
+    } while (cursor.move(direction>=0?1:-1));
+    if(direction >=0) cursor.moveToPosition(p);
+    else if(direction<0 && cursor.isBeforeFirst()) cursor.moveToFirst();
+    currentWordCount = candidates.size(); 
+    String[] ret = new String[currentWordCount];
+    candidates.toArray(ret);
+    return ret;
   }
 
   private void enableArrow(ImageButton arrow, boolean enabled) {
