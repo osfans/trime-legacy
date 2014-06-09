@@ -16,6 +16,11 @@
 
 package com.osfans.trime;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -44,6 +49,22 @@ public class ImePreferenceActivity extends PreferenceActivity {
         return true;
       }
     });
+
+    Preference importdb = findPreference(getString(R.string.prefs_importdb));
+    importdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+      public boolean onPreferenceClick(Preference preference) {
+        importDatabase();
+        return true;
+      }
+    });
+
+    Preference exportdb = findPreference(getString(R.string.prefs_exportdb));
+    exportdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+      public boolean onPreferenceClick(Preference preference) {
+        exportDatabase();
+        return true;
+      }
+    });
   }
 
   private void showLicenseDialog() {
@@ -61,6 +82,38 @@ public class ImePreferenceActivity extends PreferenceActivity {
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
     builder.setTitle(R.string.ime_name);
     builder.setView(licenseView);
+    builder.show();
+  }
+
+  private void importDatabase() {
+    boolean ret = false;
+    try {
+        File dbFile = new File("/sdcard", "trime.db");
+        if (dbFile.exists()) {
+            AssetDatabaseOpenHelper.importDatabase(new FileInputStream(dbFile));
+            ret = true;
+        }
+    } catch (IOException e) {
+        throw new RuntimeException("Error creating source database", e);
+    }
+    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        .setTitle(R.string.ime_name)
+        .setMessage(ret ? R.string.importdb_success : R.string.importdb_failure);
+    builder.show();
+  }
+
+  private void exportDatabase() {
+    boolean ret = false;
+    try {
+        File dbFile = new File("/sdcard", "trime.db");
+        AssetDatabaseOpenHelper.exportDatabase(new FileOutputStream(dbFile));
+        ret = true;
+    } catch (IOException e) {
+        throw new RuntimeException("Error creating source database", e);
+    }
+    AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        .setTitle(R.string.ime_name)
+        .setMessage(ret ? R.string.exportdb_success : R.string.exportdb_failure);
     builder.show();
   }
 }

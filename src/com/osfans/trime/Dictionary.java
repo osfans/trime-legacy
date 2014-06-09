@@ -33,7 +33,6 @@ import java.util.HashSet;
  */
 public class Dictionary {
 
-  private final AssetDatabaseOpenHelper mDatabaseOpenHelper;
   private final SQLiteDatabase mDatabase;
   private final SharedPreferences preferences;
   private final String scKey;
@@ -55,8 +54,7 @@ public class Dictionary {
     scKey = context.getString(R.string.prefs_sc_key);
     fullPyKey = context.getString(R.string.prefs_full_py_key);
     commitPyKey = context.getString(R.string.prefs_commit_py_key);
-    mDatabaseOpenHelper = new AssetDatabaseOpenHelper(context);
-    mDatabase = mDatabaseOpenHelper.openDatabase();
+    mDatabase = AssetDatabaseOpenHelper.openDatabase(context);
     initSchema();
   }
 

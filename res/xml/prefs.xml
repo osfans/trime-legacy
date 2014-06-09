@@ -48,6 +48,18 @@
         android:persistent="true"/>
 
     <Preference
+        android:key="@string/prefs_importdb"
+        android:title="@string/prefs_importdb"
+        android:summary="@string/prefs_importdb_summary"
+        android:persistent="false"/>
+
+    <Preference
+        android:key="@string/prefs_exportdb"
+        android:title="@string/prefs_exportdb"
+        android:summary="@string/prefs_exportdb_summary"
+        android:persistent="false"/>
+
+    <Preference
         android:key="@string/prefs_licensing"
         android:title="@string/prefs_licensing"
         android:persistent="false"/>

@@ -17,6 +17,7 @@
 package com.osfans.trime;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,30 +29,21 @@ import android.database.sqlite.SQLiteDatabase;
 public class AssetDatabaseOpenHelper {
 
     private static final String DB_NAME = "trime.db";
+    private static File dbFile = new File("/data/data/com.osfans.trime/databases/", DB_NAME);
 
-    private Context context;
-
-    public AssetDatabaseOpenHelper(Context context) {
-        this.context = context;
-    }
-
-    public SQLiteDatabase openDatabase() {
-        File dbFile = context.getDatabasePath(DB_NAME);
-
+    static SQLiteDatabase openDatabase(Context context) {
         if (!dbFile.exists()) {
             try {
                 dbFile.getParentFile().mkdir();
-                copyDatabase(dbFile);
+                importDatabase(context.getAssets().open(DB_NAME));
             } catch (IOException e) {
                 throw new RuntimeException("Error creating source database", e);
             }
         }
-
         return SQLiteDatabase.openDatabase(dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY | SQLiteDatabase.NO_LOCALIZED_COLLATORS);
     }
 
-    private void copyDatabase(File dbFile) throws IOException {
-        InputStream is = context.getAssets().open(DB_NAME);
+    static void importDatabase(InputStream is) throws IOException {
         OutputStream os = new FileOutputStream(dbFile);
 
         byte[] buffer = new byte[1024];
@@ -64,5 +56,17 @@ public class AssetDatabaseOpenHelper {
         is.close();
     }
 
+    static void exportDatabase(OutputStream os) throws IOException {
+        InputStream is = new FileInputStream(dbFile);
+
+        byte[] buffer = new byte[1024];
+        while (is.read(buffer) > 0) {
+            os.write(buffer);
+        }
+
+        os.flush();
+        os.close();
+        is.close();
+    }
 }
 

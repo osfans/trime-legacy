@@ -34,15 +34,23 @@
     <string name="prefs_sc_title">輸出簡體</string>
     <string name="prefs_sc_key">prefs_sc</string>
     <string name="prefs_commit_py_title">輸出拼音</string>
-    <string name="prefs_commit_py_summary">出字時標出拼音，如：拼(pin)音(yin)</string>
+    <string name="prefs_commit_py_summary">出字時標出拼音，如：拼音(pin yin)</string>
     <string name="prefs_commit_py_key">prefs_commit_py</string>
     <string name="prefs_full_py_title">全拼輪入</string>
     <string name="prefs_full_py_summary">老手機建议开啟</string>
     <string name="prefs_full_py_key">prefs_full_py</string>
+    <string name="prefs_importdb">導入碼表</string>
+    <string name="prefs_importdb_summary">從 /sdcard/trime.db 導入自定義碼表</string>
+    <string name="prefs_exportdb">導出碼表</string>
+    <string name="prefs_exportdb_summary">將碼表導出為 /sdcard/trime.db </string>
 
     <string name="set_ime">設定輸入法</string>
     <string name="other_ime">其他輸入法</string>
     <string name="pronunciation">【%s】的讀音</string>
     <string name="close">關閉</string>
+    <string name="importdb_success">碼表導入成功。\n如未生效，請重啟本輸入法。</string>
+    <string name="importdb_failure">碼表導入失敗。\n請將trime.db碼表置於/sdcard根目錄下。</string>
+    <string name="exportdb_success">碼表已成功導出為/sdcard/trime.db。</string>
+    <string name="exportdb_failure">碼表導出失敗。\n請檢查錯誤原因。</string>
 
 </resources>
