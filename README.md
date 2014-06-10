@@ -18,7 +18,8 @@
 - 支持unicode ext-A/B/C/D大字庫方言正字
 
 ## 使用自定義方案
-- 使用[trime-tool]生成自己的trime.db，放到assests目錄下，重新編譯生成新apk。
+- 參考[碼表格式說明](https://github.com/osfans/trime-tool/blob/master/data/README.md)，編寫自定義方案
+- 使用[trime-tool]生成trime.db，放到assests目錄下，重新編譯生成新apk。
 - 從設置中導入trime.db
 
 ## 已有功能
