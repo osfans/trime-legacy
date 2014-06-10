@@ -1,4 +1,4 @@
-trime
+漢字方言輸入法/trime
 =====
 源於開源的[注音倉頡輸入法]，
 參考著名的[Rime]輸入法，
@@ -36,7 +36,7 @@ trime
 - 自動造詞
 - 顯示漢字備註信息：候選或反查時顯示，當字典用
 
-[trime-tool]: https://github.com/osfans/trime
+[trime-tool]: https://github.com/osfans/trime-tool/
 [opencc]: https://github.com/BYVoid/OpenCC
 [Rime]: https://code.google.com/p/rimeime/
 [注音倉頡輸入法]: https://code.google.com/p/android-traditional-chinese-ime/
