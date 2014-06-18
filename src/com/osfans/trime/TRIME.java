@@ -50,6 +50,8 @@ public class TRIME extends InputMethodService implements
   protected StringBuilder composingText = new StringBuilder();
   private boolean canCompose;
   private boolean enterAsLineBreak;
+  private boolean isLeftApo = true;
+  private boolean isLeftQuote = true;
 
   protected int[] keyboardIds;
   protected int dictionaryId;
@@ -260,6 +262,7 @@ public class TRIME extends InputMethodService implements
     private boolean processKey(KeyEvent event) {
         int keyCode = event.getKeyCode();
         int keyChar = 0;
+        CharSequence keyText = "";
         if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
             keyChar = SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER;
             onKey(keyChar, null);
@@ -268,15 +271,40 @@ public class TRIME extends InputMethodService implements
             return false;
         }
         if (!isChinese()) return false;
+        Log.e("kyle",event.toString());
         if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
             keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
         } else if (!event.isShiftPressed() && keyCode >= KeyEvent.KEYCODE_0
                 && keyCode <= KeyEvent.KEYCODE_9) {
             keyChar = keyCode - KeyEvent.KEYCODE_0 + '0';
         } else if (keyCode == KeyEvent.KEYCODE_COMMA) {
-            keyChar = ',';
+            keyText = event.isShiftPressed() ? "《" : "，";
         } else if (keyCode == KeyEvent.KEYCODE_PERIOD) {
-            keyChar = '.';
+            keyText = event.isShiftPressed() ? "》" : "。";
+        } else if (keyCode == KeyEvent.KEYCODE_SEMICOLON) {
+            keyText = event.isShiftPressed() ? "：" : "；";
+        } else if (keyCode == KeyEvent.KEYCODE_SLASH) {
+            keyText = event.isShiftPressed() ? "？" : "、";
+        } else if (keyCode == KeyEvent.KEYCODE_BACKSLASH) {
+            keyText = "、";
+        } else if (keyCode == KeyEvent.KEYCODE_MINUS && event.isShiftPressed()) {
+            keyText = "——";
+        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE && !event.isShiftPressed()) {
+            keyText = isLeftApo ? "‘" : "’";
+            isLeftApo = !isLeftApo;
+        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE && event.isShiftPressed()) {
+            keyText = isLeftQuote ? "“" : "”";
+            isLeftQuote = !isLeftQuote;
+        } else if (keyCode == KeyEvent.KEYCODE_1 && event.isShiftPressed()) {
+            keyText = "！";
+        } else if (keyCode == KeyEvent.KEYCODE_4 && event.isShiftPressed()) {
+            keyText =  "￥";
+        } else if (keyCode == KeyEvent.KEYCODE_6 && event.isShiftPressed()) {
+            keyText = "……";
+        } else if (keyCode == KeyEvent.KEYCODE_9 && event.isShiftPressed()) {
+            keyText = "（";
+        } else if (keyCode == KeyEvent.KEYCODE_0 && event.isShiftPressed()) {
+            keyText = "）";
         } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
             keyChar = ' ';
         } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
@@ -290,6 +318,9 @@ public class TRIME extends InputMethodService implements
         }
         if (0 != keyChar) {
             onKey(keyChar, null);
+            return true;
+        } else if (keyText.length() > 0) {
+            commitText(keyText);
             return true;
         }
         return false;
@@ -390,7 +421,7 @@ public class TRIME extends InputMethodService implements
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
       candidatesContainer.setCandidates(cursor, highlightDefault, dialectDictionary);
-      setCandidatesViewShown((cursor != null && cursor.getCount() > 0) || hasComposingText());
+      setCandidatesViewShown(isChinese());
     }
   }
 
