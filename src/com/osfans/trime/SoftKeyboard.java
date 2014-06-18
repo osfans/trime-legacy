@@ -29,7 +29,7 @@ public class SoftKeyboard extends Keyboard {
   public static final int KEYCODE_MODE_CHANGE_LETTER = -200;
   public static final int KEYCODE_OPTIONS = -100;
   public static final int KEYCODE_SCHEMA_OPTIONS = -99;
-  public static final int KEYCODE_REVERSE = -98;
+  public static final int KEYCODE_REVERSE = 96;
 
   private final int id;
   

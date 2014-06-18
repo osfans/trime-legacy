@@ -104,9 +104,9 @@ public class CandidateView extends View {
    *
    * @return {@code false} if no candidate is highlighted and picked.
    */
-  public boolean pickHighlighted() {
+  public boolean pickHighlighted(int index) {
     if ((highlightIndex >= 0) && (listener != null)) {
-      listener.onPickCandidate(getCandidate(highlightIndex));
+      listener.onPickCandidate(getCandidate(index < 0 ? highlightIndex : index));
       return true;
     }
     return false;
@@ -217,7 +217,7 @@ public class CandidateView extends View {
         break;
       case MotionEvent.ACTION_UP:
         if (updateHighlight(x, y)) {
-          pickHighlighted();
+          pickHighlighted(-1);
         }
         break;
     }

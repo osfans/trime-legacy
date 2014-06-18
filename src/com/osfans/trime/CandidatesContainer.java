@@ -82,8 +82,9 @@ public class CandidatesContainer extends LinearLayout {
     this.dialectDictionary = dialectDictionary;
   }
 
-  public boolean pickHighlighted() {
-    return candidateView.pickHighlighted();
+  public boolean pickHighlighted(int index) {
+    if (index >= currentWordCount) return false;
+    return candidateView.pickHighlighted(index);
   }
  
 	private boolean isFirst() {

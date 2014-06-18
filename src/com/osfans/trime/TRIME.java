@@ -118,19 +118,25 @@ public class TRIME extends InputMethodService implements
     candidatesContainer.setCandidateViewListener(this);
     return candidatesContainer;
   }
+    
+    @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+        // Reset editor and candidates when the input-view is just being started.
+        setCandidatesViewShown(true);
+        editorstart(attribute.inputType);
+        clearCandidates();
+        effect.reset();
+
+        keyboardSwitch.initializeKeyboard(getMaxWidth());
+        // Select a keyboard based on the input type of the editing field.
+        keyboardSwitch.onStartInput(attribute.inputType);
+    }
 
   @Override
   public void onStartInputView(EditorInfo attribute, boolean restarting) {
     super.onStartInputView(attribute, restarting);
-
-    // Reset editor and candidates when the input-view is just being started.
-    editorstart(attribute.inputType);
-    clearCandidates();
-    effect.reset();
-
-    keyboardSwitch.initializeKeyboard(getMaxWidth());
-    // Select a keyboard based on the input type of the editing field.
-    keyboardSwitch.onStartInput(attribute.inputType);
+    onStartInput(attribute, restarting);
     bindKeyboardToInputView();
   }
 
@@ -246,8 +252,48 @@ public class TRIME extends InputMethodService implements
         return true;
       }
     }
+
+    if (processKey(event)) return true;
     return super.onKeyDown(keyCode, event);
   }
+
+    private boolean processKey(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        int keyChar = 0;
+        if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
+            keyChar = SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER;
+            onKey(keyChar, null);
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
+            return false;
+        }
+        if (!isChinese()) return false;
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
+            keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
+        } else if (!event.isShiftPressed() && keyCode >= KeyEvent.KEYCODE_0
+                && keyCode <= KeyEvent.KEYCODE_9) {
+            keyChar = keyCode - KeyEvent.KEYCODE_0 + '0';
+        } else if (keyCode == KeyEvent.KEYCODE_COMMA) {
+            keyChar = ',';
+        } else if (keyCode == KeyEvent.KEYCODE_PERIOD) {
+            keyChar = '.';
+        } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
+            keyChar = ' ';
+        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
+            keyChar = '\'';
+        } else if (keyCode == KeyEvent.KEYCODE_DEL) {
+            keyChar = Keyboard.KEYCODE_DELETE;
+        } else if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            keyChar = '\n';
+        } else if (keyCode == KeyEvent.KEYCODE_GRAVE) {
+            keyChar = '`';
+        }
+        if (0 != keyChar) {
+            onKey(keyChar, null);
+            return true;
+        }
+        return false;
+    }
 
   public void onKey(int primaryCode, int[] keyCodes) {
     if (keyboardSwitch.onKey(primaryCode)) {
@@ -257,7 +303,7 @@ public class TRIME extends InputMethodService implements
     }
     if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleEnter(primaryCode) || handleSpace(primaryCode)
-        || handleDelete(primaryCode) || handleReverse(primaryCode) || handleComposing(primaryCode)) {
+        || handleDelete(primaryCode) || handleReverse(primaryCode) || handleComposing(primaryCode) || handleSelect(primaryCode)) {
       return;
     }
     handleKey(primaryCode);
@@ -397,7 +443,7 @@ public class TRIME extends InputMethodService implements
         mOptionsDialog = builder.create();
         Window window = mOptionsDialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
-        lp.token = inputView.getWindowToken();
+        if (candidatesContainer != null) lp.token = candidatesContainer.getWindowToken();
         lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
         window.setAttributes(lp);
         window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
@@ -430,12 +476,29 @@ public class TRIME extends InputMethodService implements
       if ((candidatesContainer != null) && candidatesContainer.isShown()) {
         // The space key could either pick the highlighted candidate or escape
         // if there's no highlighted candidate and no composing-text.
-        if (!candidatesContainer.pickHighlighted()
+        if (!candidatesContainer.pickHighlighted(-1)
             && !hasComposingText()) {
           escape();
         }
       } else {
         commitText(" ");
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private boolean handleSelect(int keyCode) {
+    if (keyCode >= '1' && keyCode <= '9') {
+      if ((candidatesContainer != null) && candidatesContainer.isShown()) {
+        // The space key could either pick the highlighted candidate or escape
+        // if there's no highlighted candidate and no composing-text.
+        if (!candidatesContainer.pickHighlighted(keyCode - '1')
+            && !hasComposingText()) {
+          escape();
+        }
+      } else {
+        return false;
       }
       return true;
     }
@@ -479,7 +542,7 @@ public class TRIME extends InputMethodService implements
         mOptionsDialog = builder.create();
         Window window = mOptionsDialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
-        lp.token = inputView.getWindowToken();
+        if (candidatesContainer != null) lp.token = candidatesContainer.getWindowToken();
         lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
         window.setAttributes(lp);
         window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
@@ -491,13 +554,16 @@ public class TRIME extends InputMethodService implements
   }
 
     private boolean isChinese() {
-        return !((SoftKeyboard)inputView.getKeyboard()).isEnglish();
+        return !keyboardSwitch.isEnglish();
     }
 
   private boolean handleComposing(int keyCode) {
     if(canCompose && isChinese()) {
-        onText(String.valueOf((char) keyCode));
-        return true;
+        String s = String.valueOf((char) keyCode);
+        if (dialectDictionary.isAlphabet(s)) {
+            onText(s);
+            return true;
+        }
     }
     return false;
   }

@@ -108,7 +108,7 @@ public class KeyboardSwitch {
     currentDisplayWidth = displayWidth;
     initializeKeyboard(chineses);
 
-    if (currentKeyboard != null && currentKeyboard.isEnglish()) {
+    if (isEnglish()) {
       toEnglish();
       // Restore shift-status.
       currentKeyboard.setShifted(currentKeyboard.isShifted());
@@ -119,6 +119,10 @@ public class KeyboardSwitch {
 
   public Keyboard getCurrentKeyboard() {
     return currentKeyboard;
+  }
+
+  public boolean isEnglish() {
+    return currentKeyboard != null && currentKeyboard.isEnglish();
   }
 
   /**
@@ -148,7 +152,7 @@ public class KeyboardSwitch {
   public boolean onKey(int keyCode) {
     switch (keyCode) {
       case SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER:
-        if (currentKeyboard.isEnglish()) {
+        if (isEnglish()) {
           toChinese();
         } else {
           toEnglish();
