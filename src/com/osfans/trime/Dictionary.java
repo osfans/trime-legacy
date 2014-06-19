@@ -42,7 +42,7 @@ public class Dictionary {
 
   private final String defaultAlphabet = "[a-z0-9]+";
   private final String defaultSyllable = "[a-z0-9]+";
-  public Pattern alphabetP, syllableP;
+  public Pattern alphabetP, syllableP, autoSelectSyllableP;
   public String[][] pyspellRule, py2ipaRule, ipa2pyRule, ipafuzzyRule;
   public String[]  namedFuzzyRules = null;
   public boolean[] fuzzyRulesPref = null;
@@ -65,6 +65,10 @@ public class Dictionary {
     public boolean isSyllable(String s) {
         for(String i: s.split("'")) if(!syllableP.matcher(i).matches()) return false;
         return true;
+    }
+
+    public boolean isAutoSelect(CharSequence s) {
+        return (autoSelectSyllableP != null) && autoSelectSyllableP.matcher(s).matches();
     }
 
     public String correctSpell(String s) {
@@ -185,6 +189,8 @@ public class Dictionary {
         alphabetP = Pattern.compile((a!=null && a.length() > 0) ? a : defaultAlphabet);
         a = cursor.getString(cursor.getColumnIndex("syllable"));
         syllableP = Pattern.compile((a!=null && a.length() > 0) ? a : defaultSyllable);
+        a = cursor.getString(cursor.getColumnIndex("auto_select_syllable"));
+        autoSelectSyllableP = (a!=null && a.length() > 0) ? Pattern.compile(a) : null;
         pyspellRule = getRule(cursor, "pyspell");
         py2ipaRule = getRule(cursor, "py2ipa");
         ipa2pyRule = getRule(cursor, "ipa2py");
