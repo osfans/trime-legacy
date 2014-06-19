@@ -167,6 +167,7 @@ public class TRIME extends InputMethodService implements
       // Bind the selected keyboard to the input view.
       SoftKeyboard sk = (SoftKeyboard)keyboardSwitch.getCurrentKeyboard();
       inputView.setKeyboard(sk);
+      inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
       updateCursorCapsToInputView();
     }
   }
@@ -335,7 +336,12 @@ public class TRIME extends InputMethodService implements
     } else if (isChinese() && ((hasComposingText() && text.length() == 0) || dialectDictionary.isAlphabet(text))) {
         String r = composingText.toString();
         String s = dialectDictionary.correctSpell(r + text);
-        if (s == "") s = dialectDictionary.correctSpell(r + "'" + text); //自动切分音节
+        if (s == "") {
+            if (dialectDictionary.isShapeCode()) {
+                if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
+                s = text.toString();
+            } else s = dialectDictionary.correctSpell(r + "'" + text); //自动切分音节
+        }
         if (s != "") { 
             composingText.delete(0, composingText.length());
             composingText.append(s);

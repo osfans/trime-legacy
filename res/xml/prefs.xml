@@ -47,6 +47,18 @@
         android:summary="@string/prefs_full_py_summary"
         android:persistent="true"/>
 
+    <CheckBoxPreference
+        android:key="@string/prefs_shape_code_key"
+        android:title="@string/prefs_shape_code_title"
+        android:summary="@string/prefs_shape_code_summary"
+        android:persistent="true"/>
+
+    <CheckBoxPreference
+        android:key="@string/prefs_keyboard_preview_key"
+        android:title="@string/prefs_keyboard_preview_title"
+        android:summary="@string/prefs_keyboard_preview_summary"
+        android:persistent="true"/>
+
     <Preference
         android:key="@string/prefs_importdb"
         android:title="@string/prefs_importdb"

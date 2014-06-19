@@ -347,6 +347,14 @@ public class Dictionary {
       return preferences.getInt(idKey, 0);
   }
 
+  public boolean isShapeCode() {
+      return preferences.getBoolean("prefs_shape_code", false);
+  }
+
+  public boolean isKeyboardPreview() {
+      return preferences.getBoolean("prefs_keyboard_preview", false);
+  }
+
   public boolean setSchemaId(int id) {
       SharedPreferences.Editor edit = preferences.edit();
       edit.putInt(idKey, id);
