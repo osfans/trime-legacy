@@ -124,21 +124,13 @@ public class TRIME extends InputMethodService implements
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
-        // Reset editor and candidates when the input-view is just being started.
-        setCandidatesViewShown(true);
         editorstart(attribute.inputType);
-        clearCandidates();
         effect.reset();
-
-        keyboardSwitch.initializeKeyboard(getMaxWidth());
-        // Select a keyboard based on the input type of the editing field.
-        keyboardSwitch.onStartInput(attribute.inputType);
     }
 
   @Override
   public void onStartInputView(EditorInfo attribute, boolean restarting) {
     super.onStartInputView(attribute, restarting);
-    onStartInput(attribute, restarting);
     bindKeyboardToInputView();
   }
 
@@ -196,19 +188,12 @@ public class TRIME extends InputMethodService implements
    * session commences.
    */
   private void editorstart(int inputType) {
-    composingText.setLength(0);
-    canCompose = true;
+    canCompose = false;
     enterAsLineBreak = false;
 
     switch (inputType & InputType.TYPE_MASK_CLASS) {
-      case InputType.TYPE_CLASS_NUMBER:
-      case InputType.TYPE_CLASS_DATETIME:
-      case InputType.TYPE_CLASS_PHONE:
-        // Composing is disabled for number, date-time, and phone input types.
-        canCompose = false;
-        break;
-
       case InputType.TYPE_CLASS_TEXT:
+        canCompose = true;
         int variation = inputType & InputType.TYPE_MASK_VARIATION;
         if (variation == InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE) {
           // Make enter-key as line-breaks for messaging.
@@ -216,6 +201,11 @@ public class TRIME extends InputMethodService implements
         }
         break;
     }
+    // Select a keyboard based on the input type of the editing field.
+    keyboardSwitch.initializeKeyboard(getMaxWidth());
+    keyboardSwitch.onStartInput(inputType);
+    setCandidatesViewShown(true);
+    escape();
   }
   /**
    * Commits the given text to the editing field.
@@ -231,10 +221,7 @@ public class TRIME extends InputMethodService implements
       } else {
         ic.commitText(text, 1);
       }
-      // Composing-text in the editor has been cleared.
-      composingText.setLength(0);
-      // Clear candidates after committing any text.
-      clearCandidates();
+      escape();
     }
   }
 
@@ -316,11 +303,12 @@ public class TRIME extends InputMethodService implements
         } else if (keyCode == KeyEvent.KEYCODE_GRAVE) {
             keyChar = '`';
         }
-        if (0 != keyChar) {
-            onKey(keyChar, null);
-            return true;
-        } else if (keyText.length() > 0) {
+        if (keyText.length() > 0) {
+            if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
             commitText(keyText);
+            return true;
+        } else if (0 != keyChar) {
+            onKey(keyChar, null);
             return true;
         }
         return false;
@@ -341,7 +329,7 @@ public class TRIME extends InputMethodService implements
   }
 
   public void onText(CharSequence text) {
-    if (isChinese() && hasComposingText() && text.length() > 0 && "，'".contains(text)) {
+    if (isChinese() && hasComposingText() && text.length() > 0 && "'".contains(text)) {
         composingText.append("'");  //手动切分音节
         updateComposingText();
     } else if (isChinese() && ((hasComposingText() && text.length() == 0) || dialectDictionary.isAlphabet(text))) {
@@ -355,6 +343,7 @@ public class TRIME extends InputMethodService implements
             setCandidates(dialectDictionary.getWord(composingText), true);
         }
     } else {
+        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
         commitText(text);
     }
   }
@@ -393,10 +382,6 @@ public class TRIME extends InputMethodService implements
     setCandidates(dialectDictionary.getAssociation(s[0]), false);
   }
 
-  private void clearCandidates() {
-    setCandidates(null, false);
-  }
-
   public boolean hasComposingText() {
     return composingText.length() > 0;
   }
@@ -421,7 +406,7 @@ public class TRIME extends InputMethodService implements
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
       candidatesContainer.setCandidates(cursor, highlightDefault, dialectDictionary);
-      setCandidatesViewShown(isChinese());
+      setCandidatesViewShown(canCompose && isChinese());
     }
   }
 
@@ -455,7 +440,6 @@ public class TRIME extends InputMethodService implements
                     di.dismiss();
                     if (dialectDictionary.setSchemaId(id)) {
                         initKeyboard();
-                        keyboardSwitch.toChinese();
                         bindKeyboardToInputView();
                     }
                 }
@@ -503,16 +487,10 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSpace(int keyCode) {
-    if (keyCode == ' ') {
-      if ((candidatesContainer != null) && candidatesContainer.isShown()) {
-        // The space key could either pick the highlighted candidate or escape
-        // if there's no highlighted candidate and no composing-text.
-        if (!candidatesContainer.pickHighlighted(-1)
-            && !hasComposingText()) {
-          escape();
-        }
-      } else {
-        commitText(" ");
+    if (candidatesContainer != null && keyCode == ' ') {
+      if (!candidatesContainer.pickHighlighted(-1)) {
+        if (hasComposingText()) clearComposingText();
+        else commitText(" ");
       }
       return true;
     }
@@ -520,18 +498,8 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSelect(int keyCode) {
-    if (keyCode >= '1' && keyCode <= '9') {
-      if ((candidatesContainer != null) && candidatesContainer.isShown()) {
-        // The space key could either pick the highlighted candidate or escape
-        // if there's no highlighted candidate and no composing-text.
-        if (!candidatesContainer.pickHighlighted(keyCode - '1')
-            && !hasComposingText()) {
-          escape();
-        }
-      } else {
-        return false;
-      }
-      return true;
+    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9') {
+      return candidatesContainer.pickHighlighted(keyCode - '1');
     }
     return false;
   }
@@ -545,6 +513,7 @@ public class TRIME extends InputMethodService implements
             composingText.deleteCharAt(composingText.length() - 1);
             onText("");
         } else {
+            escape();
             sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
         }
       return true;
@@ -594,6 +563,8 @@ public class TRIME extends InputMethodService implements
         if (dialectDictionary.isAlphabet(s)) {
             onText(s);
             return true;
+        } else {
+            if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
         }
     }
     return false;
@@ -615,6 +586,6 @@ public class TRIME extends InputMethodService implements
    */
   private void escape() {
     clearComposingText();
-    clearCandidates();
+    setCandidates(null, false);
   }
 }

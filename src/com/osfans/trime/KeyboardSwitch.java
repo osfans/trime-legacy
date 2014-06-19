@@ -93,6 +93,7 @@ public class KeyboardSwitch {
         chineseKeyboards[i] = new SoftKeyboard(context, xmlLayoutResId, labels);
     }
     chineseKeyboardId = 0;
+    toEnglish(false);
   }
 
   /**
@@ -107,14 +108,6 @@ public class KeyboardSwitch {
 
     currentDisplayWidth = displayWidth;
     initializeKeyboard(chineses);
-
-    if (isEnglish()) {
-      toEnglish();
-      // Restore shift-status.
-      currentKeyboard.setShifted(currentKeyboard.isShifted());
-    } else {
-      toChinese();
-    }
   }
 
   public Keyboard getCurrentKeyboard() {
@@ -139,9 +132,10 @@ public class KeyboardSwitch {
             || (variation == InputType.TYPE_TEXT_VARIATION_URI)
             || (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD)
             || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) || (currentKeyboard.isEnglish())) {
-          toEnglish();
-        } else toChinese();
-     } else toEnglish();
+          toEnglish(true);
+          currentKeyboard.setShifted(currentKeyboard.isShifted());
+        } else toEnglish(false);
+     }
   }
 
   /**
@@ -152,22 +146,18 @@ public class KeyboardSwitch {
   public boolean onKey(int keyCode) {
     switch (keyCode) {
       case SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER:
-        if (isEnglish()) {
-          toChinese();
-        } else {
-          toEnglish();
-        }
+        toEnglish(!isEnglish());
         return true;
 
       case SoftKeyboard.KEYCODE_MODE_CHANGE:
         if (currentKeyboard.isEnglish()) {
            englishKeyboardId++;
            if (englishKeyboardId >= englishKeyboardIds.length) englishKeyboardId = 0;
-           toEnglish();
+           toEnglish(true);
         } else {
            chineseKeyboardId++;
            if (chineseKeyboardId >= chineseKeyboardCount) chineseKeyboardId = 0;
-           toChinese();
+           toEnglish(false);
         }
         return true;
     }
@@ -176,12 +166,7 @@ public class KeyboardSwitch {
     return false;
   }
 
-  private void toEnglish() {
-    currentKeyboard = englishKeyboards[englishKeyboardId];
+  private void toEnglish(boolean isEnglish) {
+    currentKeyboard = isEnglish ? englishKeyboards[englishKeyboardId] : chineseKeyboards[chineseKeyboardId];
   }
-
-  public void toChinese() {
-    currentKeyboard = chineseKeyboards[chineseKeyboardId];
-  }
-
 }
