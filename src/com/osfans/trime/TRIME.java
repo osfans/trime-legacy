@@ -322,8 +322,8 @@ public class TRIME extends InputMethodService implements
       return;
     }
     if (handleOption(primaryCode) || handleCapsLock(primaryCode)
-        || handleEnter(primaryCode) || handleSpace(primaryCode)
-        || handleDelete(primaryCode) || handleReverse(primaryCode) || handleComposing(primaryCode) || handleSelect(primaryCode)) {
+        || handleEnter(primaryCode) || handleSpace(primaryCode) || handleSelect(primaryCode)
+        || handleDelete(primaryCode) || handleReverse(primaryCode) || handleComposing(primaryCode)) {
       return;
     }
     handleKey(primaryCode);
@@ -504,7 +504,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSelect(int keyCode) {
-    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9') {
+    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !dialectDictionary.isAlphabet(String.valueOf(keyCode))) {
       return candidatesContainer.pickHighlighted(keyCode - '1');
     }
     return false;
