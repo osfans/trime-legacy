@@ -345,11 +345,12 @@ public class TRIME extends InputMethodService implements
         if (s != "") { 
             composingText.delete(0, composingText.length());
             composingText.append(s);
-            updateComposingText();
             Cursor cursor = dialectDictionary.getWord(composingText);
             setCandidates(cursor, true);
             if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
                 if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
+            } else {
+                updateComposingText();
             }
         }
     } else {
