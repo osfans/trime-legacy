@@ -136,8 +136,10 @@ public class Dictionary {
         String[] rule = s.split("\n");
         if (s.length() > 0 && rule.length > 0) {
             String[][] rules = new String[rule.length][4];
-            for(int i = 0; i< rule.length; i++) {
-                rules[i] = rule[i].split("/",4);
+            for(int i = 0; i < rule.length; i++) {
+                rules[i] = rule[i].split("(?<!\\\\)/", 4);
+                for(int j = 0; j < rules[i].length; j++)
+                    rules[i][j] = rules[i][j].replace("\\/","/");
             }
             return rules;
         }
@@ -255,7 +257,7 @@ public class Dictionary {
     if (s.contains("'")) return getPhrase(s);
 
     String sql = String.format("select hz from %s where py match ? and not glob('* *', py)", table);
-    if (!s.contentEquals(t)) sql = sql.replace("select hz ", "select hz,py ");
+    if (!s.contentEquals(t) || s.contains("*")) sql = sql.replace("select hz ", "select hz,py ");
     Cursor cursor = query(sql, new String[]{s});
     if (cursor != null || fullPyOn) return cursor;
 
@@ -286,13 +288,7 @@ public class Dictionary {
       String s = code.toString();
       int len = s.length();
       String sqlFormat = "select distinct substr(hz,%d) from %s where hz match '^%s*' and length(hz) > %d order by docid limit 100";
-      Cursor cursor = query(String.format(sqlFormat, len + 1, phraseTable, s, len), null);
-      if (cursor == null) {
-          s = s.substring(len - 1, len);
-          len = 1;
-          cursor = query(String.format(sqlFormat, len + 1, phraseTable, s, len), null);
-      }
-      return cursor;
+      return query(String.format(sqlFormat, len + 1, phraseTable, s, len), null);
   }
   
     /**
