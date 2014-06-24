@@ -207,6 +207,7 @@ public class TRIME extends InputMethodService implements
     keyboardSwitch.onStartInput(inputType);
     setCandidatesViewShown(true);
     escape();
+    setCandidatesViewShown(false);
   }
   /**
    * Commits the given text to the editing field.
