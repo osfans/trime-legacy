@@ -414,6 +414,26 @@ public class TRIME extends InputMethodService implements
       updateComposingText();
     }
   }
+    private void setSchema() {
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(this)
+            .setTitle(dialectDictionary.getSchemaTitle())
+            .setMultiChoiceItems(dialectDictionary.namedFuzzyRules, dialectDictionary.fuzzyRulesPref,
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    public void onClick(DialogInterface di, int which, boolean isChecked) {
+                        di.dismiss();
+                        dialectDictionary.setFuzzyRule(which, isChecked);
+                    }
+                });
+        mOptionsDialog = builder.create();
+        Window window = mOptionsDialog.getWindow();
+        WindowManager.LayoutParams lp = window.getAttributes();
+        if (candidatesContainer != null) lp.token = candidatesContainer.getWindowToken();
+        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
+        window.setAttributes(lp);
+        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        mOptionsDialog.show();
+    }
 
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
@@ -426,7 +446,7 @@ public class TRIME extends InputMethodService implements
     if (keyCode == SoftKeyboard.KEYCODE_OPTIONS || keyCode == SoftKeyboard.KEYCODE_SCHEMA_OPTIONS) {
         // Create a Dialog menu
         AlertDialog.Builder builder;
-        if (keyCode == SoftKeyboard.KEYCODE_OPTIONS)
+        if (keyCode == SoftKeyboard.KEYCODE_OPTIONS) {
             builder = new AlertDialog.Builder(this)
             .setTitle(R.string.ime_name)
             //.setIcon(android.R.drawable.ic_menu_preferences)
@@ -446,7 +466,7 @@ public class TRIME extends InputMethodService implements
                     startActivity(iSetting);
                 }
             })
-            .setSingleChoiceItems(dialectDictionary.getSchemas(), dialectDictionary.getSchemaId(),"name",
+            .setSingleChoiceItems(dialectDictionary.getSchemas(), dialectDictionary.getSchemaId(), "name",
             new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface di, int id) {
                     di.dismiss();
@@ -456,17 +476,18 @@ public class TRIME extends InputMethodService implements
                     }
                 }
             });
-        else 
-            builder = new AlertDialog.Builder(this )
-            .setTitle(dialectDictionary.getSchemaInfo())
-            .setNeutralButton(getString(R.string.close), null)
-            .setMultiChoiceItems(dialectDictionary.namedFuzzyRules, dialectDictionary.fuzzyRulesPref,
-            new DialogInterface.OnMultiChoiceClickListener() {
-                public void onClick(DialogInterface di, int which, boolean isChecked) {
-                    //di.dismiss();
-                    dialectDictionary.setFuzzyRule(which, isChecked);
+            if (dialectDictionary.namedFuzzyRules != null) builder.setNeutralButton(R.string.set_schema, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface di, int id) {
+                    di.dismiss();
+                    setSchema();
                 }
             });
+        } else {
+            builder = new AlertDialog.Builder(this)
+            .setTitle(dialectDictionary.getSchemaTitle())
+            .setPositiveButton(R.string.close, null)
+            .setItems(dialectDictionary.getSchemaInfo(), null);
+        }
         mOptionsDialog = builder.create();
         Window window = mOptionsDialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();

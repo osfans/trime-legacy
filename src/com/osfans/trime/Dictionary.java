@@ -214,12 +214,20 @@ public class Dictionary {
         return ret;
     }
 
-    public String getSchemaInfo() {
+    public String getSchemaTitle() {
         StringBuilder sb = new StringBuilder();
-        for(String i: new String[]{"name", "version", "author"}) {
+        for(String i: new String[]{"name", "version"}) {
             sb.append(querySchema(i) + " ");
         }
         return sb.toString();
+    }
+
+    public String[] getSchemaInfo() {
+        StringBuilder sb = new StringBuilder();
+        for(String i: new String[]{"author", "description"}) {
+            sb.append(querySchema(i) + "\n");
+        }
+        return sb.toString().replace("\n\n", "\n").split("\n");
     }
 
     public Cursor getSchemas() {

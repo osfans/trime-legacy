@@ -50,7 +50,8 @@
     <string name="prefs_exportdb">導出碼表</string>
     <string name="prefs_exportdb_summary">將碼表導出為 /sdcard/trime.db </string>
 
-    <string name="set_ime">設定輸入法</string>
+    <string name="set_ime">全局設定</string>
+    <string name="set_schema">設定本方案</string>
     <string name="other_ime">其他輸入法</string>
     <string name="pronunciation">【%s】的讀音</string>
     <string name="close">關閉</string>
