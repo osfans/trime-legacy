@@ -31,14 +31,9 @@
         android:persistent="true"/>
 
     <CheckBoxPreference
-        android:key="@string/prefs_sc_key"
-        android:title="@string/prefs_sc_title"
-        android:persistent="true"/>
-
-    <CheckBoxPreference
-        android:key="@string/prefs_commit_py_key"
-        android:title="@string/prefs_commit_py_title"
-        android:summary="@string/prefs_commit_py_summary"
+        android:key="@string/prefs_keyboard_preview_key"
+        android:title="@string/prefs_keyboard_preview_title"
+        android:summary="@string/prefs_keyboard_preview_summary"
         android:persistent="true"/>
 
     <CheckBoxPreference
@@ -48,15 +43,14 @@
         android:persistent="true"/>
 
     <CheckBoxPreference
-        android:key="@string/prefs_shape_code_key"
-        android:title="@string/prefs_shape_code_title"
-        android:summary="@string/prefs_shape_code_summary"
+        android:key="@string/prefs_sc_key"
+        android:title="@string/prefs_sc_title"
         android:persistent="true"/>
 
     <CheckBoxPreference
-        android:key="@string/prefs_keyboard_preview_key"
-        android:title="@string/prefs_keyboard_preview_title"
-        android:summary="@string/prefs_keyboard_preview_summary"
+        android:key="@string/prefs_commit_py_key"
+        android:title="@string/prefs_commit_py_title"
+        android:summary="@string/prefs_commit_py_summary"
         android:persistent="true"/>
 
     <Preference

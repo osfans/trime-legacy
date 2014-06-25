@@ -42,6 +42,7 @@ public class Dictionary {
 
   private final String defaultAlphabet = "[a-z0-9]+";
   private final String defaultSyllable = "[a-z0-9]+";
+  public String delimiter;
   public Pattern alphabetP, syllableP, autoSelectSyllableP;
   public String[][] pyspellRule, py2ipaRule, ipa2pyRule, ipafuzzyRule;
   public String[]  namedFuzzyRules = null;
@@ -63,7 +64,8 @@ public class Dictionary {
     }
 
     public boolean isSyllable(String s) {
-        for(String i: s.split("'")) if(!syllableP.matcher(i).matches()) return false;
+        if (!hasDelimiter()) return syllableP.matcher(s).matches();
+        for (String i: s.split(getDelimiter())) if(!syllableP.matcher(i).matches()) return false;
         return true;
     }
 
@@ -186,6 +188,7 @@ public class Dictionary {
         phraseTable = cursor.getString(cursor.getColumnIndex("phrase"));
         if (phraseTable.length() == 0) phraseTable = table;
         keyboard = cursor.getString(cursor.getColumnIndex("keyboard"));
+        delimiter = cursor.getString(cursor.getColumnIndex("delimiter"));
 
         String a = cursor.getString(cursor.getColumnIndex("alphabet"));
         alphabetP = Pattern.compile((a!=null && a.length() > 0) ? a : defaultAlphabet);
@@ -262,7 +265,7 @@ public class Dictionary {
     if (ipafuzzyRule != null) s = fuzzyText(s);
 
     boolean fullPyOn = isFullPy() && s.length() < 3;
-    if (s.contains("'")) return getPhrase(s);
+    if (hasDelimiter() && s.contains(getDelimiter())) return getPhrase(s.replace(getDelimiter(), "'"));
 
     String sql = String.format("select hz from %s where py match ? and not glob('* *', py)", table);
     if (!s.contentEquals(t) || s.contains("*")) sql = sql.replace("select hz ", "select hz,py ");
@@ -357,8 +360,16 @@ public class Dictionary {
       return preferences.getInt(idKey, 0);
   }
 
-  public boolean isShapeCode() {
-      return preferences.getBoolean("prefs_shape_code", false);
+  public boolean hasDelimiter() {
+      return delimiter.length() > 0;
+  }
+
+  public boolean isDelimiter(CharSequence text) {
+      return hasDelimiter() && delimiter.contains(text);
+  }
+
+  public String getDelimiter() {
+      return hasDelimiter() ? delimiter.substring(0, 1) : "";
   }
 
   public boolean isKeyboardPreview() {

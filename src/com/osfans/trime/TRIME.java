@@ -331,17 +331,21 @@ public class TRIME extends InputMethodService implements
   }
 
   public void onText(CharSequence text) {
-    if (isChinese() && hasComposingText() && text.length() > 0 && "'".contains(text)) {
-        composingText.append("'");  //手动切分音节
-        updateComposingText();
+    if (isChinese() && hasComposingText() && text.length() > 0 && dialectDictionary.isDelimiter(text)) {
+        if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
+            composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
+            updateComposingText();
+        }
     } else if (isChinese() && ((hasComposingText() && text.length() == 0) || dialectDictionary.isAlphabet(text))) {
         String r = composingText.toString();
         String s = dialectDictionary.correctSpell(r + text);
         if (s == "") {
-            if (dialectDictionary.isShapeCode()) {
-                if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
+            if (dialectDictionary.hasDelimiter()) {
+                s = dialectDictionary.correctSpell(r + dialectDictionary.getDelimiter() + text); //自動切分音节
+            } else {
+                if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
                 s = text.toString();
-            } else s = dialectDictionary.correctSpell(r + "'" + text); //自动切分音节
+            }
         }
         if (s != "") { 
             composingText.delete(0, composingText.length());
@@ -389,7 +393,7 @@ public class TRIME extends InputMethodService implements
     // Commit the picked candidate and suggest its following words.
     String[] s = candidate.split("\t", 2);
     String sc = dialectDictionary.toSC(s[0]);
-    String py = s[1].length() > 0 ? s[1] : composingText.toString().replace("'"," ");
+    String py = s[1].length() > 0 ? s[1] : composingText.toString();
     commitText(composingText.length() > 0 && dialectDictionary.isCommitPy() ? String.format("%s(%s)", sc, py) : sc);
     setCandidates(dialectDictionary.getAssociation(s[0]), false);
   }
@@ -520,7 +524,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSpace(int keyCode) {
-    if (candidatesContainer != null && keyCode == ' ') {
+    if (candidatesContainer != null && keyCode == ' ' && !dialectDictionary.isDelimiter(" ")) {
       if (!candidatesContainer.pickHighlighted(-1)) {
         if (hasComposingText()) clearComposingText();
         else commitText(" ");
@@ -531,7 +535,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSelect(int keyCode) {
-    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !dialectDictionary.isAlphabet(String.valueOf(keyCode))) {
+    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !dialectDictionary.isAlphabet(String.valueOf((char)keyCode))) {
       return candidatesContainer.pickHighlighted(keyCode - '1');
     }
     return false;
@@ -593,7 +597,7 @@ public class TRIME extends InputMethodService implements
   private boolean handleComposing(int keyCode) {
     if(canCompose && isChinese()) {
         String s = String.valueOf((char) keyCode);
-        if (dialectDictionary.isAlphabet(s)) {
+        if (dialectDictionary.isAlphabet(s) || dialectDictionary.isDelimiter(s)) {
             onText(s);
             return true;
         } else {
