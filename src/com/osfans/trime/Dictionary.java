@@ -42,12 +42,12 @@ public class Dictionary {
 
   private final String defaultAlphabet = "[a-z0-9]+";
   private final String defaultSyllable = "[a-z0-9]+";
-  public String delimiter;
-  public Pattern alphabetP, syllableP, autoSelectSyllableP;
-  public String[][] pyspellRule, py2ipaRule, ipa2pyRule, ipafuzzyRule;
-  public String[]  namedFuzzyRules = null;
-  public boolean[] fuzzyRulesPref = null;
-  public String table, phraseTable, keyboard;
+  private String delimiter;
+  private Pattern alphabetP, syllableP, autoSelectSyllableP;
+  private String[][] pyspellRule, py2ipaRule, ipa2pyRule, ipafuzzyRule;
+  String[]  namedFuzzyRules = null;
+  boolean[] fuzzyRulesPref = null;
+  private String table, phraseTable, keyboard;
 
   protected Dictionary(
       Context context) {
@@ -63,7 +63,7 @@ public class Dictionary {
         return alphabetP.matcher(s).matches();
     }
 
-    public boolean isSyllable(String s) {
+    private boolean isSyllable(String s) {
         if (!hasDelimiter()) return syllableP.matcher(s).matches();
         for (String i: s.split(getDelimiter())) if(!syllableP.matcher(i).matches()) return false;
         return true;
@@ -73,9 +73,14 @@ public class Dictionary {
         return (autoSelectSyllableP != null) && autoSelectSyllableP.matcher(s).matches();
     }
 
-    public String correctSpell(String s) {
-        s = translate(s, pyspellRule);
-        return isSyllable(s) ? s : "";
+    public String correctSpell(String r, CharSequence text) {
+        String s = translate(r + text, pyspellRule);
+        if (isSyllable(s)) return s;
+        if (hasDelimiter()) {
+            s = translate(r + getDelimiter() + text, pyspellRule);
+            if (isSyllable(s)) return s;
+        }
+        return null;
     }
 
     public String ipa2py(String s) {
