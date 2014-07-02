@@ -94,8 +94,10 @@ public class Dictionary {
         StringBuilder r = new StringBuilder(s);
         ArrayList<Integer> b = new ArrayList<Integer>();
         ArrayList<String> fuzzyList =  new ArrayList<String>();
-        for(int i = 0; i < fuzzyRulesPref.length; i++)  {
-            if(fuzzyRulesPref[i])fuzzyList.add(namedFuzzyRules[i]);
+        if (fuzzyRulesPref != null) {
+            for (int i = 0; i < fuzzyRulesPref.length; i++) {
+                if (fuzzyRulesPref[i]) fuzzyList.add(namedFuzzyRules[i]);
+            }
         }
         String p = s;
         for (int j=0; j<n; j++){
@@ -374,7 +376,7 @@ public class Dictionary {
   }
 
   public String getDelimiter() {
-      return hasDelimiter() ? delimiter.substring(0, 1) : "";
+      return hasDelimiter() ? "'" : "";
   }
 
   public boolean isKeyboardPreview() {
