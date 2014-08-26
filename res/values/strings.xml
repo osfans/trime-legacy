@@ -19,7 +19,7 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Titles for IME  -->
-    <string name="ime_name">漢字方言輸入法</string>
+    <string name="ime_name">方言輸入法</string>
 
     <!-- Labels on soft keys -->
     <string name="label_english">英文</string>
