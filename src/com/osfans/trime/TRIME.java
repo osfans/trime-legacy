@@ -421,7 +421,7 @@ public class TRIME extends InputMethodService implements
             .setMultiChoiceItems(dialectDictionary.namedFuzzyRules, dialectDictionary.fuzzyRulesPref,
                 new DialogInterface.OnMultiChoiceClickListener() {
                     public void onClick(DialogInterface di, int which, boolean isChecked) {
-                        di.dismiss();
+                        //di.dismiss();
                         dialectDictionary.setFuzzyRule(which, isChecked);
                     }
                 });

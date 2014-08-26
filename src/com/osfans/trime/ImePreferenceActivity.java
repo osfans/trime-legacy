@@ -29,6 +29,7 @@ import android.preference.PreferenceActivity;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 /**
  * Manages IME preferences. 
@@ -96,10 +97,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
     } catch (IOException e) {
         throw new RuntimeException("Error creating source database", e);
     }
-    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-        .setTitle(R.string.ime_name)
-        .setMessage(ret ? R.string.importdb_success : R.string.importdb_failure);
-    builder.show();
+    Toast.makeText(getApplicationContext(), ret ? R.string.importdb_success : R.string.importdb_failure, Toast.LENGTH_SHORT).show();
   }
 
   private void exportDatabase() {
@@ -111,9 +109,6 @@ public class ImePreferenceActivity extends PreferenceActivity {
     } catch (IOException e) {
         throw new RuntimeException("Error creating source database", e);
     }
-    AlertDialog.Builder builder = new AlertDialog.Builder(this)
-        .setTitle(R.string.ime_name)
-        .setMessage(ret ? R.string.exportdb_success : R.string.exportdb_failure);
-    builder.show();
+    Toast.makeText(getApplicationContext(), ret ? R.string.exportdb_success : R.string.exportdb_failure, Toast.LENGTH_SHORT).show();
   }
 }
