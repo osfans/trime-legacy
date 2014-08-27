@@ -96,7 +96,7 @@ public class TRIME extends InputMethodService implements
       escape();
     }
     // Update the caps-lock status for the current cursor position.
-    updateCursorCapsToInputView();
+    //updateCursorCapsToInputView();
   }
 
   @Override
@@ -168,7 +168,7 @@ public class TRIME extends InputMethodService implements
       SoftKeyboard sk = (SoftKeyboard)keyboardSwitch.getCurrentKeyboard();
       inputView.setKeyboard(sk);
       inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
-      updateCursorCapsToInputView();
+      //updateCursorCapsToInputView();
     }
   }
 
@@ -333,6 +333,13 @@ public class TRIME extends InputMethodService implements
   }
 
   public void onText(CharSequence text) {
+    if(inputView.isShifted() && text.length() > 0) { //換檔輸出大寫字母
+        for (char c: text.toString().toCharArray()){
+            c = Character.toUpperCase(c);
+            commitText(String.valueOf(c));
+        }
+        return;
+    }
     if (isChinese() && hasComposingText() && text.length() > 0 && dialectDictionary.isDelimiter(text)) {
         if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
             composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
