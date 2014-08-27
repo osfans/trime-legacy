@@ -238,10 +238,12 @@ public class TRIME extends InputMethodService implements
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
-      // Handle the back-key to close the pop-up keyboards.
-      if ((inputView != null) && inputView.handleBack()) {
-        return true;
-      }
+        if (hasComposingText()) { //按返回鍵自動上屏
+            commitText(composingText);
+        }
+        if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
+            return true;
+        }
     }
 
     if (processKey(event)) return true;
