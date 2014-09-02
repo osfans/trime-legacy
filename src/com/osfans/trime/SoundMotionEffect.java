@@ -31,8 +31,8 @@ public class SoundMotionEffect {
 
   private final Context context;
   private final SharedPreferences preferences;
-  private final String vibrateKey;
-  private final String soundKey;
+  private final String vibrateKey = "pref_vibrate";
+  private final String soundKey = "pref_sound";
 
   private boolean vibrateOn;
   private Vibrator vibrator;
@@ -42,8 +42,6 @@ public class SoundMotionEffect {
   public SoundMotionEffect(Context context) {
     this.context = context;
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    vibrateKey = context.getString(R.string.prefs_vibrate_key);
-    soundKey = context.getString(R.string.prefs_sound_key);
   }
 
   public void reset() {

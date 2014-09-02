@@ -35,9 +35,12 @@ public class Dictionary {
 
   private final SQLiteDatabase mDatabase;
   private final SharedPreferences preferences;
-  private final String scKey;
-  private final String fullPyKey;
-  private final String commitPyKey;
+  private final String scKey = "pref_sc";
+  private final String fullPyKey = "pref_full_py";
+  private final String commitPyKey = "pref_commit_py";
+  private final String keyboardPreviewKey = "pref_keyboard_preview";
+  private final String associationKey = "pref_association";
+  private final String pyPromptKey = "pref_py_prompt";
   private final String idKey = "_id";
 
   private final String defaultAlphabet = "[a-z0-9]+";
@@ -52,9 +55,6 @@ public class Dictionary {
   protected Dictionary(
       Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    scKey = context.getString(R.string.prefs_sc_key);
-    fullPyKey = context.getString(R.string.prefs_full_py_key);
-    commitPyKey = context.getString(R.string.prefs_commit_py_key);
     mDatabase = AssetDatabaseOpenHelper.openDatabase(context);
     initSchema();
   }
@@ -274,25 +274,32 @@ public class Dictionary {
     boolean fullPyOn = isFullPy() && s.length() < 3;
     if (hasDelimiter() && s.contains(getDelimiter())) return getPhrase(s.replace(getDelimiter(), "'"));
 
-    String sql = String.format("select hz from %s where py match ? and not glob('* *', py)", table);
-    if (!s.contentEquals(t) || s.contains("*")) sql = sql.replace("select hz ", "select hz,py ");
-    Cursor cursor = query(sql, new String[]{s});
-    if (cursor != null || fullPyOn) return cursor;
-
-    s = s.replace(" OR", "* OR") + "*";
-    sql = sql.replace("select hz ", "select hz,py ");
-    return query(sql + " limit 100", new String[]{s});
+    Cursor cursor = null;
+    String sql;
+    //Log.e("kyle", "word start");
+    if(hasDelimiter()){
+        sql = String.format("select %s from %s where py match ? and not glob('* *', py)", getQueryCol(), table);
+        cursor = query(sql, new String[]{s});
+        if (cursor == null && fullPyOn) {
+            s = s.replace(" OR", "* OR") + "*";
+            cursor = query(sql + " limit 100", new String[]{s});
+        }
+    } else {
+        sql = String.format("select %s from %s where py match ?", getQueryCol(), table);
+        cursor = query(sql, new String[]{s});
+    }
+    //Log.e("kyle", "word end");
+    return cursor;
   }
 
   private Cursor getPhrase(CharSequence code) {
     boolean fullPyOn = isFullPy() && code.length() < 6;
     if (phraseTable.contentEquals("phrase")) return null;
-    String sql = String.format("select hz from %s where py match ? limit 100", phraseTable);
+    String sql = String.format("select %s from %s where py match ? limit 100", getQueryCol(), phraseTable);
     String s = String.format("\"^%s\"",code.toString().replace(" OR ", "\" OR \"^").replace("'", " "));
     //Log.e("kyle", "phrase start");
     Cursor cursor = query(sql, new String[]{s});
     if (cursor != null || fullPyOn) return cursor;
-    sql = sql.replace("select hz", "select hz,py");
     s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace("'", " "));
     cursor = query(sql, new String[]{s});
     if (cursor != null) return cursor;
@@ -303,9 +310,10 @@ public class Dictionary {
   }
 
   public Cursor getAssociation(CharSequence code) {
+      if (!isAssociation()) return null;
       String s = code.toString();
       int len = s.length();
-      String sqlFormat = "select distinct substr(hz,%d) from %s where hz match '^%s*' and length(hz) > %d order by docid limit 100";
+      String sqlFormat = "select distinct substr(hz,%d) from %s where hz match '^%s*' and length(hz) > %d limit 100";
       return query(String.format(sqlFormat, len + 1, phraseTable, s, len), null);
   }
   
@@ -380,7 +388,15 @@ public class Dictionary {
   }
 
   public boolean isKeyboardPreview() {
-      return preferences.getBoolean("prefs_keyboard_preview", false);
+      return preferences.getBoolean(keyboardPreviewKey, true);
+  }
+
+  private boolean isAssociation() {
+      return preferences.getBoolean(associationKey, false);
+  }
+
+  private String getQueryCol() {
+      return preferences.getBoolean(pyPromptKey, false) ? "hz,py" : "hz";
   }
 
   public boolean setSchemaId(int id) {

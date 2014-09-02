@@ -26,26 +26,25 @@
     <string name="label_chinese">漢字</string>
 
     <!-- Preference settings -->
-    <string name="prefs_licensing">授權資訊</string>
-    <string name="prefs_vibrate_title">按鍵震動</string>
-    <string name="prefs_vibrate_key">prefs_vibrate</string>
-    <string name="prefs_sound_title">按鍵音效</string>
-    <string name="prefs_sound_key">prefs_sound</string>
-    <string name="prefs_keyboard_preview_title">按鍵提示</string>
-    <string name="prefs_keyboard_preview_summary">打字速度較快時建議關閉</string>
-    <string name="prefs_keyboard_preview_key">prefs_keyboard_preview</string>
-    <string name="prefs_full_py_title">全拼輪入</string>
-    <string name="prefs_full_py_summary">禁用簡拼，出字慢時建議开啟</string>
-    <string name="prefs_full_py_key">prefs_full_py</string>
-    <string name="prefs_sc_title">輸出簡體</string>
-    <string name="prefs_sc_key">prefs_sc</string>
-    <string name="prefs_commit_py_title">輸出拼音</string>
-    <string name="prefs_commit_py_summary">出字時標出拼音，如：拼音(pin yin)</string>
-    <string name="prefs_commit_py_key">prefs_commit_py</string>
-    <string name="prefs_importdb">導入碼表</string>
-    <string name="prefs_importdb_summary">從 /sdcard/trime.db 導入自定義碼表</string>
-    <string name="prefs_exportdb">導出碼表</string>
-    <string name="prefs_exportdb_summary">將碼表導出為 /sdcard/trime.db </string>
+    <string name="pref_licensing">授權資訊</string>
+    <string name="pref_vibrate_title">按鍵震動</string>
+    <string name="pref_ui">界面設置</string>
+    <string name="pref_sound_title">按鍵音效</string>
+    <string name="pref_keyboard_preview_title">按鍵提示</string>
+    <string name="pref_keyboard_preview_summary">打字速度較快時建議關閉</string>
+    <string name="pref_py_prompt_title">編碼提示</string>
+
+    <string name="pref_function">功能設置</string>
+    <string name="pref_full_py_title">全拼輪入</string>
+    <string name="pref_full_py_summary">禁用簡拼，出字慢時建議开啟</string>
+    <string name="pref_association_title">詞語聯想</string>
+    <string name="pref_sc_title">輸出簡體</string>
+    <string name="pref_commit_py_title">輸出拼音</string>
+    <string name="pref_commit_py_summary">出字時標出拼音，如：拼音(pin yin)</string>
+    <string name="pref_importdb">導入碼表</string>
+    <string name="pref_importdb_summary">從 /sdcard/trime.db 導入自定義碼表</string>
+    <string name="pref_exportdb">導出碼表</string>
+    <string name="pref_exportdb_summary">將碼表導出為 /sdcard/trime.db </string>
 
     <string name="set_ime">全局設定</string>
     <string name="set_schema">設定本方案</string>

@@ -43,7 +43,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.prefs);
 
-    Preference license = findPreference(getString(R.string.prefs_licensing));
+    Preference license = findPreference("pref_licensing");
     license.setOnPreferenceClickListener(new OnPreferenceClickListener() {
       public boolean onPreferenceClick(Preference preference) {
         showLicenseDialog();
@@ -51,7 +51,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
       }
     });
 
-    Preference importdb = findPreference(getString(R.string.prefs_importdb));
+    Preference importdb = findPreference("pref_importdb");
     importdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
       public boolean onPreferenceClick(Preference preference) {
         importDatabase();
@@ -59,7 +59,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
       }
     });
 
-    Preference exportdb = findPreference(getString(R.string.prefs_exportdb));
+    Preference exportdb = findPreference("pref_exportdb");
     exportdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
       public boolean onPreferenceClick(Preference preference) {
         exportDatabase();
