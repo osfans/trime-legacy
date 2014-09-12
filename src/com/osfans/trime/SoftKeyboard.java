@@ -45,7 +45,7 @@ public class SoftKeyboard extends Keyboard {
   public SoftKeyboard(Context context, int xmlLayoutResId, String[] labels) {
     this(context, xmlLayoutResId);
 
-    List<Keyboard.Key> keys = getKeys();    
+    List<Keyboard.Key> keys = getKeys();
     for(int i = 0; i < labels.length; i++) {
         Keyboard.Key key = keys.get(i);
         String label = labels[i];
@@ -58,6 +58,7 @@ public class SoftKeyboard extends Keyboard {
             } else {
                 String[] text = label.split(":");
                 if (text[0].length() > 0) {
+                    text[0] = text[0].contentEquals("\\\\") ? "\\":text[0].replace("\\","");
                     key.label = text[0];
                     if (key.codes[0] > 0) key.text = text[text.length - 1];
                 }

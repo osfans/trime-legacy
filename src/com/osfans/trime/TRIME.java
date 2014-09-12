@@ -262,7 +262,6 @@ public class TRIME extends InputMethodService implements
             return false;
         }
         if (!isChinese()) return false;
-        Log.e("kyle",event.toString());
         if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
             keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
         } else if (!event.isShiftPressed() && keyCode >= KeyEvent.KEYCODE_0
