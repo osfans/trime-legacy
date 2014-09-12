@@ -43,6 +43,18 @@
             android:key="pref_py_prompt"
             android:title="@string/pref_py_prompt_title"
             android:persistent="true"/>
+        <ListPreference
+            android:key="pref_cand_num"
+            android:defaultValue="5"
+            android:title="@string/pref_cand_num"
+            android:entries="@array/pref_cand_num_entries"
+            android:entryValues="@array/pref_cand_num_values" />
+        <ListPreference
+            android:key="pref_cand_font_size"
+            android:defaultValue="20"
+            android:title="@string/pref_cand_font_size"
+            android:entries="@array/pref_cand_font_size_values"
+            android:entryValues="@array/pref_cand_font_size_values" />
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -24,6 +24,8 @@ import java.io.IOException;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.ListPreference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.view.View;
@@ -66,6 +68,27 @@ public class ImePreferenceActivity extends PreferenceActivity {
         return true;
       }
     });
+
+    ListPreference candnum = (ListPreference)findPreference("pref_cand_num");
+    candnum.setSummary(candnum.getEntry());
+    candnum.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+        ListPreference candnum = (ListPreference)preference;
+        candnum.setValue(newValue.toString());
+        candnum.setSummary(candnum.getEntry());//candnum.getEntries()[candnum.findIndexOfValue(newValue.toString())]);
+        return true;
+      }
+    });
+
+    ListPreference candFontSize = (ListPreference)findPreference("pref_cand_font_size");
+    candFontSize.setSummary(candFontSize.getValue());
+    candFontSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+        ((ListPreference)preference).setSummary(newValue.toString());
+        return true;
+      }
+    });
+
   }
 
   private void showLicenseDialog() {

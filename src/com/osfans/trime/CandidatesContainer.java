@@ -120,20 +120,22 @@ public class CandidatesContainer extends LinearLayout {
         p = cursor.getPosition();
     } else if (direction < 0) cursor.move(-1);
     
-    int n = 0;
+    float n = 0;
     ArrayList<String> candidates = new ArrayList<String>();
+    int max_len = candidateView.getCandMaxLen();
+    int max_num = candidateView.getCandNum();
     do {
         String word = cursor.getString(0);
         String py = cursor.getColumnCount() > 1 ? dialectDictionary.ipa2py(cursor.getString(1)) : "";
         String s = String.format("%s\t%s", word, py);
-        n += word.codePointCount(0,word.length());
-        if (n > CandidateView.MAX_CANDIDATE_COUNT) {
+        n += candidateView.len(word);
+        if (n > max_len && candidates.size() > 0) {
             if(direction < 0) cursor.move(1);
             break;
         }
         if(direction < 0) candidates.add(0, s);
         else candidates.add(s);
-        if (n == CandidateView.MAX_CANDIDATE_COUNT) break;
+        if (n >= max_len || candidates.size() >= max_num) break;
     } while (cursor.move(direction>=0?1:-1));
     if(direction >=0) cursor.moveToPosition(p);
     else if(direction<0 && cursor.isBeforeFirst()) cursor.moveToFirst();

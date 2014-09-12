@@ -26,6 +26,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.util.Log;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.TypedValue;
 
 /**
  * View to show candidate words.
@@ -39,7 +42,7 @@ public class CandidateView extends View {
     void onPickCandidate(String candidate);
   }
 
-  public static final int MAX_CANDIDATE_COUNT = 6;
+  public static final int MAX_CANDIDATE_COUNT = 20;
   private static final int CANDIDATE_TOUCH_OFFSET = -12;
 
   private CandidateViewListener listener;
@@ -51,9 +54,14 @@ public class CandidateView extends View {
   private Paint paint, paintpy;
 
   private Rect candidateRect[] = new Rect[MAX_CANDIDATE_COUNT];
+  private final String candNumKey = "pref_cand_num";
+  private final String candFontSizeKey = "pref_cand_font_size";
+  private final SharedPreferences preferences;
 
   public CandidateView(Context context, AttributeSet attrs) {
     super(context, attrs);
+
+    preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
     Resources r = context.getResources();
     candidateHighlight = r.getDrawable(R.drawable.candidate_highlight);
@@ -138,6 +146,11 @@ public class CandidateView extends View {
   private void drawCandidates(Canvas canvas) {
     final int count = candidates!=null ? candidates.length : 0;
 
+    float size = getCandFontSize();
+    if (size != paint.getTextSize()) {
+        paint.setTextSize(size);
+    }
+
     if (count > 0) {
       // Draw the separator at the left edge of the first candidate. 
       candidateSeparator.setBounds(
@@ -188,13 +201,12 @@ public class CandidateView extends View {
     private void updateCandidateWidth() {
         final int top = 0;
         final int bottom = getHeight();
-        final int width = getWidth() / MAX_CANDIDATE_COUNT;
 
         // Set the first candidate 1-pixel wider since it'd accommodate two
         // candidate-separators.  
-        candidateRect[0] = new Rect(0, top, width * getCandidateHzLen(0) + 1, bottom);
-        for (int i = 1, x = candidateRect[0].right; i < MAX_CANDIDATE_COUNT; i++) {
-          candidateRect[i] = new Rect(x, top, x += width * getCandidateHzLen(i), bottom);
+        candidateRect[0] = new Rect(0, top, getCandidateWidth(0) + 1, bottom);
+        for (int i = 1, x = candidateRect[0].right; i < getCandNum(); i++) {
+          candidateRect[i] = new Rect(x, top, x += getCandidateWidth(i), bottom);
         }
     }
 
@@ -262,8 +274,24 @@ public class CandidateView extends View {
     return getCandidate(index).split("\t", 2)[1];
   }
 
-  private int getCandidateHzLen(int index) {
-    String s = getCandidateHz(index);
-    return s.codePointCount(0,s.length());
+  public float len(String s) {
+    return s.codePointCount(0, s.length()) + 0.5f;
+  }
+
+  public float getCandFontSize() {
+      int size = Integer.parseInt(preferences.getString(candFontSizeKey, "20"));
+      return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, Resources.getSystem().getDisplayMetrics());
+  }
+
+  public int getCandNum() {
+      return Integer.parseInt(preferences.getString(candNumKey, "5"));
+  }
+
+  private int getCandidateWidth(int index) {
+    return (int)(len(getCandidateHz(index)) * getCandFontSize());
+  }
+
+  public int getCandMaxLen() {
+    return (int)(getWidth()/getCandFontSize());
   }
 }
