@@ -144,7 +144,7 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public void onFinishInputView(boolean finishingInput) {
-    clearComposingText();
+    if (hasComposingText()) commitText(composingText); //退出時上屏
     super.onFinishInputView(finishingInput);
     // Dismiss any pop-ups when the input-view is being finished and hidden.
     inputView.closing();
@@ -238,9 +238,7 @@ public class TRIME extends InputMethodService implements
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
-        if (hasComposingText()) { //按返回鍵自動上屏
-            commitText(composingText);
-        }
+        clearComposingText(); //返回鍵清屏
         if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
             return true;
         }
@@ -472,6 +470,7 @@ public class TRIME extends InputMethodService implements
                     iSetting.setClass(TRIME.this, ImePreferenceActivity.class);
                     iSetting.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
                     startActivity(iSetting);
+                    escape(); //全局設置時清屏
                 }
             })
             .setSingleChoiceItems(dialectDictionary.getSchemas(), dialectDictionary.getSchemaId(), "name",
