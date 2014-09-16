@@ -55,6 +55,12 @@
             android:title="@string/pref_cand_font_size"
             android:entries="@array/pref_cand_font_size_values"
             android:entryValues="@array/pref_cand_font_size_values" />
+        <ListPreference
+            android:key="pref_cand_max_phrase"
+            android:defaultValue="8"
+            android:title="@string/pref_cand_max_phrase"
+            android:entries="@array/pref_cand_num_entries"
+            android:entryValues="@array/pref_cand_num_values" />
     </PreferenceCategory>
 
     <PreferenceCategory

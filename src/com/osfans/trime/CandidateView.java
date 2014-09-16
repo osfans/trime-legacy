@@ -56,6 +56,7 @@ public class CandidateView extends View {
   private Rect candidateRect[] = new Rect[MAX_CANDIDATE_COUNT];
   private final String candNumKey = "pref_cand_num";
   private final String candFontSizeKey = "pref_cand_font_size";
+  private final String candMaxPhraseKey = "pref_cand_max_phrase";
   private final SharedPreferences preferences;
 
   public CandidateView(Context context, AttributeSet attrs) {
@@ -166,7 +167,7 @@ public class CandidateView extends View {
         (int) (((getHeight() + (hasPy ? paintpy.getTextSize() : 0) - paint.getTextSize()) / 2) - paint.ascent());
     for (int i = 0; i < count; i++) {
       // Calculate a position where the text could be centered in the rectangle.
-      String candidateHz = getCandidateHz(i);
+      String candidateHz = getCandDisplay(getCandidateHz(i));
       float x = (int) ((candidateRect[i].left + candidateRect[i].right -
           paint.measureText(candidateHz)) / 2);
       canvas.drawText(candidateHz, x, y, paint);
@@ -275,7 +276,10 @@ public class CandidateView extends View {
   }
 
   public float len(String s) {
-    return s.codePointCount(0, s.length()) + 0.5f;
+    int n = s.codePointCount(0, s.length());
+    int m = getCandMaxPhrase();
+    if ( n > m ) n = m;
+    return n + 0.5f;
   }
 
   public float getCandFontSize() {
@@ -285,6 +289,17 @@ public class CandidateView extends View {
 
   public int getCandNum() {
       return Integer.parseInt(preferences.getString(candNumKey, "5"));
+  }
+
+  public int getCandMaxPhrase() {
+      return Integer.parseInt(preferences.getString(candMaxPhraseKey, "8"));
+  }
+
+  public String getCandDisplay(String s) {
+      int n = s.codePointCount(0, s.length());
+      int m = getCandMaxPhrase();
+     if ( n > m) return s.substring(0, m-1) + "…";
+      return s;
   }
 
   private int getCandidateWidth(int index) {

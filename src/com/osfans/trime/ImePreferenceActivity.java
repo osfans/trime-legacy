@@ -75,7 +75,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
       public boolean onPreferenceChange(Preference preference, Object newValue) {
         ListPreference candnum = (ListPreference)preference;
         candnum.setValue(newValue.toString());
-        candnum.setSummary(candnum.getEntry());//candnum.getEntries()[candnum.findIndexOfValue(newValue.toString())]);
+        candnum.setSummary(candnum.getEntry());
         return true;
       }
     });
@@ -89,6 +89,16 @@ public class ImePreferenceActivity extends PreferenceActivity {
       }
     });
 
+    ListPreference canMaxPhrase = (ListPreference)findPreference("pref_cand_max_phrase");
+    canMaxPhrase.setSummary(canMaxPhrase.getEntry());
+    canMaxPhrase.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+        ListPreference canMaxPhrase = (ListPreference)preference;
+        canMaxPhrase.setValue(newValue.toString());
+        canMaxPhrase.setSummary(canMaxPhrase.getEntry());
+        return true;
+      }
+    });
   }
 
   private void showLicenseDialog() {
