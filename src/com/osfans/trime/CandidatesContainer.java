@@ -40,6 +40,7 @@ public class CandidatesContainer extends LinearLayout {
   private Cursor cursor;
   private boolean highlightDefault;
   private int currentWordCount;
+  private int currentWordSkip;
   private Dictionary dialectDictionary;
 
   public CandidatesContainer(Context context, AttributeSet attrs) {
@@ -78,6 +79,7 @@ public class CandidatesContainer extends LinearLayout {
     cursor = words;
     this.highlightDefault = highlightDefault;
     currentWordCount = 0;
+    currentWordSkip = 0;
     movePage(0);
     this.dialectDictionary = dialectDictionary;
   }
@@ -92,7 +94,7 @@ public class CandidatesContainer extends LinearLayout {
 	}
 
 	private boolean isLast() {
-		return (cursor != null) && (cursor.getPosition() + currentWordCount >= cursor.getCount());
+		return (cursor != null) && (cursor.getPosition() + currentWordSkip + currentWordCount >= cursor.getCount());
 	}
 
   private void movePage(int direction) {
@@ -111,12 +113,13 @@ public class CandidatesContainer extends LinearLayout {
   private String[] getCandidates(int direction) {
     if ((direction > 0 && isLast()) || (direction < 0 && isFirst()) ) {
             currentWordCount = 0;
+            currentWordSkip = 0;
             return null;
     }
     
     int p = 0;
-    if (direction > 0 && currentWordCount > 0)  {
-        cursor.move(currentWordCount);
+    if (direction > 0 && currentWordCount + currentWordSkip> 0)  {
+        cursor.move(currentWordCount + currentWordSkip);
         p = cursor.getPosition();
     } else if (direction < 0) cursor.move(-1);
     
@@ -124,10 +127,15 @@ public class CandidatesContainer extends LinearLayout {
     ArrayList<String> candidates = new ArrayList<String>();
     int max_len = candidateView.getCandMaxLen();
     int max_num = candidateView.getCandNum();
+    currentWordSkip = 0;
     do {
         String word = cursor.getString(0);
         String py = cursor.getColumnCount() > 1 ? dialectDictionary.ipa2py(cursor.getString(1)) : "";
         String s = String.format("%s\t%s", word, py);
+        if (candidates.contains(s)) { //單屏去重
+             currentWordSkip++;
+             continue;
+        }
         n += candidateView.len(word);
         if (n > max_len && candidates.size() > 0) {
             if(direction < 0) cursor.move(1);
