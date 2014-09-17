@@ -159,6 +159,7 @@ public class TRIME extends InputMethodService implements
   @Override
   public void onUnbindInput() {
     clearComposingText();
+    if (dialectDictionary != null && dialectDictionary.isInitChinese()) keyboardSwitch.reset(); //初始中文
     super.onUnbindInput();
   }
 

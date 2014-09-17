@@ -41,6 +41,7 @@ public class Dictionary {
   private final String keyboardPreviewKey = "pref_keyboard_preview";
   private final String associationKey = "pref_association";
   private final String pyPromptKey = "pref_py_prompt";
+  private final String initChineseKey = "pref_init_chinese";
   private final String idKey = "_id";
 
   private final String defaultAlphabet = "[a-z0-9]+";
@@ -397,6 +398,10 @@ public class Dictionary {
 
   private String getQueryCol() {
       return preferences.getBoolean(pyPromptKey, false) ? "hz,py" : "hz";
+  }
+
+  public boolean isInitChinese() {
+     return preferences.getBoolean(initChineseKey, false);
   }
 
   public boolean setSchemaId(int id) {

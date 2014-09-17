@@ -66,6 +66,12 @@
     <PreferenceCategory
         android:key="pref_function"
         android:title="@string/pref_function">
+
+        <CheckBoxPreference
+            android:key="pref_init_chinese"
+            android:title="@string/pref_init_chinese"
+            android:persistent="true"/>
+
         <CheckBoxPreference
             android:key="pref_full_py"
             android:title="@string/pref_full_py_title"

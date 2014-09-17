@@ -54,6 +54,11 @@ public class KeyboardSwitch {
     this.context = context;
   }
 
+  public void reset(){
+    chineseKeyboardId = 0;
+    toEnglish(false);
+  }
+
   public void initializeKeyboard(String s) {
     chineses = s;
     englishKeyboards = new SoftKeyboard[englishKeyboardIds.length];
@@ -92,8 +97,7 @@ public class KeyboardSwitch {
         }
         chineseKeyboards[i] = new SoftKeyboard(context, xmlLayoutResId, labels);
     }
-    chineseKeyboardId = 0;
-    toEnglish(false);
+    reset();
   }
 
   /**
