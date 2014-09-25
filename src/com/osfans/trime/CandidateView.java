@@ -69,7 +69,7 @@ public class CandidateView extends View {
     candidateSeparator = r.getDrawable(R.drawable.candidate_separator);
 
     paint = new Paint();
-    paint.setColor(r.getColor(R.color.candidate_normal));
+    paint.setColor(r.getColor(android.R.color.black));
     paint.setAntiAlias(true);
     paint.setTextSize(r.getDimensionPixelSize(R.dimen.candidate_font_height));
     paint.setStrokeWidth(0);

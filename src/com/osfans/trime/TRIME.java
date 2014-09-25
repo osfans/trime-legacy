@@ -18,8 +18,6 @@ package com.osfans.trime;
 
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
-import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
 import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -40,7 +38,7 @@ import android.content.Intent;
 public class TRIME extends InputMethodService implements 
     KeyboardView.OnKeyboardActionListener, CandidateView.CandidateViewListener {
 
-  protected SoftKeyboardView inputView;
+  protected KeyboardView inputView;
   private CandidatesContainer candidatesContainer;
   private KeyboardSwitch keyboardSwitch;
   private Dictionary dialectDictionary;
@@ -107,7 +105,7 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public View onCreateInputView() {
-    inputView = (SoftKeyboardView) getLayoutInflater().inflate(
+    inputView = (KeyboardView) getLayoutInflater().inflate(
         R.layout.input, null);
     inputView.setOnKeyboardActionListener(this);
     return inputView;
@@ -166,7 +164,7 @@ public class TRIME extends InputMethodService implements
   private void bindKeyboardToInputView() {
     if (inputView != null) {
       // Bind the selected keyboard to the input view.
-      SoftKeyboard sk = (SoftKeyboard)keyboardSwitch.getCurrentKeyboard();
+      Keyboard sk = (Keyboard)keyboardSwitch.getCurrentKeyboard();
       inputView.setKeyboard(sk);
       inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
       //updateCursorCapsToInputView();
@@ -254,7 +252,7 @@ public class TRIME extends InputMethodService implements
         int keyChar = 0;
         CharSequence keyText = "";
         if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
-            keyChar = SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER;
+            keyChar = Keyboard.KEYCODE_MODE_CHANGE_LETTER;
             onKey(keyChar, null);
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
@@ -450,10 +448,10 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleOption(int keyCode) {
-    if (keyCode == SoftKeyboard.KEYCODE_OPTIONS || keyCode == SoftKeyboard.KEYCODE_SCHEMA_OPTIONS) {
+    if (keyCode == Keyboard.KEYCODE_OPTIONS || keyCode == Keyboard.KEYCODE_SCHEMA_OPTIONS) {
         // Create a Dialog menu
         AlertDialog.Builder builder;
-        if (keyCode == SoftKeyboard.KEYCODE_OPTIONS) {
+        if (keyCode == Keyboard.KEYCODE_OPTIONS) {
             builder = new AlertDialog.Builder(this)
             .setTitle(R.string.ime_name)
             //.setIcon(android.R.drawable.ic_menu_preferences)
@@ -563,7 +561,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleReverse(int keyCode) {
-    if (keyCode == SoftKeyboard.KEYCODE_REVERSE && !hasComposingText()) {
+    if (keyCode == Keyboard.KEYCODE_REVERSE && !hasComposingText()) {
       CharSequence s = getLastText();
       if (s.length() == 0) return true;
       //setCandidates(dialectDictionary.getPy(s), false);

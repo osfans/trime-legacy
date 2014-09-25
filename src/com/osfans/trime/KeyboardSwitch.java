@@ -17,7 +17,6 @@
 package com.osfans.trime;
 
 import android.content.Context;
-import android.inputmethodservice.Keyboard;
 import android.text.InputType;
 
 /**
@@ -43,9 +42,9 @@ public class KeyboardSwitch {
   private int chineseKeyboardId;
   private int chineseKeyboardCount;
 
-  private SoftKeyboard[] englishKeyboards;
-  private SoftKeyboard[] chineseKeyboards;
-  private SoftKeyboard currentKeyboard;
+  private Keyboard[] englishKeyboards;
+  private Keyboard[] chineseKeyboards;
+  private Keyboard currentKeyboard;
   private String chineses;
 
   private int currentDisplayWidth;
@@ -61,12 +60,12 @@ public class KeyboardSwitch {
 
   public void initializeKeyboard(String s) {
     chineses = s;
-    englishKeyboards = new SoftKeyboard[englishKeyboardIds.length];
-    for (int i = 0; i < englishKeyboardIds.length; i++ ) englishKeyboards[i] = new SoftKeyboard(context, englishKeyboardIds[i]);
+    englishKeyboards = new Keyboard[englishKeyboardIds.length];
+    for (int i = 0; i < englishKeyboardIds.length; i++ ) englishKeyboards[i] = new Keyboard(context, englishKeyboardIds[i]);
 
     String[] keys = s.split("\n");
     chineseKeyboardCount = keys.length;
-    chineseKeyboards = new SoftKeyboard[chineseKeyboardCount];
+    chineseKeyboards = new Keyboard[chineseKeyboardCount];
     for (int i = 0; i < chineseKeyboardCount; i++ ) {
         String[]labels = keys[i].split("\\|");
         int xmlLayoutResId;
@@ -95,7 +94,7 @@ public class KeyboardSwitch {
                 xmlLayoutResId = R.xml.key37;
                 break;
         }
-        chineseKeyboards[i] = new SoftKeyboard(context, xmlLayoutResId, labels);
+        chineseKeyboards[i] = new Keyboard(context, xmlLayoutResId, labels);
     }
     reset();
   }
@@ -149,11 +148,11 @@ public class KeyboardSwitch {
    */
   public boolean onKey(int keyCode) {
     switch (keyCode) {
-      case SoftKeyboard.KEYCODE_MODE_CHANGE_LETTER:
+      case Keyboard.KEYCODE_MODE_CHANGE_LETTER:
         toEnglish(!isEnglish());
         return true;
 
-      case SoftKeyboard.KEYCODE_MODE_CHANGE:
+      case Keyboard.KEYCODE_MODE_CHANGE:
         if (currentKeyboard.isEnglish()) {
            englishKeyboardId++;
            if (englishKeyboardId >= englishKeyboardIds.length) englishKeyboardId = 0;

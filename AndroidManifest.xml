@@ -22,7 +22,7 @@
         android:versionCode="120"
         android:versionName="1.2"
         >
-    <uses-sdk android:minSdkVersion="3"  android:targetSdkVersion="4"/>
+    <uses-sdk android:minSdkVersion="3"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>

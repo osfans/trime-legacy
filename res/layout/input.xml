@@ -17,10 +17,22 @@
  */
 -->
 
-<com.osfans.trime.SoftKeyboardView
+<com.osfans.trime.KeyboardView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/keyboard"
         android:layout_alignParentBottom="true"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:keyBackground="@drawable/key"
+        android:keyPreviewLayout="@layout/keyboard_key_preview"
+        android:background="@drawable/keyboard_background"
+        android:keyTextColor="@android:color/white"
+        android:keyPreviewOffset="-12dip"
+        android:keyPreviewHeight="80dip"
+        android:labelTextSize="14sp"
+        android:keyTextSize="22sp"
+        android:verticalCorrection="-10dip"
+        android:shadowColor="#BB000000"
+        android:shadowRadius="2.75"
+        android:popupLayout="@layout/keyboard_popup_keyboard"
         />
