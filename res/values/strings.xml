@@ -40,12 +40,12 @@
 
     <string name="pref_function">功能設置</string>
     <string name="pref_init_chinese">初始中文</string>
-    <string name="pref_full_py_title">全拼輪入</string>
-    <string name="pref_full_py_summary">禁用簡拼，出字慢時建議开啟</string>
+    <string name="pref_full_py_title">全码輪入</string>
+    <string name="pref_full_py_summary">禁用漸進提示，出字慢時建議开啟</string>
     <string name="pref_association_title">詞語聯想</string>
     <string name="pref_sc_title">輸出簡體</string>
-    <string name="pref_commit_py_title">輸出拼音</string>
-    <string name="pref_commit_py_summary">出字時標出拼音，如：拼音(pin yin)</string>
+    <string name="pref_commit_py_title">輸出編碼</string>
+    <string name="pref_commit_py_summary">出字時標出編碼，如：拼音(pin yin)</string>
     <string name="pref_importdb">導入碼表</string>
     <string name="pref_importdb_summary">從 /sdcard/trime.db 導入自定義碼表</string>
     <string name="pref_exportdb">導出碼表</string>
@@ -54,7 +54,7 @@
     <string name="set_ime">全局設定</string>
     <string name="set_schema">設定本方案</string>
     <string name="other_ime">其他輸入法</string>
-    <string name="pronunciation">【%s】的讀音</string>
+    <string name="pronunciation">【%s】的編碼</string>
     <string name="close">關閉</string>
     <string name="importdb_success">碼表導入成功。\n如未生效，請重啟本輸入法。</string>
     <string name="importdb_failure">碼表導入失敗。\n請將trime.db碼表置於/sdcard根目錄下。</string>
