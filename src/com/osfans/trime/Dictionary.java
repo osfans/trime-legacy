@@ -17,7 +17,7 @@
 package com.osfans.trime;
 
 import android.content.Context;
-import android.util.Log;
+//import android.util.Log;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.database.Cursor;
@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.regex.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * Reads a word-dictionary and provides word-suggestions as a list of characters
@@ -269,7 +268,6 @@ public class Dictionary {
   public Cursor getWord(CharSequence code) {
     String s = code.toString();
     s = translate(s, py2ipaRule);
-    String t = s;
     if (ipafuzzyRule != null) s = fuzzyText(s);
 
     boolean fullPyOn = isFullPy() && s.length() < 3;

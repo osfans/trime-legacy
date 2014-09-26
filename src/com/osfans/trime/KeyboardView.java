@@ -31,10 +31,9 @@ import android.graphics.Region.Op;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.util.Log;
+//import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -123,7 +122,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         void swipeUp();
     }
 
-    private static final boolean DEBUG = false;
+    // private static final boolean DEBUG = false;
     private static final int NOT_A_KEY = -1;
     private static final int[] KEY_DELETE = { Keyboard.KEYCODE_DELETE };
     private static final int[] LONG_PRESSABLE_STATE_SET = { android.R.attr.state_long_pressable };   
@@ -171,7 +170,7 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     private boolean mPreviewCentered = false;
     private boolean mShowPreview = true;
-    private boolean mShowTouchPoints = true;
+    // private boolean mShowTouchPoints = true;
     private int mPopupPreviewX;
     private int mPopupPreviewY;
 
@@ -312,11 +311,13 @@ public class KeyboardView extends View implements View.OnClickListener {
                 break;
             }
         }
+        a.recycle();
         
         a = getContext().obtainStyledAttributes(
                 R.styleable.Theme);
         mBackgroundDimAmount = a.getFloat(R.styleable.Theme_backgroundDimAmount, 0.5f);
-
+        a.recycle();
+        
         mPreviewPopup = new PopupWindow(context);
         if (previewLayout != 0) {
             mPreviewText = (TextView) inflate.inflate(previewLayout, null);
@@ -663,7 +664,7 @@ public class KeyboardView extends View implements View.OnClickListener {
             canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
         }
 
-        if (DEBUG && mShowTouchPoints) {
+        /*if (DEBUG && mShowTouchPoints) {
             paint.setAlpha(128);
             paint.setColor(0xFFFF0000);
             canvas.drawCircle(mStartX, mStartY, 3, paint);
@@ -672,7 +673,7 @@ public class KeyboardView extends View implements View.OnClickListener {
             canvas.drawCircle(mLastX, mLastY, 3, paint);
             paint.setColor(0xFF00FF00);
             canvas.drawCircle((mStartX + mLastX) / 2, (mStartY + mLastY) / 2, 2, paint);
-        }
+        }*/
         
         mDrawPending = false;
         mDirtyRect.setEmpty();
@@ -680,7 +681,7 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     private int getKeyIndices(int x, int y, int[] allKeys) {
         final Key[] keys = mKeys;
-        final boolean shifted = mKeyboard.isShifted();
+        // final boolean shifted = mKeyboard.isShifted();
         int primaryIndex = NOT_A_KEY;
         int closestKey = NOT_A_KEY;
         int closestKeyDist = mProximityThreshold + 1;

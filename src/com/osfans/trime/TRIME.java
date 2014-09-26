@@ -19,7 +19,7 @@ package com.osfans.trime;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
-import android.util.Log;
+//import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -168,18 +168,6 @@ public class TRIME extends InputMethodService implements
       inputView.setKeyboard(sk);
       inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
       //updateCursorCapsToInputView();
-    }
-  }
-
-  private void updateCursorCapsToInputView() {
-    InputConnection ic = getCurrentInputConnection();
-    if ((ic != null) && (inputView != null)) {
-      int caps = 0;
-      EditorInfo ei = getCurrentInputEditorInfo();
-      if ((ei != null) && (ei.inputType != EditorInfo.TYPE_NULL)) {
-        caps = ic.getCursorCapsMode(ei.inputType);
-      }
-      if(!isChinese())inputView.setShifted(caps!=0);
     }
   }
 

@@ -84,7 +84,7 @@ public class Keyboard {
     public static final int KEYCODE_ALT = -6;
     
     /** Keyboard label **/
-    private CharSequence mLabel;
+    //private CharSequence mLabel;
 
     /** Horizontal gap default for all rows */
     private int mDefaultHorizontalGap;
@@ -108,10 +108,10 @@ public class Keyboard {
     private int mShiftKeyIndex = -1;
     
     /** Current key width, while loading the keyboard */
-    private int mKeyWidth;
+    //private int mKeyWidth;
     
     /** Current key height, while loading the keyboard */
-    private int mKeyHeight;
+    //private int mKeyHeight;
     
     /** Total height of the keyboard, including the padding and keys */
     private int mTotalHeight;
@@ -206,6 +206,7 @@ public class Keyboard {
             rowEdgeFlags = a.getInt(R.styleable.Keyboard_Row_rowEdgeFlags, 0);
             mode = a.getResourceId(R.styleable.Keyboard_Row_keyboardMode,
                     0);
+            a.recycle();
         }
     }
 
@@ -714,8 +715,8 @@ id = xmlLayoutResId;
     private void loadKeyboard(Context context, XmlResourceParser parser) {
         boolean inKey = false;
         boolean inRow = false;
-        boolean leftMostKey = false;
-        int row = 0;
+        // boolean leftMostKey = false;
+        // int row = 0;
         int x = 0;
         int y = 0;
         Key key = null;
@@ -762,7 +763,7 @@ id = xmlLayoutResId;
                         inRow = false;
                         y += currentRow.verticalGap;
                         y += currentRow.defaultHeight;
-                        row++;
+                        // row++;
                     } else {
                         // TODO: error or extend?
                     }
