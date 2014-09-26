@@ -26,22 +26,25 @@
         >
         
     <com.osfans.trime.KeyboardView
+            xmlns:trime="http://schemas.android.com/apk/res/com.osfans.trime"
+
             android:id="@android:id/keyboardView"
             android:background="@android:color/transparent"
             android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:keyBackground="@drawable/key"
-            android:verticalCorrection="-10dip"
-            android:keyPreviewLayout="@layout/keyboard_key_preview"
-            android:keyPreviewOffset="-12dip"
-            android:keyPreviewHeight="80dip"
-            android:keyTextSize="22dip"
-            android:keyTextColor="@android:color/white"
-            android:labelTextSize="14dip"
-            android:popupLayout="@layout/keyboard_popup_keyboard"
-            android:shadowColor="#BB000000"
-            android:shadowRadius="0.5"
+
+            trime:keyBackground="@drawable/key"
+            trime:verticalCorrection="-10dip"
+            trime:keyPreviewLayout="@layout/keyboard_key_preview"
+            trime:keyPreviewOffset="-12dip"
+            trime:keyPreviewHeight="80dip"
+            trime:keyTextSize="22dip"
+            trime:keyTextColor="@android:color/white"
+            trime:labelTextSize="14dip"
+            trime:popupLayout="@layout/keyboard_popup_keyboard"
+            trime:shadowColor="#BB000000"
+            trime:shadowRadius="0.5"
             />
     <ImageButton android:id="@android:id/closeButton"
         android:background="@android:color/transparent"
