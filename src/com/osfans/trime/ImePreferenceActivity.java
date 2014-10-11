@@ -89,6 +89,15 @@ public class ImePreferenceActivity extends PreferenceActivity {
       }
     });
 
+    ListPreference keyFontSize = (ListPreference)findPreference("pref_key_font_size");
+    keyFontSize.setSummary(keyFontSize.getValue());
+    keyFontSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+        ((ListPreference)preference).setSummary(newValue.toString());
+        return true;
+      }
+    });
+
     ListPreference canMaxPhrase = (ListPreference)findPreference("pref_cand_max_phrase");
     canMaxPhrase.setSummary(canMaxPhrase.getEntry());
     canMaxPhrase.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {

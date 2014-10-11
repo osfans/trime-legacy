@@ -19,8 +19,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
         package="com.osfans.trime"
-        android:versionCode="120"
-        android:versionName="1.2"
+        android:versionName="2.0"
         >
     <uses-sdk android:minSdkVersion="3"  android:targetSdkVersion="20"/>
     <uses-permission android:name="android.permission.VIBRATE"/>

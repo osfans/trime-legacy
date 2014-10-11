@@ -19,11 +19,11 @@
 
 <resources>
     <dimen name="key_height">53dip</dimen>
-    <dimen name="key_height_bottom_row">53dip</dimen>
-    <dimen name="key_height_popup">50dip</dimen>
-    <dimen name="key_height_4row">56dip</dimen>
-    <dimen name="key_height_6row">38dip</dimen>
-    <dimen name="candidate_font_height">28sp</dimen>
-    <dimen name="pinyin_font_height">12sp</dimen>
-    <dimen name="candidates_view_height">42sp</dimen>
+    <dimen name="candidate_view_height">42sp</dimen>
+
+    <dimen name="candidate_text_size">28sp</dimen>
+    <dimen name="pinyin_text_size">14sp</dimen>
+    <dimen name="key_text_size">24sp</dimen>
+    <dimen name="label_text_size">16sp</dimen>
+    <dimen name="symbol_text_size">14sp</dimen>
 </resources>

@@ -17,8 +17,10 @@
  */
 -->
 
-<resources>
-    <dimen name="key_height">38dip</dimen>
-    <dimen name="key_height_bottom_row">48dip</dimen>
-    <dimen name="key_height_4row">51dip</dimen>
-</resources>
+<Keyboard xmlns:trime="http://schemas.android.com/apk/res/com.osfans.trime"
+    trime:keyWidth="10%p"
+    trime:horizontalGap="0px"
+    trime:verticalGap="0px"
+    trime:keyHeight="@dimen/key_height"
+    >
+</Keyboard>

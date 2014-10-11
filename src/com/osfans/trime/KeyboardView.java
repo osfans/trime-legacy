@@ -19,6 +19,7 @@ package com.osfans.trime;
 import com.osfans.trime.Keyboard.Key;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -135,6 +136,11 @@ public class KeyboardView extends View implements View.OnClickListener {
     private float mShadowRadius;
     private int mShadowColor;
     private float mBackgroundDimAmount;
+    
+    private Typeface tf;
+    private int mSymbolColor;
+    private int mSymbolSize;
+    private Paint mPaintSymbol;
     
     private TextView mPreviewText;
     private PopupWindow mPreviewPopup;
@@ -258,7 +264,17 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     public KeyboardView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
+        Resources r = context.getResources();
+        mSymbolSize = r.getDimensionPixelSize(R.dimen.symbol_text_size);
+        mSymbolColor = r.getColor(R.color.symbol);
+        tf = Typeface.createFromAsset(context.getAssets(), "symbol.ttf");
+        mPaintSymbol = new Paint();
+        mPaintSymbol.setTypeface(tf);
+        mPaintSymbol.setColor(mSymbolColor);
+        mPaintSymbol.setTextSize(mSymbolSize);
+        mPaintSymbol.setAntiAlias(true);
+        mPaintSymbol.setTextAlign(Align.CENTER);
+        
         TypedArray a =
             context.obtainStyledAttributes(
                 attrs, R.styleable.KeyboardView, defStyle, 0);
@@ -571,6 +587,10 @@ public class KeyboardView extends View implements View.OnClickListener {
         canvas.drawBitmap(mBuffer, 0, 0, null);
     }
     
+    public void setTextSize(int size){
+      mKeyTextSize = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, (float) size, Resources.getSystem().getDisplayMetrics());
+    }
+    
     private void onBufferDraw() {
         if (mBuffer == null) {
             mBuffer = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
@@ -631,7 +651,7 @@ public class KeyboardView extends View implements View.OnClickListener {
                     paint.setTypeface(Typeface.DEFAULT_BOLD);
                 } else {
                     paint.setTextSize(mKeyTextSize);
-                    paint.setTypeface(Typeface.DEFAULT);
+                    paint.setTypeface(tf);
                 }
                 // Draw a drop shadow for the text
                 paint.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
@@ -642,6 +662,16 @@ public class KeyboardView extends View implements View.OnClickListener {
                     (key.height - padding.top - padding.bottom) / 2
                             + (paint.getTextSize() - paint.descent()) / 2 + padding.top,
                     paint);
+
+  if(key.symbol!=null) {
+      mPaintSymbol.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
+
+	  canvas.drawText((String)key.symbol,
+          (key.width - padding.left - padding.right) / 2 
+          + padding.left,
+  2 + (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2  + padding.top,
+          mPaintSymbol); 
+  }
                 // Turn off drop shadow
                 paint.setShadowLayer(0, 0, 0, 0);
             } else if (key.icon != null) {
@@ -771,7 +801,7 @@ public class KeyboardView extends View implements View.OnClickListener {
             mPreviewLabel.append((char) key.codes[mTapCount < 0 ? 0 : mTapCount]);
             return adjustCase(mPreviewLabel);
         } else {
-            return adjustCase(key.label);
+            return key.labelPreview != null ? key.labelPreview: adjustCase(key.label);
         }
     }
     
@@ -819,7 +849,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         final PopupWindow previewPopup = mPreviewPopup;
         final Key[] keys = mKeys;
         Key key = keys[keyIndex];
-        if (key.icon != null) {
+        if (key.icon != null || key.iconPreview != null) {
             mPreviewText.setCompoundDrawables(null, null, null, 
                     key.iconPreview != null ? key.iconPreview : key.icon);
             mPreviewText.setText(null);
@@ -828,10 +858,10 @@ public class KeyboardView extends View implements View.OnClickListener {
             mPreviewText.setText(getPreviewText(key));
             if (key.label.length() > 1 && key.codes.length < 2) {
                 mPreviewText.setTextSize(TypedValue.COMPLEX_UNIT_PX, mKeyTextSize);
-                mPreviewText.setTypeface(Typeface.DEFAULT_BOLD);
+                mPreviewText.setTypeface(tf);
             } else {
                 mPreviewText.setTextSize(TypedValue.COMPLEX_UNIT_PX, mPreviewTextSizeLarge);
-                mPreviewText.setTypeface(Typeface.DEFAULT);
+                mPreviewText.setTypeface(tf);
             }
         }
         mPreviewText.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), 
@@ -1011,15 +1041,19 @@ public class KeyboardView extends View implements View.OnClickListener {
             return true;
         } else {
             Key key = popupKey;
-            if(mKeyboard.isEnglish() && key.codes[0] >= 97 && key.codes[0] <= 124){
+            if(key.symbol!=null){
+            	getOnKeyboardActionListener().onText(key.symbol);
+            	return true;
+            }
+            if(key.codes[0] >= 97 && key.codes[0] <= 124){
                 getOnKeyboardActionListener().onKey(key.codes[0] - 32, null);
                 return true;
             }
 
-            if (key.codes[0] == Keyboard.KEYCODE_MODE_CHANGE_LETTER) {
+            if (key.codes[0] <= Keyboard.KEYCODE_MODE_SWITCH) {
               getOnKeyboardActionListener().onKey(Keyboard.KEYCODE_OPTIONS, null);
               return true;
-            } else if (key.codes[0] == Keyboard.KEYCODE_MODE_CHANGE) {
+            } else if (key.codes[0] <= Keyboard.KEYCODE_MODE_LAST) {
               getOnKeyboardActionListener().onKey(Keyboard.KEYCODE_SCHEMA_OPTIONS, null);
               return true;
             } else if (key.codes[0] == "，".charAt(0)) {

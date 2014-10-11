@@ -18,5 +18,6 @@
 -->
 
 <resources>
-    <color name="pinyin_normal">#ff666666</color>
+    <color name="pinyin_normal">#666666</color>
+    <color name="symbol">#E5E5E5</color>
 </resources>

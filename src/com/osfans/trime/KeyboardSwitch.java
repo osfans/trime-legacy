@@ -16,86 +16,42 @@
 
 package com.osfans.trime;
 
+import java.util.List;
+
 import android.content.Context;
 import android.text.InputType;
 
-/**
- * Switches between two letter modes (Chinese and English), by two toggling
- * keys: mode-change-letter, mode-change-layout.
- * 
- * <pre>
- * State transition (the initial state is always 'English'):
- *   English
- *     MODE_CHANGE_LETTER -> Chinese
- *     SHIFT -> English (no-op)
- *   Chinese
- *     MODE_CHANGE_LETTER -> English
- *     SHIFT (n/a)
- * </pre>
- *     
- */
 public class KeyboardSwitch {
 
   private final Context context;
-  private int englishKeyboardId = 0;
-  private final int[] englishKeyboardIds = {R.xml.en_qwerty, R.xml.en_dvorak};
-  private int chineseKeyboardId;
-  private int chineseKeyboardCount;
 
-  private Keyboard[] englishKeyboards;
-  private Keyboard[] chineseKeyboards;
+  private Keyboard[] keyboards;
   private Keyboard currentKeyboard;
-  private String chineses;
+  private int currentId, lastId;
+  private List<Object> keys;
 
   private int currentDisplayWidth;
 
   public KeyboardSwitch(Context context) {
     this.context = context;
+    currentId = 0;
+    lastId = 0;
   }
 
   public void reset(){
-    chineseKeyboardId = 0;
-    toEnglish(false);
+    currentId = 0;
+    currentKeyboard = keyboards[currentId];
   }
 
-  public void initializeKeyboard(String s) {
-    chineses = s;
-    englishKeyboards = new Keyboard[englishKeyboardIds.length];
-    for (int i = 0; i < englishKeyboardIds.length; i++ ) englishKeyboards[i] = new Keyboard(context, englishKeyboardIds[i]);
-
-    String[] keys = s.split("\n");
-    chineseKeyboardCount = keys.length;
-    chineseKeyboards = new Keyboard[chineseKeyboardCount];
-    for (int i = 0; i < chineseKeyboardCount; i++ ) {
-        String[]labels = keys[i].split("\\|");
-        int xmlLayoutResId;
-        switch (labels.length) {
-            case 27:
-            case 28:
-            case 29:
-                xmlLayoutResId = R.xml.key27;
-                break;
-            case 30:
-            case 31:
-            case 32:
-                xmlLayoutResId = R.xml.key30;
-                break;
-            case 40:
-            case 41:
-            case 42:
-                xmlLayoutResId = R.xml.key40;
-                break;
-            case 50:
-            case 51:
-            case 52:
-                xmlLayoutResId = R.xml.key50;
-                break;
-            default:
-                xmlLayoutResId = R.xml.key37;
-                break;
-        }
-        chineseKeyboards[i] = new Keyboard(context, xmlLayoutResId, labels);
+  public void initializeKeyboard(Object o) {
+   
+    keys = (List<Object>)o;    
+    int n = keys.size();
+    keyboards = new Keyboard[n];
+    for (int i = 0; i < n; i++ ) {
+        keyboards[i] = new Keyboard(context, keys.get(i));
     }
+
     reset();
   }
 
@@ -110,17 +66,17 @@ public class KeyboardSwitch {
     }
 
     currentDisplayWidth = displayWidth;
-    initializeKeyboard(chineses);
+    initializeKeyboard(keys);
   }
 
   public Keyboard getCurrentKeyboard() {
     return currentKeyboard;
   }
 
-  public boolean isEnglish() {
-    return currentKeyboard != null && currentKeyboard.isEnglish();
+  public boolean isChinese() {
+    return currentKeyboard != null && currentKeyboard.isChinese();
   }
-
+  
   /**
    * Switches to the appropriate keyboard based on the type of text being
    * edited, for example, the symbol keyboard for numbers.
@@ -134,10 +90,12 @@ public class KeyboardSwitch {
         if ((variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
             || (variation == InputType.TYPE_TEXT_VARIATION_URI)
             || (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) || (currentKeyboard.isEnglish())) {
-          toEnglish(true);
+            || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) || !isChinese()) {
+          currentId = 1;
+          lastId = 1;
+          currentKeyboard = keyboards[currentId];
           currentKeyboard.setShifted(currentKeyboard.isShifted());
-        } else toEnglish(false);
+        } else reset();
      }
   }
 
@@ -147,29 +105,31 @@ public class KeyboardSwitch {
    * @return {@code true} if the keyboard is switched; otherwise {@code false}.
    */
   public boolean onKey(int keyCode) {
-    switch (keyCode) {
-      case Keyboard.KEYCODE_MODE_CHANGE_LETTER:
-        toEnglish(!isEnglish());
-        return true;
-
-      case Keyboard.KEYCODE_MODE_CHANGE:
-        if (currentKeyboard.isEnglish()) {
-           englishKeyboardId++;
-           if (englishKeyboardId >= englishKeyboardIds.length) englishKeyboardId = 0;
-           toEnglish(true);
-        } else {
-           chineseKeyboardId++;
-           if (chineseKeyboardId >= chineseKeyboardCount) chineseKeyboardId = 0;
-           toEnglish(false);
-        }
-        return true;
+    if (keyCode <= Keyboard.KEYCODE_MODE_SWITCH) {
+      lastId = currentId;
+      currentId = Keyboard.KEYCODE_MODE_SWITCH - keyCode;
+      currentKeyboard = keyboards[currentId];
+      return true;
+    } else if (keyCode == Keyboard.KEYCODE_MODE_NEXT) {
+      lastId = currentId;
+      currentId++;
+      if(currentId>=keyboards.length) currentId = 0;
+      currentKeyboard = keyboards[currentId];
+      return true;
+    } else if (keyCode == Keyboard.KEYCODE_MODE_PREV) {
+      lastId = currentId;
+      currentId--;
+      if(currentId<0) currentId = keyboards.length - 1;
+      currentKeyboard = keyboards[currentId];
+      return true;
+    } else if (keyCode == Keyboard.KEYCODE_MODE_LAST) {
+      int tmp = currentId;
+      currentId = lastId;
+      lastId = tmp;
+      currentKeyboard = keyboards[currentId];
+      return true; 
     }
-
     // Return false if the key isn't consumed to switch a keyboard.
     return false;
-  }
-
-  private void toEnglish(boolean isEnglish) {
-    currentKeyboard = isEnglish ? englishKeyboards[englishKeyboardId] : chineseKeyboards[chineseKeyboardId];
   }
 }

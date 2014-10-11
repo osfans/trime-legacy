@@ -20,10 +20,11 @@
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content" 
-    android:layout_height="80sp"
+    android:layout_height="wrap_content"
     android:textSize="32sp"
     android:textColor="@android:color/black"
-    android:minWidth="32dip"
-    android:gravity="center"
+    android:minWidth="32sp"
+    android:minHeight="80sp"
+    android:gravity="bottom|center_horizontal"
     android:background="@drawable/keyboard_key_feedback"
     />

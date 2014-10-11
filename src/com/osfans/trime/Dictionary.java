@@ -25,6 +25,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.regex.*;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Reads a word-dictionary and provides word-suggestions as a list of characters
@@ -48,9 +52,11 @@ public class Dictionary {
   private String delimiter;
   private Pattern alphabetP, syllableP, autoSelectSyllableP;
   private String[][] pyspellRule, py2ipaRule, ipa2pyRule, ipafuzzyRule;
-  String[]  namedFuzzyRules = null;
-  boolean[] fuzzyRulesPref = null;
-  private String table, phraseTable, keyboard;
+  String[]  namedFuzzyRules;
+  boolean[] fuzzyRulesPref;
+  private String table, phraseTable;
+  private Object keyboard;
+  private Map<String,Object> mSchema;
 
   protected Dictionary(
       Context context) {
@@ -140,13 +146,13 @@ public class Dictionary {
         return s;
     }
 
-    private String[][] getRule(Cursor cursor, String column) {
-        String s = cursor.getString(cursor.getColumnIndex(column)).trim();
-        String[] rule = s.split("\n");
-        if (s.length() > 0 && rule.length > 0) {
-            String[][] rules = new String[rule.length][4];
-            for(int i = 0; i < rule.length; i++) {
-                rules[i] = rule[i].split("(?<!\\\\)/", 4);
+    private String[][] getRule(String column) {
+        List<String> rule = (List<String>)getValue(column, null);
+        if (rule!=null && rule.size() > 0) {
+            int n = rule.size();
+            String[][] rules = new String[n][4];
+            for(int i = 0; i < n; i++) {
+                rules[i] = rule.get(i).split("(?<!\\\\)/", 4);
                 for(int j = 0; j < rules[i].length; j++)
                     rules[i][j] = rules[i][j].replace("\\/","/");
             }
@@ -187,47 +193,43 @@ public class Dictionary {
         }
     }
 
+    private Object getValue(String k, Object o) {
+      return (mSchema!=null && mSchema.containsKey(k)) ? mSchema.get(k) : o;
+    }
+
     private void initSchema() {
         int id = getSchemaId();
         Cursor cursor = query(String.format("select * from schema where _id = %d", id), null);
         if (cursor == null) return;
-        table = cursor.getString(cursor.getColumnIndex("dictionary"));
-        phraseTable = cursor.getString(cursor.getColumnIndex("phrase"));
-        if (phraseTable.length() == 0) phraseTable = table;
-        keyboard = cursor.getString(cursor.getColumnIndex("keyboard"));
-        delimiter = cursor.getString(cursor.getColumnIndex("delimiter"));
-
-        String a = cursor.getString(cursor.getColumnIndex("alphabet"));
-        alphabetP = Pattern.compile((a!=null && a.length() > 0) ? a : defaultAlphabet);
-        a = cursor.getString(cursor.getColumnIndex("syllable"));
-        syllableP = Pattern.compile((a!=null && a.length() > 0) ? a : defaultSyllable);
-        a = cursor.getString(cursor.getColumnIndex("auto_select_syllable"));
-        autoSelectSyllableP = (a!=null && a.length() > 0) ? Pattern.compile(a) : null;
-        pyspellRule = getRule(cursor, "pyspell");
-        py2ipaRule = getRule(cursor, "py2ipa");
-        ipa2pyRule = getRule(cursor, "ipa2py");
-        ipafuzzyRule = getRule(cursor, "ipafuzzy");
+        Yaml yaml = new Yaml();
+        mSchema = (Map<String,Object>)(((Map<String,Object>)yaml.load(cursor.getString(cursor.getColumnIndex("full")))).get("schema"));
+        cursor.close();
+        
+        table = (String)getValue("dictionary", null);
+        phraseTable = (String)getValue("phrase", table);
+        keyboard = (Object)getValue("keyboard", null);
+        delimiter = (String)getValue("delimiter", "");
+        alphabetP = Pattern.compile((String)getValue("alphabet", defaultAlphabet));
+        syllableP = Pattern.compile((String)getValue("syllable", defaultSyllable));
+        String a = (String) getValue("auto_select_syllable", null);
+        autoSelectSyllableP = (a!=null) ? Pattern.compile(a) : null;
+        
+        pyspellRule = getRule("pyspell");
+        py2ipaRule = getRule("py2ipa");
+        ipa2pyRule = getRule("ipa2py");
+        ipafuzzyRule = getRule("ipafuzzy");
         initNamedFuzzyRule();
-        cursor.close();
+        
     }
 
-    public String getKeyboard() {
+    public Object getKeyboards() {
         return keyboard;
-    }
-
-    private String querySchema(String s) {
-        int id = getSchemaId();
-        Cursor cursor = query(String.format("select * from schema where _id = %d", id), null);
-        if (cursor == null) return "";
-        String ret = cursor.getString(cursor.getColumnIndex(s));
-        cursor.close();
-        return ret;
     }
 
     public String getSchemaTitle() {
         StringBuilder sb = new StringBuilder();
         for(String i: new String[]{"name", "version"}) {
-            sb.append(querySchema(i) + " ");
+            sb.append(getValue(i, "") + " ");
         }
         return sb.toString();
     }
@@ -235,7 +237,7 @@ public class Dictionary {
     public String[] getSchemaInfo() {
         StringBuilder sb = new StringBuilder();
         for(String i: new String[]{"author", "description"}) {
-            sb.append(querySchema(i) + "\n");
+            sb.append(getValue(i, "") + "\n");
         }
         return sb.toString().replace("\n\n", "\n").split("\n");
     }
@@ -408,5 +410,12 @@ public class Dictionary {
       boolean ret = edit.commit();
       if (ret) initSchema();
       return ret;
+  }
+
+  public int getCandTextSize() {
+     return Integer.parseInt(preferences.getString("pref_cand_font_size", "20"));
+  }
+  public int getKeyTextSize() {
+     return Integer.parseInt(preferences.getString("pref_key_font_size", "28"));
   }
 }

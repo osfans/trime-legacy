@@ -38,7 +38,7 @@
     <com.osfans.trime.CandidateView
         android:id="@+id/candidate_view"
         android:layout_width="fill_parent"
-        android:layout_height="@dimen/candidates_view_height"
+        android:layout_height="@dimen/candidate_view_height"
         android:layout_weight="1"
         />
 

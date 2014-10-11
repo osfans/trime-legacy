@@ -71,13 +71,13 @@ public class CandidateView extends View {
     paint = new Paint();
     paint.setColor(r.getColor(android.R.color.black));
     paint.setAntiAlias(true);
-    paint.setTextSize(r.getDimensionPixelSize(R.dimen.candidate_font_height));
+    paint.setTextSize(r.getDimensionPixelSize(R.dimen.candidate_text_size));
     paint.setStrokeWidth(0);
 
     paintpy = new Paint();
     paintpy.setColor(r.getColor(R.color.pinyin_normal));
     paintpy.setAntiAlias(true);
-    paintpy.setTextSize(r.getDimensionPixelSize(R.dimen.pinyin_font_height));
+    paintpy.setTextSize(r.getDimensionPixelSize(R.dimen.pinyin_text_size));
     paintpy.setStrokeWidth(0);
 
     setWillNotDraw(false);

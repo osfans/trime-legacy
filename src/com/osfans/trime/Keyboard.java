@@ -32,6 +32,7 @@ import android.util.DisplayMetrics;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 
@@ -60,12 +61,7 @@ import java.util.StringTokenizer;
 public class Keyboard {
 
     static final String TAG = "Keyboard";
-  public static final int KEYCODE_MODE_CHANGE_LETTER = -200;
-  public static final int KEYCODE_OPTIONS = -100;
-  public static final int KEYCODE_SCHEMA_OPTIONS = -99;
-  public static final int KEYCODE_REVERSE = 96;
 
-  private final int id;    
     // Keyboard XML Tags
     private static final String TAG_KEYBOARD = "Keyboard";
     private static final String TAG_ROW = "Row";
@@ -77,11 +73,20 @@ public class Keyboard {
     public static final int EDGE_BOTTOM = 0x08;
 
     public static final int KEYCODE_SHIFT = -1;
-    public static final int KEYCODE_MODE_CHANGE = -2;
+    //public static final int KEYCODE_MODE_CHANGE = -2;
     public static final int KEYCODE_CANCEL = -3;
     public static final int KEYCODE_DONE = -4;
     public static final int KEYCODE_DELETE = -5;
     public static final int KEYCODE_ALT = -6;
+
+    public static final int KEYCODE_OPTIONS = -10;
+    public static final int KEYCODE_SCHEMA_OPTIONS = -11;
+    public static final int KEYCODE_REVERSE = -12;
+
+    public static final int KEYCODE_MODE_LAST = -20;
+    public static final int KEYCODE_MODE_PREV = -21;
+    public static final int KEYCODE_MODE_NEXT = -22;
+    public static final int KEYCODE_MODE_SWITCH = -30;
     
     /** Keyboard label **/
     //private CharSequence mLabel;
@@ -262,6 +267,10 @@ public class Keyboard {
         public CharSequence text;
         /** Popup characters */
         public CharSequence popupCharacters;
+        
+        public CharSequence symbol;
+        public CharSequence labelPreview;
+        
         
         /** 
          * Flags that specify the anchoring to edges of the keyboard for detecting touch events
@@ -528,7 +537,6 @@ public class Keyboard {
         mModifierKeys = new ArrayList<Key>();
         mKeyboardMode = modeId;
         loadKeyboard(context, context.getResources().getXml(xmlLayoutResId));
-id = xmlLayoutResId;
     }
 
     /**
@@ -820,31 +828,121 @@ id = xmlLayoutResId;
         return defValue;
     }
 
-  public Keyboard(Context context, int xmlLayoutResId, String[] labels) {
-    this(context, xmlLayoutResId);
-
-    for(int i = 0; i < labels.length; i++) {
-        Key key = mKeys.get(i);
-        String label = labels[i];
-        if (label.length() > 0) {
-            if (label.startsWith("[")) {
-                String s = label.substring(1, label.length()-1);
-                key.label = s.substring(0,2);
-                key.codes = new int[s.length()];
-                for(int j = 0; j < s.length(); j++) key.codes[j] = s.codePointAt(j);
-            } else {
-                String[] text = label.split(":");
-                if (text[0].length() > 0) {
-                    text[0] = text[0].contentEquals("\\\\") ? "\\":text[0].replace("\\","");
-                    key.label = text[0];
-                    if (key.codes[0] > 0) key.text = text[text.length - 1];
-                }
-            }
-        }
-    }
+  private Object getValue(Map<String,Object> m, String k, Object o) {
+    return m.containsKey(k) ? m.get(k) : o;
   }
 
-  public boolean isEnglish() {
-    return id == R.xml.en_qwerty || id == R.xml.en_dvorak ;
+  public Keyboard(Context context, Object o) {
+    this(context, R.xml.template);
+    Resources r = context.getResources();
+    Map<String,Object> m = (Map<String,Object>)o;
+    int columns = (Integer)getValue(m, "columns", 10);
+    int defaultWidth = (Integer)getValue(m, "width", 0) * mDisplayWidth / 100;
+    if (defaultWidth == 0) defaultWidth = mDefaultWidth;
+    List<Map<String,Object>> lm = (List<Map<String,Object>>)m.get("keys");
+    mKeyboardMode = (Integer)getValue(m, "mode", 0);
+    int defaultHGap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
+    if (defaultHGap == 0) defaultHGap = mDefaultHorizontalGap;
+
+    int x = 0;
+    int y = 0;
+    int column = 0;
+    mTotalWidth = 0;
+
+    Row row = new Row(this);
+    row.defaultHeight = mDefaultHeight;
+    row.defaultWidth = defaultWidth;
+    row.defaultHorizontalGap = defaultHGap;
+    row.verticalGap = mDefaultVerticalGap;
+    row.rowEdgeFlags = EDGE_TOP | EDGE_BOTTOM;
+
+    final int maxColumns = columns == -1 ? Integer.MAX_VALUE : columns;
+    for (Map<String,Object> mk: lm) {
+      int gap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
+      if (gap == 0) gap = defaultHGap;
+      int w = (Integer)getValue(mk, "width", 0) * mDisplayWidth / 100;
+      if (w == 0) w = defaultWidth;
+      if (column >= maxColumns 
+              || x + w + gap > mDisplayWidth) {
+          x = 0;
+          y += mDefaultVerticalGap + mDefaultHeight;
+          column = 0;
+      }
+      if(!mk.containsKey("text")){
+          x += w + gap;
+          continue; //縮進
+      }
+
+      final Key key = new Key(row);
+      key.x = x;
+      key.y = y;
+      key.width = w;
+      key.height = mDefaultHeight;
+      key.gap = gap;
+      
+      key.text = (String)getValue(mk, "text", null);
+      key.label = (String)getValue(mk, "label", null);
+      key.labelPreview = (String)getValue(mk, "preview", null);
+      key.symbol = (String)getValue(mk, "symbol", null);
+      
+      String s = (String)key.text;
+      int c = s.codePointAt(0);
+      key.codes = new int[]{c};
+
+      if (s.contentEquals("<space>")){
+        key.codes = new int[] {' '};
+        if (key.label==null) key.label = "␣";
+        key.repeatable = true;
+      } else if(s.contentEquals("<shift>")){
+        key.codes = new int[] {KEYCODE_SHIFT};
+        if (key.label==null) key.label = "⇪";
+        key.modifier = true;
+        key.sticky = true;
+        mShiftKey = key;
+        mShiftKeyIndex = mKeys.size()-2;
+        mModifierKeys.add(key);
+      } else if(s.contentEquals("<delete>")){
+        key.codes = new int[] {KEYCODE_DELETE};
+        if (key.label==null) key.label = "⌫";
+        key.repeatable = true;
+      } else if(s.contentEquals("<enter>")){
+        key.codes = new int[] {'\n'};
+        key.text = "\n";
+        if (key.label==null) key.label = "⏎";
+      } else if(s.contentEquals("<switch>")){
+        key.codes = new int[] {KEYCODE_MODE_SWITCH - (Integer)getValue(mk, "switch", 0)};
+        if (key.label==null)	key.label = "⌨";
+      } else if(s.contentEquals("<switch_last>")){
+        key.codes = new int[] {KEYCODE_MODE_LAST};
+        if (key.label==null)	key.label = "⟲";
+      } else if(s.contentEquals("<switch_prev>")){
+        key.codes = new int[] {KEYCODE_MODE_PREV};
+        if (key.label==null)	key.label = "⬆";
+      } else if(s.contentEquals("<switch_next>")){
+        key.codes = new int[] {KEYCODE_MODE_NEXT};
+        if (key.label==null)	key.label = "⬇";
+      }
+      if(key.codes[0]<=' ') key.text = null;
+      else if (key.label == null) key.label = key.text;
+      
+      if (key.icon != null) {
+          key.icon.setBounds(0, 0, key.icon.getIntrinsicWidth(), key.icon.getIntrinsicHeight());
+      }
+      if (key.iconPreview != null) {
+          key.iconPreview.setBounds(0, 0, key.iconPreview.getIntrinsicWidth(), 
+                  key.iconPreview.getIntrinsicHeight());
+      }
+      column++;
+      x += key.width + key.gap;
+      mKeys.add(key);
+      if (x > mTotalWidth) {
+          mTotalWidth = x;
+      }
+    }
+    mTotalHeight = y + mDefaultHeight; 
+  }
+
+  public boolean isChinese() {
+    return mKeyboardMode == 0;
   }
 }

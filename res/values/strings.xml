@@ -37,6 +37,7 @@
     <string name="pref_cand_font_size">候選字號</string>
     <string name="pref_cand_max_phrase">候選詞長</string>
     <string name="unlimited">不限</string>
+    <string name="pref_key_font_size">鍵盤字號</string>
 
     <string name="pref_function">功能設置</string>
     <string name="pref_init_chinese">初始中文</string>

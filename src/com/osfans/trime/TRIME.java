@@ -56,9 +56,8 @@ public class TRIME extends InputMethodService implements
   private AlertDialog mOptionsDialog;
 
   private void initKeyboard() {
-    String keys = dialectDictionary.getKeyboard();
     keyboardSwitch = new KeyboardSwitch(this);
-    keyboardSwitch.initializeKeyboard(keys);
+    keyboardSwitch.initializeKeyboard(dialectDictionary.getKeyboards());
   }
 
   @Override
@@ -165,6 +164,8 @@ public class TRIME extends InputMethodService implements
     if (inputView != null) {
       // Bind the selected keyboard to the input view.
       Keyboard sk = (Keyboard)keyboardSwitch.getCurrentKeyboard();
+      int i = dialectDictionary.getKeyTextSize();
+      inputView.setTextSize(i);
       inputView.setKeyboard(sk);
       inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
       //updateCursorCapsToInputView();
@@ -240,7 +241,7 @@ public class TRIME extends InputMethodService implements
         int keyChar = 0;
         CharSequence keyText = "";
         if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
-            keyChar = Keyboard.KEYCODE_MODE_CHANGE_LETTER;
+            keyChar = Keyboard.KEYCODE_MODE_NEXT;
             onKey(keyChar, null);
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
@@ -581,7 +582,7 @@ public class TRIME extends InputMethodService implements
   }
 
     private boolean isChinese() {
-        return !keyboardSwitch.isEnglish();
+        return keyboardSwitch.isChinese();
     }
 
   private boolean handleComposing(int keyCode) {
