@@ -99,31 +99,42 @@ public class Dictionary {
         if (n == 0) return s;
         StringBuilder r = new StringBuilder(s);
         ArrayList<Integer> b = new ArrayList<Integer>();
+        ArrayList<Integer> bn = new ArrayList<Integer>();
         ArrayList<String> fuzzyList =  new ArrayList<String>();
         if (fuzzyRulesPref != null) {
             for (int i = 0; i < fuzzyRulesPref.length; i++) {
                 if (fuzzyRulesPref[i]) fuzzyList.add(namedFuzzyRules[i]);
             }
         }
-        String p = s;
         for (int j=0; j<n; j++){
             String[] rule = ipafuzzyRule[j];
             if (rule[0].length() == 0 || fuzzyList.contains(rule[0])) {
-                String temp = p;
-                p = p.replaceAll(rule[1],rule[2]);
-                if (!p.contentEquals(temp)) b.add(j);
+                Matcher m = Pattern.compile(rule[1]).matcher(s);
+                while(m.find()) {
+                    b.add(j);
+                    bn.add(m.start());
+                }
             }
         }
         int cnt = b.size();
-        if (cnt > 0) {
-            r.append(" OR ");
-            r.append(p);
-        }
-        for (int i = 1;  i < ((1 << cnt) - 1); i++) {
+        if (cnt == 0) return s;
+        String p = s;
+        for (int i = 1;  i < (1 << cnt); i++) {
             p = s;
             for (int j = 0; j < cnt; j++) {
-                String[] rule = ipafuzzyRule[b.get(j)];
-                if ((i & (1 << j)) != 0) p = p.replaceAll(rule[1],rule[2]);
+                int bj = b.get(j);
+                int bnj = bn.get(j);
+                String[] rule = ipafuzzyRule[bj];
+                if ((i & (1 << j)) != 0) {
+                    StringBuffer sb = new StringBuffer(p.length());
+                    Matcher m = Pattern.compile(rule[1]).matcher(p);
+                    if(m.find(bnj)) {
+                        m.appendReplacement(sb, rule[2]);
+                    }
+                    m.appendTail(sb);
+                    m.reset();
+                    p = sb.toString();
+                }
             }
             r.append(" OR ");
             r.append(p);
