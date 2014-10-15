@@ -269,9 +269,10 @@ public class Keyboard {
         public CharSequence popupCharacters;
         
         public CharSequence symbol;
+        public int symbolCode;
+
         public CharSequence labelPreview;
-        
-        
+
         /** 
          * Flags that specify the anchoring to edges of the keyboard for detecting touch events
          * that are just out of the boundary of the key. This is a bit mask of 
@@ -834,7 +835,6 @@ public class Keyboard {
 
   public Keyboard(Context context, Object o) {
     this(context, R.xml.template);
-    Resources r = context.getResources();
     Map<String,Object> m = (Map<String,Object>)o;
     int columns = (Integer)getValue(m, "columns", 10);
     int defaultWidth = (Integer)getValue(m, "width", 0) * mDisplayWidth / 100;
@@ -884,6 +884,7 @@ public class Keyboard {
       key.label = (String)getValue(mk, "label", null);
       key.labelPreview = (String)getValue(mk, "preview", null);
       key.symbol = (String)getValue(mk, "symbol", null);
+      key.symbolCode = (Integer)getValue(mk, "symbolCode", 0);
       
       String s = (String)key.text;
       int c = s.codePointAt(0);
@@ -912,6 +913,7 @@ public class Keyboard {
       } else if(s.contentEquals("<switch>")){
         key.codes = new int[] {KEYCODE_MODE_SWITCH - (Integer)getValue(mk, "switch", 0)};
         if (key.label==null)	key.label = "⌨";
+        if (key.symbolCode == 0) key.symbolCode = KEYCODE_OPTIONS;
       } else if(s.contentEquals("<switch_last>")){
         key.codes = new int[] {KEYCODE_MODE_LAST};
         if (key.label==null)	key.label = "⟲";

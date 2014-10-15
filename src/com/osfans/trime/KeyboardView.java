@@ -1041,24 +1041,17 @@ public class KeyboardView extends View implements View.OnClickListener {
             return true;
         } else {
             Key key = popupKey;
-            if(key.symbol!=null){
-            	getOnKeyboardActionListener().onText(key.symbol);
-            	return true;
-            }
-            if(key.codes[0] >= 97 && key.codes[0] <= 124){
-                getOnKeyboardActionListener().onKey(key.codes[0] - 32, null);
+            if (key.symbolCode != 0) {
+                mKeyboardActionListener.onKey(key.symbolCode, null);
                 return true;
             }
-
-            if (key.codes[0] <= Keyboard.KEYCODE_MODE_SWITCH) {
-              getOnKeyboardActionListener().onKey(Keyboard.KEYCODE_OPTIONS, null);
-              return true;
-            } else if (key.codes[0] <= Keyboard.KEYCODE_MODE_LAST) {
-              getOnKeyboardActionListener().onKey(Keyboard.KEYCODE_SCHEMA_OPTIONS, null);
-              return true;
-            } else if (key.codes[0] == "，".charAt(0)) {
-              getOnKeyboardActionListener().onKey(Keyboard.KEYCODE_REVERSE, null);
-              return true;
+            if (key.symbol!=null){
+                mKeyboardActionListener.onText(key.symbol);
+                return true;
+            }
+            if(key.codes[0] >= 97 && key.codes[0] <= 124){
+                mKeyboardActionListener.onKey(key.codes[0] - 32, null);
+                return true;
             }
         }
         return false;
