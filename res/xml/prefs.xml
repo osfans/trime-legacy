@@ -85,6 +85,11 @@
             android:persistent="true"/>
 
         <CheckBoxPreference
+            android:key="pref_single"
+            android:title="@string/pref_single_title"
+            android:persistent="true"/>
+
+        <CheckBoxPreference
             android:key="pref_association"
             android:title="@string/pref_association_title"
             android:persistent="true"/>

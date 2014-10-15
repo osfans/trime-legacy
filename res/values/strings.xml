@@ -43,6 +43,7 @@
     <string name="pref_init_chinese">初始中文</string>
     <string name="pref_full_py_title">全码輪入</string>
     <string name="pref_full_py_summary">禁用漸進提示，出字慢時建議开啟</string>
+    <string name="pref_single_title">單字模式</string>
     <string name="pref_association_title">詞語聯想</string>
     <string name="pref_sc_title">輸出簡體</string>
     <string name="pref_commit_py_title">輸出編碼</string>

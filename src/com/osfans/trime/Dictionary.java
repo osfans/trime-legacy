@@ -297,7 +297,7 @@ public class Dictionary {
             cursor = query(sql + " limit 100", new String[]{s});
         }
     } else {
-        sql = String.format("select %s from %s where py match ?", getQueryCol(), table);
+        sql = String.format("select %s from %s where py match ? %s", getQueryCol(), table, getSingle());
         cursor = query(sql, new String[]{s});
     }
     //Log.e("kyle", "word end");
@@ -401,6 +401,10 @@ public class Dictionary {
 
   public boolean isKeyboardPreview() {
       return preferences.getBoolean(keyboardPreviewKey, true);
+  }
+
+  private String getSingle() {
+      return preferences.getBoolean("pref_single", false) ? " and length(hz) == 1" : "";
   }
 
   private boolean isAssociation() {
