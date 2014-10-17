@@ -134,6 +134,8 @@ public class ImePreferenceActivity extends PreferenceActivity {
         File dbFile = new File("/sdcard", "trime.db");
         if (dbFile.exists()) {
             AssetDatabaseOpenHelper.importDatabase(new FileInputStream(dbFile));
+            TRIME ime = TRIME.getService();
+            if (ime != null) ime.initDictionary();
             ret = true;
         }
     } catch (IOException e) {

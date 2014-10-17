@@ -43,7 +43,7 @@ public class KeyboardSwitch {
     currentKeyboard = keyboards[currentId];
   }
 
-  public void initializeKeyboard(Object o) {
+  public void init(Object o) {
    
     keys = (List<Object>)o;    
     int n = keys.size();
@@ -60,13 +60,13 @@ public class KeyboardSwitch {
    * 
    * @param displayWidth the display-width for keyboards.
    */
-  public void initializeKeyboard(int displayWidth) {
+  public void init(int displayWidth) {
     if ((currentKeyboard != null) && (displayWidth == currentDisplayWidth)) {
       return;
     }
 
     currentDisplayWidth = displayWidth;
-    initializeKeyboard(keys);
+    init(keys);
   }
 
   public Keyboard getCurrentKeyboard() {

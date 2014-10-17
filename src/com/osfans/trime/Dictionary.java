@@ -36,7 +36,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class Dictionary {
 
-  private final SQLiteDatabase mDatabase;
+  private SQLiteDatabase mDatabase;
   private final SharedPreferences preferences;
   private final String scKey = "pref_sc";
   private final String fullPyKey = "pref_full_py";
@@ -61,6 +61,11 @@ public class Dictionary {
   protected Dictionary(
       Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    init(context);
+  }
+
+  public void init(Context context) {
+    if (mDatabase != null && mDatabase.isOpen()) mDatabase.close();
     mDatabase = AssetDatabaseOpenHelper.openDatabase(context);
     initSchema();
   }

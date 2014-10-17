@@ -54,22 +54,39 @@ public class TRIME extends InputMethodService implements
   protected int[] keyboardIds;
   protected int dictionaryId;
   private AlertDialog mOptionsDialog;
-
-  private void initKeyboard() {
-    keyboardSwitch = new KeyboardSwitch(this);
-    keyboardSwitch.initializeKeyboard(dialectDictionary.getKeyboards());
-  }
+  private static TRIME self;
 
   @Override
   public void onCreate() {
     super.onCreate();
+    self = this;
     dialectDictionary = new Dictionary(this);
     effect = new SoundMotionEffect(this);
+    keyboardSwitch = new KeyboardSwitch(this);
     initKeyboard();
 
     orientation = getResources().getConfiguration().orientation;
     // Use the following line to debug IME service.
     //android.os.Debug.waitForDebugger();
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    self = null;
+  }
+
+  public static TRIME getService() {
+    return self;
+  }
+
+  private void initKeyboard() {
+    keyboardSwitch.init(dialectDictionary.getKeyboards());
+  }
+
+  public void initDictionary() {
+    dialectDictionary.init(this);
+    initKeyboard();
   }
 
   @Override
@@ -191,7 +208,7 @@ public class TRIME extends InputMethodService implements
         break;
     }
     // Select a keyboard based on the input type of the editing field.
-    keyboardSwitch.initializeKeyboard(getMaxWidth());
+    keyboardSwitch.init(getMaxWidth());
     keyboardSwitch.onStartInput(inputType);
     setCandidatesViewShown(true);
     escape();

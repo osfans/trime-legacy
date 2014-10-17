@@ -21,10 +21,6 @@
     <!-- Titles for IME  -->
     <string name="ime_name">同文輸入法平臺</string>
 
-    <!-- Labels on soft keys -->
-    <string name="label_english">英文</string>
-    <string name="label_chinese">漢字</string>
-
     <!-- Preference settings -->
     <string name="pref_licensing">授權資訊</string>
     <string name="pref_vibrate_title">按鍵震動</string>
@@ -58,9 +54,9 @@
     <string name="other_ime">其他輸入法</string>
     <string name="pronunciation">【%s】的編碼</string>
     <string name="close">關閉</string>
-    <string name="importdb_success">碼表導入成功。\n如未生效，請重啟本輸入法。</string>
-    <string name="importdb_failure">碼表導入失敗。\n請將trime.db碼表置於/sdcard根目錄下。</string>
-    <string name="exportdb_success">碼表已成功導出為/sdcard/trime.db。</string>
-    <string name="exportdb_failure">碼表導出失敗。\n請檢查錯誤原因。</string>
+    <string name="importdb_success">碼表導入成功。</string>
+    <string name="importdb_failure">碼表導入失敗。\n請將trime.db置於/sdcard根目錄下。</string>
+    <string name="exportdb_success">碼表已導出為/sdcard/trime.db。</string>
+    <string name="exportdb_failure">碼表導出失敗。</string>
 
 </resources>
