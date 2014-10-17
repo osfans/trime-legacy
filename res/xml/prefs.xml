@@ -114,10 +114,8 @@
 
     <Preference
         android:key="pref_exportdb"
-        android:enabled="false"
         android:title="@string/pref_exportdb"
         android:summary="@string/pref_exportdb_summary"
-        android:selectable="false"
         android:persistent="false"/>
 
     <Preference

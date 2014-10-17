@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.FilenameFilter;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.ListPreference;
@@ -32,6 +34,8 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+//import android.util.Log;
+import android.text.format.Time;
 
 /**
  * Manages IME preferences. 
@@ -56,7 +60,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
     Preference importdb = findPreference("pref_importdb");
     importdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
       public boolean onPreferenceClick(Preference preference) {
-        importDatabase();
+        openImportDatabase();
         return true;
       }
     });
@@ -122,16 +126,46 @@ public class ImePreferenceActivity extends PreferenceActivity {
     });
     webView.loadUrl(licenseUrl);
 
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle(R.string.ime_name);
-    builder.setView(licenseView);
-    builder.show();
+    new AlertDialog.Builder(this)
+      .setTitle(R.string.ime_name)
+      .setView(licenseView)
+      .show();
   }
 
-  private void importDatabase() {
+  private String[] getFiles() {
+        FilenameFilter ff = new FilenameFilter(){
+            public boolean accept(File dir, String fn){
+                return fn.endsWith(".db") || fn.endsWith(".yaml");
+            }
+        };
+        return new File("/sdcard").list(ff);
+  }
+
+  private void openImportDatabase() {
+        final String[] files = getFiles();
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.pref_importdb)
+            .setItems(files,
+            new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface di, int id) {
+                    String fn = files[id];
+                    importDatabase(fn);
+                    di.dismiss();
+                }
+            })
+            .show();
+  }
+
+  public static String getExportName() {
+    Time t = new Time();
+    t.setToNow();
+    return String.format("trime_%s.db", t.format2445());
+  }
+
+  private void importDatabase(String fn) {
     boolean ret = false;
     try {
-        File dbFile = new File("/sdcard", "trime.db");
+        File dbFile = new File("/sdcard", fn);
         if (dbFile.exists()) {
             AssetDatabaseOpenHelper.importDatabase(new FileInputStream(dbFile));
             TRIME ime = TRIME.getService();
@@ -141,18 +175,18 @@ public class ImePreferenceActivity extends PreferenceActivity {
     } catch (IOException e) {
         throw new RuntimeException("Error creating source database", e);
     }
-    Toast.makeText(getApplicationContext(), ret ? R.string.importdb_success : R.string.importdb_failure, Toast.LENGTH_SHORT).show();
+    Toast.makeText(this, ret ? R.string.importdb_success : R.string.importdb_failure, Toast.LENGTH_SHORT).show();
   }
 
   private void exportDatabase() {
-    boolean ret = false;
+    String fn = getExportName();
     try {
-        File dbFile = new File("/sdcard", "trime.db");
+        File dbFile = new File("/sdcard", fn);
         AssetDatabaseOpenHelper.exportDatabase(new FileOutputStream(dbFile));
-        ret = true;
+        Toast.makeText(this, String.format(getString(R.string.exportdb_success, fn)), Toast.LENGTH_SHORT).show();
     } catch (IOException e) {
+        Toast.makeText(this, R.string.exportdb_failure, Toast.LENGTH_SHORT).show();
         throw new RuntimeException("Error creating source database", e);
     }
-    Toast.makeText(getApplicationContext(), ret ? R.string.exportdb_success : R.string.exportdb_failure, Toast.LENGTH_SHORT).show();
   }
 }

@@ -45,18 +45,18 @@
     <string name="pref_commit_py_title">输出编码</string>
     <string name="pref_commit_py_summary">出字时标出编码，如：拼音(pin yin)</string>
     <string name="pref_importdb">导入码表</string>
-    <string name="pref_importdb_summary">从 /sdcard/trime.db 导入自定义码表</string>
+    <string name="pref_importdb_summary">从SD卡根目录导入*.db或.yaml码表</string>
     <string name="pref_exportdb">导出码表</string>
-    <string name="pref_exportdb_summary">将码表导出为/sdcard/trime.db </string>
+    <string name="pref_exportdb_summary">将码表导出至SD卡根目录</string>
 
     <string name="set_ime">全局设定</string>
     <string name="set_schema">设定本方案</string>
     <string name="other_ime">其他输入法</string>
     <string name="pronunciation">【%s】的编码</string>
     <string name="close">关闭</string>
-    <string name="importdb_success">码表导入成功。</string>
-    <string name="importdb_failure">码表导入失败。\n请将trime.db置于/sdcard根目录下。</string>
-    <string name="exportdb_success">码表已导出为/sdcard/trime.db。</string>
-    <string name="exportdb_failure">码表导出失败。</string>
+    <string name="importdb_success">码表导入成功</string>
+    <string name="importdb_failure">码表导入失败。\n请将*.db或*.yaml码表置于SD卡根目录下。</string>
+    <string name="exportdb_success">码表已导出为“%s”</string>
+    <string name="exportdb_failure">码表导出失败</string>
 
 </resources>
