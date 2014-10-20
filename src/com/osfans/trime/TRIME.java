@@ -63,7 +63,7 @@ public class TRIME extends InputMethodService implements
     dialectDictionary = new Dictionary(this);
     effect = new SoundMotionEffect(this);
     keyboardSwitch = new KeyboardSwitch(this);
-    initKeyboard();
+    initDictionary();
 
     orientation = getResources().getConfiguration().orientation;
     // Use the following line to debug IME service.

@@ -61,12 +61,11 @@ public class Dictionary {
   protected Dictionary(
       Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
-    init(context);
   }
 
   public void init(Context context) {
     if (mDatabase != null && mDatabase.isOpen()) mDatabase.close();
-    mDatabase = AssetDatabaseOpenHelper.openDatabase(context);
+    mDatabase = DatabaseHelper.openDatabase(context);
     initSchema();
   }
 
