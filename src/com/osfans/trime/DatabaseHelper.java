@@ -17,10 +17,15 @@
 package com.osfans.trime;
 
 import java.io.*;
+import java.util.Map;
 
 import android.content.Context;
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.format.Time;
+//import android.util.Log;
+
+import org.yaml.snakeyaml.Yaml;
 
 public class DatabaseHelper {
 
@@ -82,12 +87,45 @@ public class DatabaseHelper {
             success = true;
         } catch (Exception e) {
             throw new RuntimeException("Error copy database", e);
-        } finally {
-            return success;
         }
+        return success;
+    }
+
+    static boolean updateSchema(String fn) {
+        boolean success = false;
+        SQLiteDatabase db =  SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+        db.beginTransaction();
+        try {
+            InputStream is = new FileInputStream(new File(sd, fn));
+            Yaml yaml = new Yaml();
+            Map<String,Object> y = (Map<String,Object>)(yaml.load(is));
+            Map<String,Object> m = (Map<String,Object>)y.get("schema");
+            String schema_id = (String)m.get("schema_id");
+            String name = (String)m.get("name");
+            String full = yaml.dump(y);
+
+            ContentValues initialValues = new ContentValues();
+            initialValues.put("schema_id", schema_id);
+            initialValues.put("name", name);
+            initialValues.put("full", full);
+            long r = db.update("schema", initialValues, "schema_id = ?", new String[] {schema_id});
+            if (r == 0){
+                r = db.insert("schema", null, initialValues);
+            }
+            db.setTransactionSuccessful();
+            success = true;
+        } catch (Exception e) {
+            throw new RuntimeException("Error update schema", e);
+        } finally {
+            db.endTransaction();
+        }
+        return success;
     }
 
     static boolean importDatabase(Object ois) {
+        if (ois instanceof String && ((String)ois).endsWith(".schema.yaml")) {
+            return updateSchema((String)ois);
+        }
         return copyDatabase(ois, null);
     }
 

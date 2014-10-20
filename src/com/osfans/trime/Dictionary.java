@@ -217,10 +217,11 @@ public class Dictionary {
         Cursor cursor = query(String.format("select * from schema where _id = %d", id), null);
         if (cursor == null) return;
         Yaml yaml = new Yaml();
-        mSchema = (Map<String,Object>)(((Map<String,Object>)yaml.load(cursor.getString(cursor.getColumnIndex("full")))).get("schema"));
+        Map<String,Object> y = (Map<String,Object>)yaml.load(cursor.getString(cursor.getColumnIndex("full")));
         cursor.close();
         
-        table = (String)getValue("dictionary", null);
+        mSchema = (Map<String,Object>)(y.get("schema"));
+        table = (String)((Map<String,Object>)y.get("translator")).get("dictionary"); //translator/dictionary
         phraseTable = (String)getValue("phrase", table);
         keyboard = (Object)getValue("keyboard", null);
         delimiter = (String)getValue("delimiter", "");
