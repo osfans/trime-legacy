@@ -151,11 +151,11 @@ public class Dictionary {
         if (rules == null) return s;
         for (String[] rule:  rules) {
             if (rule[0].contentEquals("xlit")) {
-                String[] rulea = rule[1].split(rule[1].contains("|") ? "\\|" : "\\B");
-                String[] ruleb = rule[2].split(rule[2].contains("|") ? "\\|" : "\\B");
+                String[] rulea = rule[1].split(rule[1].contains("|") ? "\\|" : "");
+                String[] ruleb = rule[2].split(rule[2].contains("|") ? "\\|" : "");
                 int n = rulea.length;
                 if (n == ruleb.length) {
-                    for (int i = 0; i < n; i++) s = s.replace(rulea[i], ruleb[i]);
+                    for (int i = 0; i < n; i++) if (rulea[i].length() > 0) s = s.replace(rulea[i], ruleb[i]);
                 }
             } else s = s.replaceAll(rule[1],rule[2]);
         }
