@@ -151,6 +151,9 @@ ascii_composer:
     Caps_Lock: clear
     Eisu_toggle: clear
 
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba
+
 trime:
   keyboard:
   - mode: 0
