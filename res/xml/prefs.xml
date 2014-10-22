@@ -51,7 +51,7 @@
             android:entryValues="@array/pref_cand_num_values" />
         <ListPreference
             android:key="pref_cand_font_size"
-            android:defaultValue="20"
+            android:defaultValue="22"
             android:title="@string/pref_cand_font_size"
             android:entries="@array/pref_cand_font_size_values"
             android:entryValues="@array/pref_cand_font_size_values" />
@@ -63,7 +63,7 @@
             android:entryValues="@array/pref_cand_num_values" />
         <ListPreference
             android:key="pref_key_font_size"
-            android:defaultValue="28"
+            android:defaultValue="22"
             android:title="@string/pref_key_font_size"
             android:entries="@array/pref_cand_font_size_values"
             android:entryValues="@array/pref_cand_font_size_values" />

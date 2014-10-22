@@ -334,6 +334,10 @@ public class TRIME extends InputMethodService implements
     handleKey(primaryCode);
   }
 
+  private boolean isAlphabet(CharSequence s) {
+    return dialectDictionary.isAlphabet(s, hasComposingText());
+  }
+
   public void onText(CharSequence text) {
     if(inputView.isShifted() && text.length() > 0) { //換檔輸出大寫字母
         for (char c: text.toString().toCharArray()){
@@ -347,7 +351,7 @@ public class TRIME extends InputMethodService implements
             composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
             updateComposingText();
         }
-    } else if (isChinese() && ((hasComposingText() && text.length() == 0) || dialectDictionary.isAlphabet(text))) {
+    } else if (isChinese() && ((hasComposingText() && text.length() == 0) || isAlphabet(text))) {
         String r = composingText.toString();
         String s = dialectDictionary.correctSpell(r, text);
         if (s == null && !dialectDictionary.hasDelimiter()) {
@@ -355,7 +359,7 @@ public class TRIME extends InputMethodService implements
             s = dialectDictionary.correctSpell("", text);
         }
         if (s != null) {
-            composingText.delete(0, composingText.length());
+            composingText.setLength(0);
             composingText.append(s);
             Cursor cursor = dialectDictionary.getWord(composingText);
             setCandidates(cursor, true);
@@ -413,7 +417,7 @@ public class TRIME extends InputMethodService implements
     InputConnection ic = getCurrentInputConnection();
     if (ic != null) {
       // Set cursor position 1 to advance the cursor to the text end.
-      ic.setComposingText(composingText, 1);
+      ic.setComposingText(dialectDictionary.preedit(composingText.toString()), 1);
     }
   }
 
@@ -429,7 +433,7 @@ public class TRIME extends InputMethodService implements
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this)
             .setTitle(dialectDictionary.getSchemaTitle())
-            .setMultiChoiceItems(dialectDictionary.namedFuzzyRules, dialectDictionary.fuzzyRulesPref,
+            .setMultiChoiceItems(dialectDictionary.getNamedFuzzyRules(), dialectDictionary.getFuzzyRulesPref(),
                 new DialogInterface.OnMultiChoiceClickListener() {
                     public void onClick(DialogInterface di, int which, boolean isChecked) {
                         //di.dismiss();
@@ -488,7 +492,7 @@ public class TRIME extends InputMethodService implements
                     }
                 }
             });
-            if (dialectDictionary.namedFuzzyRules != null) builder.setNeutralButton(R.string.set_schema, new DialogInterface.OnClickListener() {
+            if (dialectDictionary.getNamedFuzzyRules() != null) builder.setNeutralButton(R.string.set_schema, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface di, int id) {
                     di.dismiss();
                     setSchema();
@@ -543,7 +547,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSelect(int keyCode) {
-    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !dialectDictionary.isAlphabet(String.valueOf((char)keyCode))) {
+    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !isAlphabet(String.valueOf((char)keyCode))) {
       return candidatesContainer.pickHighlighted(keyCode - '1');
     }
     return false;
@@ -570,8 +574,7 @@ public class TRIME extends InputMethodService implements
     if (keyCode == Keyboard.KEYCODE_REVERSE && !hasComposingText()) {
       CharSequence s = getLastText();
       if (s.length() == 0) return true;
-      //setCandidates(dialectDictionary.getPy(s), false);
-      String[] pys = dialectDictionary.getPy(s);
+      String[] pys = dialectDictionary.getComment(s);
       if (pys != null) {
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(this)
@@ -605,7 +608,7 @@ public class TRIME extends InputMethodService implements
   private boolean handleComposing(int keyCode) {
     if(canCompose && isChinese()) {
         String s = String.valueOf((char) keyCode);
-        if (dialectDictionary.isAlphabet(s) || dialectDictionary.isDelimiter(s)) {
+        if (isAlphabet(s) || dialectDictionary.isDelimiter(s)) {
             onText(s);
             return true;
         } else {

@@ -130,7 +130,7 @@ public class CandidatesContainer extends LinearLayout {
     currentWordSkip = 0;
     do {
         String word = cursor.getString(0);
-        String py = cursor.getColumnCount() > 1 ? dialectDictionary.ipa2py(cursor.getString(1)) : "";
+        String py = cursor.getColumnCount() > 1 ? dialectDictionary.comment(cursor.getString(1)) : "";
         String s = String.format("%s\t%s", word, py);
         if (candidates.contains(s)) { //單屏去重
              currentWordSkip++;
