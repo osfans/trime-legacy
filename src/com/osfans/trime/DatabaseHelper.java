@@ -91,7 +91,7 @@ public class DatabaseHelper {
         return success;
     }
 
-    static boolean updateSchema(String fn) {
+    static boolean importSchema(String fn) {
         boolean success = false;
         SQLiteDatabase db =  SQLiteDatabase.openOrCreateDatabase(dbFile, null);
         db.beginTransaction();
@@ -103,6 +103,7 @@ public class DatabaseHelper {
             String schema_id = (String)m.get("schema_id");
             String name = (String)m.get("name");
             String full = yaml.dump(y);
+            is.close();
 
             ContentValues initialValues = new ContentValues();
             initialValues.put("schema_id", schema_id);
@@ -115,7 +116,55 @@ public class DatabaseHelper {
             db.setTransactionSuccessful();
             success = true;
         } catch (Exception e) {
-            throw new RuntimeException("Error update schema", e);
+            throw new RuntimeException("Error import schema", e);
+        } finally {
+            db.endTransaction();
+        }
+        return success;
+    }
+
+    static boolean importDict(String fn) {
+        boolean success = false;
+        String fs = "...";
+        String comment = "#";
+        String newline = "\n";
+        SQLiteDatabase db =  SQLiteDatabase.openOrCreateDatabase(dbFile, null);
+            //Log.e("kyle", "begin transaction");
+        db.beginTransaction();
+        try {
+            String line;
+            StringBuilder content = new StringBuilder();
+            InputStream is = new FileInputStream(new File(sd, fn));
+            InputStreamReader ir = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(ir);
+            while ((line = br.readLine()) != null && !line.contentEquals(fs)) {
+                content.append(line);
+                content.append(newline);
+            }
+
+            Yaml yaml = new Yaml();
+            Map<String,Object> y = (Map<String,Object>)(yaml.load(content.toString()));
+            String table = (String)y.get("name");
+
+            db.execSQL("DROP TABLE IF EXISTS " + table);
+            db.execSQL(String.format("CREATE VIRTUAL TABLE %s USING fts3(hz, py)", table));
+
+            ContentValues initialValues = new ContentValues(2);
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(comment)) continue;
+                String[] s = line.split("\t");
+                if (s.length < 2) continue;
+                initialValues.put("hz", s[0]);
+                initialValues.put("py", s[1]);
+                db.insert(table, null, initialValues);
+                initialValues.clear();
+            }
+            is.close();
+            db.setTransactionSuccessful();
+            //Log.e("kyle", "end transaction");
+            success = true;
+        } catch (Exception e) {
+            throw new RuntimeException("Error import dict", e);
         } finally {
             db.endTransaction();
         }
@@ -123,8 +172,10 @@ public class DatabaseHelper {
     }
 
     static boolean importDatabase(Object ois) {
-        if (ois instanceof String && ((String)ois).endsWith(".schema.yaml")) {
-            return updateSchema((String)ois);
+        if (ois instanceof String) {
+            String s = (String)ois;
+            if (s.endsWith(".schema.yaml")) return importSchema(s);
+            if (s.endsWith(".dict.yaml")) return importDict(s);
         }
         return copyDatabase(ois, null);
     }
