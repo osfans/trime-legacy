@@ -17,6 +17,7 @@
 package com.osfans.trime;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -128,17 +129,36 @@ public class ImePreferenceActivity extends PreferenceActivity {
   }
 
   private void openImportDatabase() {
-        final String[] files = DictionaryHelper.getImportNames();
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.pref_importdb)
-            .setItems(files,
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    importDatabase(files[id]);
-                    di.dismiss();
-                }
-            })
-            .show();
+    final String[] files = DictionaryHelper.getImportNames();
+    new AlertDialog.Builder(this)
+      .setTitle(R.string.pref_importdb)
+      .setItems(files,
+      new DialogInterface.OnClickListener() {
+        public void onClick(DialogInterface di, int id) {
+          final ProgressDialog dialog = new ProgressDialog(((AlertDialog)di).getContext());
+          dialog.setTitle(R.string.pref_importdb);
+          dialog.setMessage(getString(R.string.importdb_message));
+          dialog.setCancelable(false);
+          dialog.show();
+          final String fn = files[id];
+          new Thread(new Runnable(){
+            @Override
+            public void run() {
+              try{
+                importDatabase(fn);
+              }
+              catch(Exception e){
+                e.printStackTrace();
+              }
+              finally{
+                dialog.dismiss();
+              }
+            }
+          }).start();
+          di.dismiss();
+        }
+      })
+      .show();
   }
 
   private boolean importDatabase(String fn) {

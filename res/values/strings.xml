@@ -54,6 +54,7 @@
     <string name="other_ime">其他輸入法</string>
     <string name="pronunciation">【%s】的編碼</string>
     <string name="close">關閉</string>
+    <string name="importdb_message">正在導入碼表，請稍候...</string>
     <string name="importdb_success">碼表導入成功</string>
     <string name="importdb_failure">碼表導入失敗。\n請將*.db或*.yaml碼表置於SD卡根目錄下。</string>
     <string name="exportdb_success">碼表已導出為“%s”</string>
