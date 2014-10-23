@@ -38,6 +38,7 @@ import org.yaml.snakeyaml.Yaml;
 public class Dictionary {
 
   private SQLiteDatabase mDatabase;
+  private DictionaryHelper mHelper;
   private final SharedPreferences preferences;
 
   private Map<String,Object> mSchema, mDefaultSchema;
@@ -53,12 +54,16 @@ public class Dictionary {
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
     initDefaultSchema(context);
+    mHelper = new DictionaryHelper(context);
   }
 
   public void init(Context context) {
-    if (mDatabase != null && mDatabase.isOpen()) mDatabase.close();
-    mDatabase = DatabaseHelper.openDatabase(context);
+    mDatabase = mHelper.getReadableDatabase();
     initSchema();
+  }
+
+  public DictionaryHelper getHelper() {
+    return mHelper;
   }
 
   private void initDefaultSchema(Context context) {

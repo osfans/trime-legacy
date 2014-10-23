@@ -36,11 +36,13 @@ import android.widget.Toast;
 public class ImePreferenceActivity extends PreferenceActivity {
 
   private final String licenseUrl = "file:///android_asset/licensing.html";
+  public TRIME ime;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.prefs);
+    ime = TRIME.getService();
 
     Preference license = findPreference("pref_licensing");
     license.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -126,7 +128,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
   }
 
   private void openImportDatabase() {
-        final String[] files = DatabaseHelper.getFiles();
+        final String[] files = DictionaryHelper.getImportNames();
         new AlertDialog.Builder(this)
             .setTitle(R.string.pref_importdb)
             .setItems(files,
@@ -139,17 +141,23 @@ public class ImePreferenceActivity extends PreferenceActivity {
             .show();
   }
 
-  private void importDatabase(String fn) {
-    boolean success = DatabaseHelper.importDatabase(fn);
-    if (success) {
-        DatabaseHelper.initDictionary();
-        Toast.makeText(this, R.string.importdb_success, Toast.LENGTH_SHORT).show();
-    } else Toast.makeText(this, R.string.importdb_failure, Toast.LENGTH_SHORT).show();
+  private boolean importDatabase(String fn) {
+    boolean success = false;
+    if (ime != null) {
+      success = ime.importDatabase(fn);
+      ime.initDictionary();
+    } else success = new DictionaryHelper(this).importDatabase(fn);
+    return success;
+  }
+
+  private boolean exportDatabase(String fn) {
+    if (ime != null) return ime.exportDatabase(fn);
+    return new DictionaryHelper(this).exportDatabase(fn);
   }
 
   private void exportDatabase() {
-    String fn = DatabaseHelper.getExportName();
-    boolean success = DatabaseHelper.exportDatabase(fn);
+    String fn = DictionaryHelper.getExportName();
+    boolean success = exportDatabase(fn);
     if (success) Toast.makeText(this, String.format(getString(R.string.exportdb_success, fn)), Toast.LENGTH_SHORT).show();
     else Toast.makeText(this, R.string.exportdb_failure, Toast.LENGTH_SHORT).show();
   }

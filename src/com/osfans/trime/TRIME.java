@@ -89,6 +89,14 @@ public class TRIME extends InputMethodService implements
     initKeyboard();
   }
 
+  public boolean importDatabase(String fn) {
+    return dialectDictionary.getHelper().importDatabase(fn);
+  }
+
+  public boolean exportDatabase(String fn) {
+    return dialectDictionary.getHelper().exportDatabase(fn);
+  }
+
   @Override
   public void onConfigurationChanged(Configuration newConfig) {
     if (orientation != newConfig.orientation) {
