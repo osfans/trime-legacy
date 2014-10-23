@@ -179,8 +179,8 @@ trime:
     - {symbol: '[', text: o}
     - {symbol: ']', text: p}
     - {width: 5}
-    - {symbol: '-', text: a}
-    - {symbol: '——', text: s}
+    - {symbol: '——', text: a}
+    - {symbol: '-', text: s}
     - {symbol: '/', text: d}
     - {symbol: '|', text: f}
     - {symbol: '\', text: g}
@@ -189,17 +189,17 @@ trime:
     - {symbol: '：', text: k}
     - {symbol: '；', text: l}
     - {text: <shift>, width: 12}
-    - {symbol: '￥', text: z}
-    - {symbol: '、', text: x}
-    - {symbol: '℃',text: c}
+    - {text: z}
+    - {text: x}
+    - {text: c}
     - {symbol: '‘',text: v}
     - {symbol: '’',text: b}
     - {symbol: '“', text: n}
     - {symbol: '”', text: m}
     - {text: <delete>, width: 18}
     - {label: "中", switch: 1, text: <switch>, width: 12}
-    - {label: '123', switch: 2, text: <switch>, width: 12}
-    - {text: '，', width: 15}
+    - {label: '123', switch: 2, text: <switch>, symbol: '...', symbolCode: -11, width: 12}
+    - {symbol: '、', text: '，', width: 15}
     - {text: <space>, width: 22}
     - {symbol: '？', text: '。', width: 15}
     - {text: <enter>, width: 24}
@@ -226,8 +226,8 @@ trime:
     - {symbol: '[', text: o}
     - {symbol: ']', text: p}
     - {width: 5}
-    - {symbol: '-', text: a}
-    - {symbol: '_', text: s}
+    - {symbol: '_', text: a}
+    - {symbol: '-', text: s}
     - {symbol: '/', text: d}
     - {symbol: '|', text: f}
     - {symbol: '\', text: g}
