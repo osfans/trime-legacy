@@ -330,16 +330,11 @@ public class Dictionary {
     Cursor cursor = null;
     String sql;
     //Log.e("kyle", "word start");
-    if(hasDelimiter()){
-      sql = String.format("select %s from %s where py match ? and not glob('* *', py)", getQueryCol(), table);
-      cursor = query(sql, new String[]{s});
-      if (cursor == null && !fullPyOn) {
-        s = s.replace(" OR", "* OR") + "*";
-        cursor = query(sql + " limit 100", new String[]{s});
-      }
-    } else {
-      sql = String.format("select %s from %s where py match ? %s", getQueryCol(), table, getSingle());
-      cursor = query(sql, new String[]{s});
+    sql = String.format("select %s from %s where py match ? and not glob('* *', py) %s", getQueryCol(), table, getSingle());
+    cursor = query(sql, new String[]{s});
+    if (cursor == null && !fullPyOn) {
+      s = s.replace(" OR", "* OR") + "*";
+      cursor = query(sql + " limit 100", new String[]{s});
     }
     //Log.e("kyle", "word end");
     return cursor;
