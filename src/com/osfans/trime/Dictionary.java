@@ -427,12 +427,12 @@ public class Dictionary {
       return (delimiter != null) && delimiter.length() > 0;
   }
 
-  public boolean isDelimiter(CharSequence text) {
-      return hasDelimiter() && delimiter.contains(text);
+  public boolean isDelimiter(CharSequence s) {
+      return hasDelimiter() && s.length() > 0 && s.charAt(0) != ' ' && delimiter.contains(s);
   }
 
   public String getDelimiter() {
-    return hasDelimiter() ? "'" : "";
+    return hasDelimiter() ? delimiter.substring(0, 1) : "";
   }
 
   public boolean isKeyboardPreview() {

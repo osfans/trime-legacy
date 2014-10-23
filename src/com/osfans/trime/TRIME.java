@@ -335,7 +335,11 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean isAlphabet(CharSequence s) {
-    return dialectDictionary.isAlphabet(s, hasComposingText());
+    return isChinese() && dialectDictionary.isAlphabet(s, hasComposingText());
+  }
+
+  private boolean isDelimiter(CharSequence s) {
+    return isChinese() && hasComposingText() && dialectDictionary.isDelimiter(s);
   }
 
   public void onText(CharSequence text) {
@@ -346,12 +350,12 @@ public class TRIME extends InputMethodService implements
         }
         return;
     }
-    if (isChinese() && hasComposingText() && text.length() > 0 && dialectDictionary.isDelimiter(text)) {
+    if (isDelimiter(text)) {
         if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
             composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
             updateComposingText();
         }
-    } else if (isChinese() && ((hasComposingText() && text.length() == 0) || isAlphabet(text))) {
+    } else if (isAlphabet(text)) {
         String r = composingText.toString();
         String s = dialectDictionary.correctSpell(r, text);
         if (s == null && !dialectDictionary.hasDelimiter()) {
@@ -536,7 +540,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleSpace(int keyCode) {
-    if (candidatesContainer != null && keyCode == ' ' && !dialectDictionary.isDelimiter(" ")) {
+    if (candidatesContainer != null && keyCode == ' ') {
       if (!candidatesContainer.pickHighlighted(-1)) {
         if (hasComposingText()) clearComposingText();
         else commitText(" ");
@@ -608,7 +612,7 @@ public class TRIME extends InputMethodService implements
   private boolean handleComposing(int keyCode) {
     if(canCompose && isChinese()) {
         String s = String.valueOf((char) keyCode);
-        if (isAlphabet(s) || dialectDictionary.isDelimiter(s)) {
+        if (isAlphabet(s) || isDelimiter(s)) {
             onText(s);
             return true;
         } else {
