@@ -70,7 +70,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   static String[] getImportNames() {
     FilenameFilter ff = new FilenameFilter(){
       public boolean accept(File dir, String fn){
-        return fn.endsWith(".db") || fn.endsWith(".yaml");
+        return fn.endsWith(".db") || fn.endsWith(".schema.yaml") || fn.endsWith(".dict.yaml");
       }
     };
     return sd.list(ff);
@@ -83,6 +83,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   }
 
   private boolean copyDatabase(InputStream is, String s) {
+    close();
     boolean success = false;
     try {
       if (is == null ) is = new FileInputStream(dbFile);
@@ -132,6 +133,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
       throw new RuntimeException("Error import schema", e);
     } finally {
       db.endTransaction();
+      close();
     }
     return success;
   }
@@ -182,6 +184,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
       throw new RuntimeException("Error import dict", e);
     } finally {
         db.endTransaction();
+        close();
     }
     return success;
   }
@@ -191,7 +194,8 @@ public class DictionaryHelper extends SQLiteOpenHelper {
       InputStream is = new FileInputStream(new File(sd, s));
       if (s.endsWith(".schema.yaml")) return importSchema(is);
       if (s.endsWith(".dict.yaml")) return importDict(is);
-      return copyDatabase(is, null);
+      if (s.endsWith(".db")) return copyDatabase(is, null);
+      return false;
     } catch (Exception e) {
       throw new RuntimeException("Error import Database", e);
     }
