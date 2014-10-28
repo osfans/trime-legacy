@@ -89,12 +89,13 @@ public class TRIME extends InputMethodService implements
     initKeyboard();
   }
 
-  public boolean importDatabase(String fn) {
-    return dialectDictionary.getHelper().importDatabase(fn);
+  public void importDatabase(String fn) {
+    dialectDictionary.getHelper().importDatabase(fn);
+    initDictionary();
   }
 
-  public boolean exportDatabase(String fn) {
-    return dialectDictionary.getHelper().exportDatabase(fn);
+  public void exportDatabase(String fn) {
+    dialectDictionary.getHelper().exportDatabase(fn);
   }
 
   @Override

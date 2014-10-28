@@ -28,7 +28,6 @@ import android.preference.PreferenceActivity;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 //import android.util.Log;
 
 /**
@@ -37,13 +36,11 @@ import android.widget.Toast;
 public class ImePreferenceActivity extends PreferenceActivity {
 
   private final String licenseUrl = "file:///android_asset/licensing.html";
-  public TRIME ime;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.prefs);
-    ime = TRIME.getService();
 
     Preference license = findPreference("pref_licensing");
     license.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -64,7 +61,7 @@ public class ImePreferenceActivity extends PreferenceActivity {
     Preference exportdb = findPreference("pref_exportdb");
     exportdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
       public boolean onPreferenceClick(Preference preference) {
-        exportDatabase();
+        exportDatabase(DictionaryHelper.getExportName());
         return true;
       }
     });
@@ -135,50 +132,22 @@ public class ImePreferenceActivity extends PreferenceActivity {
       .setItems(files,
       new DialogInterface.OnClickListener() {
         public void onClick(DialogInterface di, int id) {
-          final ProgressDialog dialog = new ProgressDialog(((AlertDialog)di).getContext());
-          dialog.setTitle(R.string.pref_importdb);
-          dialog.setMessage(getString(R.string.importdb_message));
-          dialog.setCancelable(false);
-          dialog.show();
-          final String fn = files[id];
-          new Thread(new Runnable(){
-            @Override
-            public void run() {
-              try{
-                importDatabase(fn);
-              }
-              catch(Exception e){
-                e.printStackTrace();
-              }
-              finally{
-                dialog.dismiss();
-              }
-            }
-          }).start();
+          importDatabase(files[id]);
           di.dismiss();
         }
       })
       .show();
   }
 
-  private boolean importDatabase(String fn) {
-    boolean success = false;
-    if (ime != null) {
-      success = ime.importDatabase(fn);
-      ime.initDictionary();
-    } else success = new DictionaryHelper(this).importDatabase(fn);
-    return success;
+  private void importDatabase(String fn) {
+    TRIME ime = TRIME.getService();
+    if (ime != null) ime.importDatabase(fn);
+    else new DictionaryHelper(this).importDatabase(fn);
   }
 
-  private boolean exportDatabase(String fn) {
-    if (ime != null) return ime.exportDatabase(fn);
-    return new DictionaryHelper(this).exportDatabase(fn);
-  }
-
-  private void exportDatabase() {
-    String fn = DictionaryHelper.getExportName();
-    boolean success = exportDatabase(fn);
-    if (success) Toast.makeText(this, String.format(getString(R.string.exportdb_success, fn)), Toast.LENGTH_SHORT).show();
-    else Toast.makeText(this, R.string.exportdb_failure, Toast.LENGTH_SHORT).show();
+  private void exportDatabase(String fn) {
+    TRIME ime = TRIME.getService();
+    if (ime != null) ime.exportDatabase(fn);
+    else new DictionaryHelper(this).exportDatabase(fn);
   }
 }

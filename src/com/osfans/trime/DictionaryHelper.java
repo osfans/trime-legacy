@@ -27,6 +27,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.text.format.Time;
 import android.util.Log;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.support.v4.app.NotificationCompat;
+
 import org.yaml.snakeyaml.Yaml;
 
 public class DictionaryHelper extends SQLiteOpenHelper {
@@ -42,9 +46,14 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   private static final String comment = "#";
   private static final String newline = "\n";
 
+  NotificationManager mNotifyManager;
+  NotificationCompat.Builder mBuilder;
+  int notify_id = 1;
+
   DictionaryHelper(Context context) {
     super(context, DB_NAME, null, DB_VER);
     mContext = context;
+    initProgress();
     loadAssetsDB();
   }
 
@@ -57,10 +66,17 @@ public class DictionaryHelper extends SQLiteOpenHelper {
     // mDatabase = db;
   }
 
+  private void initProgress() {
+    mNotifyManager = (NotificationManager) mContext.getSystemService(mContext.NOTIFICATION_SERVICE);
+    mBuilder = new NotificationCompat.Builder(mContext);
+    mBuilder.setSmallIcon(R.drawable.smallicon);
+  }
+
   private void loadAssetsDB() {
     if (dbFile.exists()) return;
     try {
       dbFile.getParentFile().mkdir();
+      mBuilder.setContentTitle(mContext.getString(R.string.initdb_message));
       copyDatabase(mContext.getAssets().open(DB_NAME), null);
     } catch (IOException e) {
       throw new RuntimeException("Error creating source database", e);
@@ -83,26 +99,41 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   }
 
   private boolean copyDatabase(InputStream is, String s) {
-    close();
     boolean success = false;
+    mNotifyManager.notify(notify_id, mBuilder.build());
     try {
       if (is == null ) is = new FileInputStream(dbFile);
 
       OutputStream os = null;
-      if (s == null ) os = new FileOutputStream(dbFile);
-      else os = new FileOutputStream(new File(sd, s));
+      if (s == null) {
+        close();
+        os = new FileOutputStream(dbFile);
+      } else {
+        os = new FileOutputStream(new File(sd, s));
+      }
 
+      int max = is.available();
+      int count = 0;
+      int progress = 0;
       byte[] buffer = new byte[BLK_SIZE];
       while (is.read(buffer) > 0) {
         os.write(buffer);
+        count++;
+        if ((count % 100) == 0) {
+          progress = count * BLK_SIZE;
+          mBuilder.setProgress(max, progress, false)
+            .setContentText(String.format("%d / 100", progress * 100 / max));
+          mNotifyManager.notify(notify_id, mBuilder.build());
+        }
       }
       os.flush();
       os.close();
       is.close();
-      close();
       success = true;
     } catch (Exception e) {
       throw new RuntimeException("Error copy database", e);
+    } finally {
+      mNotifyManager.cancel(notify_id);
     }
     return success;
   }
@@ -133,7 +164,6 @@ public class DictionaryHelper extends SQLiteOpenHelper {
       throw new RuntimeException("Error import schema", e);
     } finally {
       db.endTransaction();
-      close();
     }
     return success;
   }
@@ -141,7 +171,6 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   private boolean importDict(InputStream is) {
     boolean success = false;
     SQLiteDatabase db =  getWritableDatabase();
-    Log.e("kyle", "begin transaction");
     db.beginTransaction();
     try {
       String line;
@@ -161,8 +190,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
       db.execSQL(String.format("CREATE VIRTUAL TABLE %s USING fts3(hz, py)", table));
 
       ContentValues initialValues = new ContentValues(2);
-      int left = is.available();
-      int step = left / 100;
+      int max = is.available();
       int progress = 0;
       int count = 0;
       while ((line = br.readLine()) != null) {
@@ -174,35 +202,61 @@ public class DictionaryHelper extends SQLiteOpenHelper {
         db.insert(table, null, initialValues);
         initialValues.clear();
         count++;
-        if ((count % 1000) == 0) progress = (left - is.available()) / step;
+        if ((count % 1000) == 0) {
+          progress = max - is.available();
+          mBuilder.setProgress(max, progress, false)
+            .setContentText(String.format("%d / 100", progress * 100 / max));
+          mNotifyManager.notify(notify_id, mBuilder.build());
+        }
       }
       is.close();
       db.setTransactionSuccessful();
-      Log.e("kyle", "end transaction");
       success = true;
     } catch (Exception e) {
       throw new RuntimeException("Error import dict", e);
     } finally {
-        db.endTransaction();
-        close();
+      db.endTransaction();
+      mNotifyManager.cancel(notify_id);
     }
     return success;
   }
 
-  public boolean importDatabase(String s) {
+  private void toast(String t, String s) {
+    mBuilder.setContentTitle(t)
+            .setContentText(s)
+            .setProgress(0, 0, false);
+    mNotifyManager.notify(notify_id, mBuilder.build());
+  }
+
+  public void importDatabase(final String s) {
     try {
-      InputStream is = new FileInputStream(new File(sd, s));
-      if (s.endsWith(".schema.yaml")) return importSchema(is);
-      if (s.endsWith(".dict.yaml")) return importDict(is);
-      if (s.endsWith(".db")) return copyDatabase(is, null);
-      return false;
+      final InputStream is = new FileInputStream(new File(sd, s));
+      mBuilder.setContentTitle(String.format(mContext.getString(R.string.importdb_message), s));
+      if (s.endsWith(".db") || s.endsWith(".schema.yaml")) {
+        boolean success = s.endsWith(".db") ? copyDatabase(is, null) : importSchema(is);
+        if (success) toast(mContext.getString(R.string.importdb_success), s);
+        else toast(mContext.getString(R.string.importdb_failure), s);
+      } else if (s.endsWith(".dict.yaml")) {
+        new Thread(new Runnable() {
+          @Override
+          public void run() {
+            boolean success = importDict(is);
+            if (success) toast(mContext.getString(R.string.importdb_success), s);
+            else toast(mContext.getString(R.string.importdb_failure), s);
+          }
+        }
+      ).start();
+    }
     } catch (Exception e) {
       throw new RuntimeException("Error import Database", e);
     }
   }
 
-  public boolean exportDatabase(String s) {
-    return copyDatabase(null, s);
+  public void exportDatabase(final String s) {
+    mBuilder.setContentTitle(mContext.getString(R.string.exportdb_message));
+    boolean success = copyDatabase(null, s);
+    if (success) toast(mContext.getString(R.string.exportdb_success), s);
+    else toast(mContext.getString(R.string.exportdb_failure), null);
   }
 }
 

@@ -58,7 +58,6 @@ public class Dictionary {
   }
 
   public void init(Context context) {
-    mHelper.close();
     mDatabase = mHelper.getReadableDatabase();
     initSchema();
   }
