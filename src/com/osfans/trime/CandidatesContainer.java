@@ -19,7 +19,7 @@ package com.osfans.trime;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.database.Cursor;
 
@@ -35,8 +35,8 @@ public class CandidatesContainer extends LinearLayout {
   private static final int ARROW_ALPHA_DISABLED = 0x40;
 
   private CandidateView candidateView;
-  private ImageButton leftArrow;
-  private ImageButton rightArrow;
+  private Button leftArrow;
+  private Button rightArrow;
   private Cursor cursor;
   private boolean highlightDefault;
   private int currentWordCount;
@@ -53,14 +53,14 @@ public class CandidatesContainer extends LinearLayout {
 
     candidateView = (CandidateView) findViewById(R.id.candidate_view);
 
-    leftArrow = (ImageButton) findViewById(R.id.arrow_left);
+    leftArrow = (Button) findViewById(R.id.arrow_left);
     leftArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         movePage(-1);
       }
     });
 
-    rightArrow = (ImageButton) findViewById(R.id.arrow_right);
+    rightArrow = (Button) findViewById(R.id.arrow_right);
     rightArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         movePage(1);
@@ -153,9 +153,9 @@ public class CandidatesContainer extends LinearLayout {
     return ret;
   }
 
-  private void enableArrow(ImageButton arrow, boolean enabled) {
+  private void enableArrow(Button arrow, boolean enabled) {
     arrow.setEnabled(enabled);
-    arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
+    //arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
   }
 
 }

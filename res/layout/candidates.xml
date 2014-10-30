@@ -26,15 +26,15 @@
         android:background="@drawable/candidates_container_bg"
         >
 
-    <ImageButton
+    <Button
         android:id="@+id/arrow_left"
         android:background="@drawable/arrow_bg"
-        android:src="@drawable/arrow_left"
+        android:text="◀"
+        android:textSize="33sp"
         android:layout_width="33dp"
         android:layout_height="fill_parent"
         android:clickable="true"
         />
-
     <com.osfans.trime.CandidateView
         android:id="@+id/candidate_view"
         android:layout_width="fill_parent"
@@ -42,10 +42,11 @@
         android:layout_weight="1"
         />
 
-    <ImageButton
+    <Button
         android:id="@+id/arrow_right"
         android:background="@drawable/arrow_bg"
-        android:src="@drawable/arrow_right"
+        android:text="▶"
+        android:textSize="33sp"
         android:layout_width="33dp"
         android:layout_height="fill_parent"
         android:clickable="true"
