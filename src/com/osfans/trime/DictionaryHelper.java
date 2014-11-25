@@ -27,6 +27,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.text.format.Time;
 import android.util.Log;
 
+import android.content.Intent;
+import android.app.PendingIntent;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.support.v4.app.NotificationCompat;
@@ -48,6 +50,7 @@ public class DictionaryHelper extends SQLiteOpenHelper {
 
   NotificationManager mNotifyManager;
   NotificationCompat.Builder mBuilder;
+  PendingIntent pendingIntent;
   int notify_id = 1;
 
   DictionaryHelper(Context context) {
@@ -67,9 +70,13 @@ public class DictionaryHelper extends SQLiteOpenHelper {
   }
 
   private void initProgress() {
+    pendingIntent = PendingIntent.getActivity(
+      mContext, 0, new Intent(),
+      Intent.FLAG_ACTIVITY_NEW_TASK);
     mNotifyManager = (NotificationManager) mContext.getSystemService(mContext.NOTIFICATION_SERVICE);
-    mBuilder = new NotificationCompat.Builder(mContext);
-    mBuilder.setSmallIcon(R.drawable.smallicon);
+    mBuilder = new NotificationCompat.Builder(mContext)
+      .setContentIntent(pendingIntent)
+      .setSmallIcon(R.drawable.smallicon);
   }
 
   private void loadAssetsDB() {
