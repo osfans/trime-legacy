@@ -78,6 +78,7 @@ public class Keyboard {
     public static final int KEYCODE_DONE = -4;
     public static final int KEYCODE_DELETE = -5;
     public static final int KEYCODE_ALT = -6;
+    public static final int KEYCODE_CLEAR = -7;
 
     public static final int KEYCODE_OPTIONS = -10;
     public static final int KEYCODE_SCHEMA_OPTIONS = -11;
@@ -906,6 +907,9 @@ public class Keyboard {
         key.codes = new int[] {KEYCODE_DELETE};
         if (key.label==null) key.label = "⌫";
         key.repeatable = true;
+      } else if(s.contentEquals("<clear>")){
+        key.codes = new int[] {KEYCODE_CLEAR};
+        if (key.label==null) key.label = "⎚";
       } else if(s.contentEquals("<enter>")){
         key.codes = new int[] {'\n'};
         key.text = "\n";

@@ -337,7 +337,8 @@ public class TRIME extends InputMethodService implements
     }
     if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleEnter(primaryCode) || handleSpace(primaryCode) || handleSelect(primaryCode)
-        || handleDelete(primaryCode) || handleReverse(primaryCode) || handleComposing(primaryCode)) {
+        || handleClear(primaryCode) || handleDelete(primaryCode)
+        || handleReverse(primaryCode) || handleComposing(primaryCode)) {
       return;
     }
     handleKey(primaryCode);
@@ -532,6 +533,15 @@ public class TRIME extends InputMethodService implements
 
   private boolean handleCapsLock(int keyCode) {
     return (keyCode == Keyboard.KEYCODE_SHIFT) && inputView.setShifted(!inputView.isShifted());
+  }
+
+  private boolean handleClear(int keyCode) {
+    if (keyCode == Keyboard.KEYCODE_CLEAR) {
+      clearComposingText();
+      setCandidates(null, true);
+      return true;
+    }
+    return false;
   }
 
   private boolean handleEnter(int keyCode) {
