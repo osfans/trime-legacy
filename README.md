@@ -20,9 +20,10 @@
 - 國際音標同音字表
 - 支持unicode ext-A/B/C/D大字庫方言正字
 
-## 使用自定義方案
+## 自定方案
 - 參考[碼表格式說明](https://github.com/osfans/trime-tool/blob/master/data/README.md)，編寫自定義方案
-- 使用[trime-tool]生成trime.db，放到assests目錄下，重新編譯生成新apk。
+- 使用[trime-tool]生成trime.db，放到assests目錄下，重新編譯生成新apk
+- 使用[Apktool http://ibotpeaches.github.io/Apktool/]解包替換trime.db，並打包成新apk
 - 從設置中導入trime.db
 
 ## 已有功能
@@ -35,8 +36,8 @@
 - 輸出拼音：啓用時，自動在輸出的漢字後加括號和注音。
 - 反查字音：長按逗號，查詢光標處漢字讀音。
 
-## [將有功能](https://github.com/osfans/trime/issues?q=is%3Aopen+is%3Aissue+label%3A%E5%8A%9F%E8%83%BD)
-
+## 將有功能
+- 查看或建議新功能(https://github.com/osfans/trime/issues?q=is%3Aopen+is%3Aissue+label%3A%E5%8A%9F%E8%83%BD)
 
 [trime-tool]: https://github.com/osfans/trime-tool/
 [opencc]: https://github.com/BYVoid/OpenCC
