@@ -35,10 +35,8 @@
 - 輸出拼音：啓用時，自動在輸出的漢字後加括號和注音。
 - 反查字音：長按逗號，查詢光標處漢字讀音。
 
-## 將有功能
-- 詞頻調整
-- 自動造詞
-- 顯示漢字備註信息：候選或反查時顯示，當字典用
+## [將有功能](https://github.com/osfans/trime/issues?q=is%3Aopen+is%3Aissue+label%3A%E5%8A%9F%E8%83%BD)
+
 
 [trime-tool]: https://github.com/osfans/trime-tool/
 [opencc]: https://github.com/BYVoid/OpenCC
