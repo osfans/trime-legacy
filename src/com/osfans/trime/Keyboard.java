@@ -862,9 +862,9 @@ public class Keyboard {
       int gap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
       if (gap == 0) gap = defaultHGap;
       int w = (Integer)getValue(mk, "width", 0) * mDisplayWidth / 100;
-      if (w == 0) w = defaultWidth;
+      if (w == 0 && mk.containsKey("text")) w = defaultWidth;
       if (column >= maxColumns 
-              || x + w + gap > mDisplayWidth) {
+              || x + w > mDisplayWidth) {
           x = 0;
           y += mDefaultVerticalGap + mDefaultHeight;
           column = 0;
