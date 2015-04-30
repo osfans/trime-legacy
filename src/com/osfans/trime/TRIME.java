@@ -265,7 +265,6 @@ public class TRIME extends InputMethodService implements
     private boolean processKey(KeyEvent event) {
         int keyCode = event.getKeyCode();
         int keyChar = 0;
-        CharSequence keyText = "";
         if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
             keyChar = Keyboard.KEYCODE_MODE_NEXT;
             onKey(keyChar, null);
@@ -275,60 +274,20 @@ public class TRIME extends InputMethodService implements
         }
         if (!isChinese()) return false;
 
-        String s = String.valueOf((char)event.getUnicodeChar());
-        if(canCompose && event.hasNoModifiers() && !event.isShiftPressed() && s.length() == 1 && isAlphabet(s)) {
+        char c = (char)event.getUnicodeChar();
+        String s = String.valueOf(c);
+        if(canCompose && event.hasNoModifiers() && s.length() == 1 && isAlphabet(s)) {
             onText(s);
             return true;
         }
-        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
-            keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
-        } else if (!event.isShiftPressed() && keyCode >= KeyEvent.KEYCODE_0
-                && keyCode <= KeyEvent.KEYCODE_9) {
-            keyChar = keyCode - KeyEvent.KEYCODE_0 + '0';
-        } else if (keyCode == KeyEvent.KEYCODE_COMMA) {
-            keyText = event.isShiftPressed() ? "《" : "，";
-        } else if (keyCode == KeyEvent.KEYCODE_PERIOD) {
-            keyText = event.isShiftPressed() ? "》" : "。";
-        } else if (keyCode == KeyEvent.KEYCODE_SEMICOLON) {
-            keyText = event.isShiftPressed() ? "：" : "；";
-        } else if (keyCode == KeyEvent.KEYCODE_SLASH) {
-            keyText = event.isShiftPressed() ? "？" : "、";
-        } else if (keyCode == KeyEvent.KEYCODE_BACKSLASH) {
-            keyText = "、";
-        } else if (keyCode == KeyEvent.KEYCODE_MINUS && event.isShiftPressed()) {
-            keyText = "——";
-        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE && !event.isShiftPressed()) {
-            keyText = isLeftApo ? "‘" : "’";
-            isLeftApo = !isLeftApo;
-        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE && event.isShiftPressed()) {
-            keyText = isLeftQuote ? "“" : "”";
-            isLeftQuote = !isLeftQuote;
-        } else if (keyCode == KeyEvent.KEYCODE_1 && event.isShiftPressed()) {
-            keyText = "！";
-        } else if (keyCode == KeyEvent.KEYCODE_4 && event.isShiftPressed()) {
-            keyText =  "￥";
-        } else if (keyCode == KeyEvent.KEYCODE_6 && event.isShiftPressed()) {
-            keyText = "……";
-        } else if (keyCode == KeyEvent.KEYCODE_9 && event.isShiftPressed()) {
-            keyText = "（";
-        } else if (keyCode == KeyEvent.KEYCODE_0 && event.isShiftPressed()) {
-            keyText = "）";
-        } else if (keyCode == KeyEvent.KEYCODE_SPACE) {
-            keyChar = ' ';
-        } else if (keyCode == KeyEvent.KEYCODE_APOSTROPHE) {
-            keyChar = '\'';
-        } else if (keyCode == KeyEvent.KEYCODE_DEL) {
+
+        if (keyCode == KeyEvent.KEYCODE_DEL) {
             keyChar = Keyboard.KEYCODE_DELETE;
-        } else if (keyCode == KeyEvent.KEYCODE_ENTER) {
-            keyChar = '\n';
-        } else if (keyCode == KeyEvent.KEYCODE_GRAVE) {
-            keyChar = '`';
+        } else if (s.length() == 1) {
+            keyChar = (int)c;
         }
-        if (keyText.length() > 0) {
-            if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
-            commitText(keyText);
-            return true;
-        } else if (0 != keyChar) {
+
+        if (0 != keyChar) {
             onKey(keyChar, null);
             return true;
         }
