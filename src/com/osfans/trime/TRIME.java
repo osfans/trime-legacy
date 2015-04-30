@@ -19,7 +19,7 @@ package com.osfans.trime;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
-//import android.util.Log;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -274,6 +274,12 @@ public class TRIME extends InputMethodService implements
             return false;
         }
         if (!isChinese()) return false;
+
+        String s = String.valueOf((char)event.getUnicodeChar());
+        if(canCompose && event.hasNoModifiers() && !event.isShiftPressed() && s.length() == 1 && isAlphabet(s)) {
+            onText(s);
+            return true;
+        }
         if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
             keyChar = keyCode - KeyEvent.KEYCODE_A + 'a';
         } else if (!event.isShiftPressed() && keyCode >= KeyEvent.KEYCODE_0
