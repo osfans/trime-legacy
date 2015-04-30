@@ -245,7 +245,7 @@ public class CandidateView extends View {
   private int getCandidateIndex(int x, int y) {
     Rect r = new Rect();
     for (int i = 0; i < MAX_CANDIDATE_COUNT; i++) {
-      if (candidateRect[i] != null) {
+      if (candidates!= null && candidateRect[i] != null) {
         // Enlarge the rectangle to be more responsive to user clicks.
         r.set(candidateRect[i]);
         r.inset(0, CANDIDATE_TOUCH_OFFSET);
