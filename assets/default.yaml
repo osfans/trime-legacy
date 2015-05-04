@@ -188,7 +188,7 @@ trime:
     - {symbol: '"', text: j}
     - {symbol: '：', text: k}
     - {symbol: '；', text: l}
-    - {text: <shift>, width: 12}
+    - {text: <shift>}
     - {text: z}
     - {text: x}
     - {text: c}
@@ -196,13 +196,13 @@ trime:
     - {symbol: '’',text: b}
     - {symbol: '“', text: n}
     - {symbol: '”', text: m}
-    - {text: <delete>, width: 18}
-    - {label: "中", switch: 1, text: <switch>, width: 12}
-    - {label: '123', switch: 2, text: <switch>, symbol: '...', symbolCode: -11, width: 12}
-    - {symbol: '、', text: '，', width: 15}
-    - {text: <space>, width: 22}
-    - {symbol: '？', text: '。', width: 15}
-    - {text: <enter>, width: 24}
+    - {text: <delete>, width: 20}
+    - {label: "中", switch: 1, text: <switch>}
+    - {label: '123', switch: 2, text: <switch>, symbol: '...', symbolCode: -11}
+    - {symbol: '、', text: '，'}
+    - {text: <space>, width: 40}
+    - {symbol: '？', text: '。'}
+    - {text: <enter>, width: 20, symbol: '反查', symbolCode: -12}
   - mode: 1
     keys:
     - {symbol: '!', text: '1'}
@@ -235,7 +235,7 @@ trime:
     - {symbol: '"', text: j}
     - {symbol: ':', text: k}
     - {symbol: ';', text: l}
-    - {text: <shift>, width: 12}
+    - {text: <shift>}
     - {text: z}
     - {text: x}
     - {text: c}
@@ -243,33 +243,38 @@ trime:
     - {text: b}
     - {text: n}
     - {text: m}
-    - {text: <delete>, width: 18}
-    - {label: "英", switch: 0, text: <switch>, width: 12}
-    - {label: '123', switch: 2, text: <switch>, width: 12}
-    - {text: ',', width: 15}
-    - {text: <space>, width: 22}
-    - {symbol: '?', text: '.', width: 15}
-    - {text: <enter>, width: 24}
+    - {text: <delete>, width: 20}
+    - {label: "英", switch: 0, text: <switch>}
+    - {label: '123', switch: 2, text: <switch>}
+    - {text: ','}
+    - {text: <space>, width: 40}
+    - {symbol: '?', text: '.'}
+    - {text: <enter>, width: 20}
   - mode: 2
-    width: 22
+    width: 20
     keys:
-    - {text: '+', width: 17}
+    - {text: '+'}
     - {text: '1'}
     - {text: '2'}
     - {text: '3'}
-    - {text: '*', width: 17}
-    - {text: '-', width: 17}
+    - {text: '#'}
+    - {text: '-'}
     - {text: '4'}
     - {text: '5'}
     - {text: '6'}
-    - {text: '/', width: 17}
-    - {text: '.', width: 17}
+    - {text: '%'}
+    - {text: '*'}
     - {text: '7'}
     - {text: '8'}
     - {text: '9'}
-    - {text: <delete>, width: 17}
-    - {text: <switch>, switch: 0, width: 17}
-    - {text: <space>}
+    - {text: ':'}
+    - {text: '/'}
+    - {text: '±'}
     - {text: '0'}
-    - {text: '#'}
-    - {text: <enter>, width: 17}
+    - {text: '.'}
+    - {text: ','}
+    - {text: '='}
+    - {text: <switch_last>}
+    - {text: <space>}
+    - {text: <delete>}
+    - {text: <enter>}
