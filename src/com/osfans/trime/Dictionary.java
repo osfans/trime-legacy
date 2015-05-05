@@ -391,32 +391,88 @@ public class Dictionary {
         return cursor;
   }
 
-  public String toSC(String text) {
-    if (!isSC()) return text;
-    Cursor cursor =  query("select s from opencc where t match ?", new String[]{text});
-    if (cursor != null) {
-      String s = cursor.getString(0).split(" ")[0];
-      cursor.close();
-      return s;
-    }
-    StringBuilder s = new StringBuilder();
-    for (String i: text.split("\\B")) {
-      cursor = query("select s from opencc where t match ?", new String[]{i});
-      if (cursor == null) s.append(i);
-      else {
-        s.append(cursor.getString(0).split(" ")[0]);
+  private String mm(String text, String rule) {
+    Cursor cursor;
+    int l = text.length();
+    int start = 0, end = l;
+    StringBuilder t = new StringBuilder();
+    String s;
+
+    while (start < end) {
+      s = text.substring(start, end);
+      cursor =  query("select t from opencc where opencc match ?", new String[]{String.format("s:%s r:%s", s, rule)});
+      if (cursor == null) {
+          if (start + 1 == end) {
+            t.append(s);
+            start++;
+            end = l;
+          } else end--;
+      } else {
+        t.append(cursor.getString(0).split(" ")[0]);
         cursor.close();
+        start = end;
+        end = l;
       }
     }
-    return s.toString();
+    return t.toString();
+  }
+
+  public String openCC(String text) {
+    String st = getOpenCC();
+    if (st.isEmpty()) return text;
+
+    String t;
+    switch (st) {
+      case "s2t":
+          t = mm(text, "s2t");
+          break;
+      case "s2tw":
+          t = mm(text, "s2t");
+          t = mm(t, "t2tw");
+          break;
+      case "s2twp":
+          t = mm(text, "s2t");
+          t = mm(t, "t2twp");
+          t = mm(t, "t2tw");
+          break;
+      case "s2hk":
+          t = mm(text, "s2t");
+          t = mm(t, "t2hk");
+          break;
+      case "s2jp":
+          t = mm(text, "s2t");
+          t = mm(t, "t2jp");
+          break;
+      case "t2s":
+          t = mm(text, "t2s");
+          break;
+      case "tw2s":
+          t = mm(text, "tw2t");
+          t = mm(t, "t2s");
+          break;
+      case "tw2sp":
+          t = mm(text, "twp2t");
+          t = mm(t, "tw2t");
+          t = mm(t, "t2s");
+          break;
+      case "hk2s":
+          t = mm(text, "hk2t");
+          t = mm(t, "t2s");
+          break;
+      default:
+        t = text;
+        break;
+    }
+
+    return t;
   }
 
   public boolean isCommitPy() {
     return preferences.getBoolean("pref_commit_py", false);
   }
 
-  public boolean isSC() {
-    return preferences.getBoolean("pref_sc", false);
+  public String getOpenCC() {
+    return preferences.getString("pref_opencc", "");
   }
 
   private boolean isFullPy() {

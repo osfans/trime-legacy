@@ -41,7 +41,18 @@
     <string name="pref_full_py_summary">禁用漸進提示，出字慢時建議开啟</string>
     <string name="pref_single_title">單字模式</string>
     <string name="pref_association_title">詞語聯想</string>
-    <string name="pref_sc_title">輸出簡體</string>
+    <string name="pref_opencc_title">簡繁轉換</string>
+    <string name="nocc">不轉換</string>
+    <string name="s2t">簡體⇒繁體</string>
+    <string name="s2tw">簡體⇒臺灣正體</string>
+    <string name="s2twp">簡體⇒臺灣詞彙</string>
+    <string name="s2hk">簡體⇒香港繁體</string>
+    <string name="s2jp">簡體⇒日本漢字</string>
+    <string name="t2s">繁體⇒簡體</string>
+    <string name="tw2s">臺灣正體⇒簡體</string>
+    <string name="tw2sp">臺灣詞彙⇒簡體</string>
+    <string name="hk2s">香港繁體⇒簡體</string>
+
     <string name="pref_commit_py_title">輸出編碼</string>
     <string name="pref_commit_py_summary">出字時標出編碼，如：拼音(pin yin)</string>
     <string name="pref_importdb">導入碼表</string>

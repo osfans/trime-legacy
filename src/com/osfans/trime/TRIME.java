@@ -382,7 +382,7 @@ public class TRIME extends InputMethodService implements
   public void onPickCandidate(String candidate) {
     // Commit the picked candidate and suggest its following words.
     String[] s = candidate.split("\t", 2);
-    String sc = dialectDictionary.toSC(s[0]);
+    String sc = dialectDictionary.openCC(s[0]);
     String py = s[1].length() > 0 ? s[1] : composingText.toString();
     commitText(composingText.length() > 0 && dialectDictionary.isCommitPy() ? String.format("%s(%s)", sc, py) : sc);
     setCandidates(dialectDictionary.getAssociation(s[0]), false);

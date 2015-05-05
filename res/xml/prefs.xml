@@ -94,10 +94,12 @@
             android:title="@string/pref_association_title"
             android:persistent="true"/>
 
-        <CheckBoxPreference
-            android:key="pref_sc"
-            android:title="@string/pref_sc_title"
-            android:persistent="true"/>
+        <ListPreference
+            android:key="pref_opencc"
+            android:defaultValue=""
+            android:title="@string/pref_opencc_title"
+            android:entries="@array/pref_opencc_entries"
+            android:entryValues="@array/pref_opencc_values" />
 
         <CheckBoxPreference
             android:key="pref_commit_py"
