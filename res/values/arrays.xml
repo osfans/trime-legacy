@@ -40,15 +40,15 @@
         <item>@string/hk2s</item>
     </string-array>
     <string-array name="pref_opencc_values">
-        <item>nocc</item>
+        <item></item>
         <item>s2t</item>
-        <item>s2tw</item>
-        <item>s2twp</item>
-        <item>s2hk</item>
-        <item>s2jp</item>
+        <item>s2t,t2tw</item>
+        <item>s2t,t2twp,t2tw</item>
+        <item>s2t,t2hk</item>
+        <item>s2t,t2jp</item>
         <item>t2s</item>
-        <item>tw2s</item>
-        <item>tw2sp</item>
-        <item>hk2s</item>
+        <item>tw2t,t2s</item>
+        <item>twp2t,tw2t,t2s</item>
+        <item>hk2t,t2s</item>
     </string-array>
 </resources>

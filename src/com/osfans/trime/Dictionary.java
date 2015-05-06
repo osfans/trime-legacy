@@ -392,6 +392,8 @@ public class Dictionary {
   }
 
   private String mm(String text, String rule) {
+    if (rule.isEmpty()) return text;
+
     Cursor cursor;
     int l = text.length();
     int start = 0, end = l;
@@ -419,52 +421,8 @@ public class Dictionary {
 
   public String openCC(String text) {
     String st = getOpenCC();
-    if (st.isEmpty()) return text;
-
-    String t;
-    switch (st) {
-      case "s2t":
-          t = mm(text, "s2t");
-          break;
-      case "s2tw":
-          t = mm(text, "s2t");
-          t = mm(t, "t2tw");
-          break;
-      case "s2twp":
-          t = mm(text, "s2t");
-          t = mm(t, "t2twp");
-          t = mm(t, "t2tw");
-          break;
-      case "s2hk":
-          t = mm(text, "s2t");
-          t = mm(t, "t2hk");
-          break;
-      case "s2jp":
-          t = mm(text, "s2t");
-          t = mm(t, "t2jp");
-          break;
-      case "t2s":
-          t = mm(text, "t2s");
-          break;
-      case "tw2s":
-          t = mm(text, "tw2t");
-          t = mm(t, "t2s");
-          break;
-      case "tw2sp":
-          t = mm(text, "twp2t");
-          t = mm(t, "tw2t");
-          t = mm(t, "t2s");
-          break;
-      case "hk2s":
-          t = mm(text, "hk2t");
-          t = mm(t, "t2s");
-          break;
-      default:
-        t = text;
-        break;
-    }
-
-    return t;
+    for(String r: st.split(",")) text = mm(text, r);
+    return text;
   }
 
   public boolean isCommitPy() {
