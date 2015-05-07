@@ -50,6 +50,7 @@ public class Dictionary {
   private String[][] preeditRule, spellRule, lookupRule, commentRule, fuzzyRule;
   private String[]  namedFuzzyRules;
   private boolean[] fuzzyRulesPref;
+  private String half;
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -246,6 +247,31 @@ public class Dictionary {
     return (ret != null) ? ret : o;
   }
 
+  private void initHalf(){
+      String a = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      StringBuilder s = new StringBuilder();
+      for (char i: alphabet.toCharArray()) {
+        if (a.indexOf(i) >=0) s.append(i);
+      }
+      half = s.toString();
+  }
+
+  private String h2f(String s){
+    if (half.isEmpty()) return s;
+    for (int i: half.toCharArray()) {
+      s = s.replace((char)i, (char)(i - 0x20 + 0xff00));
+    }
+    return s;
+  }
+
+  private String f2h(String s){
+    if (half.isEmpty()) return s;
+    for (int i: half.toCharArray()) {
+      s = s.replace((char)(i - 0x20 + 0xff00), (char)i);
+    }
+    return s;
+  }
+
   private void initSchema() {
     int id = getSchemaId();
     Cursor cursor = query(String.format("select * from schema where _id = %d", id), null);
@@ -269,6 +295,7 @@ public class Dictionary {
     fuzzyRule = getRule("trime", "fuzzy");
     keyboard = (Object)getValue("trime", "keyboard");
     initNamedFuzzyRule();
+    initHalf();
   }
 
   public Object getKeyboards() {
@@ -300,6 +327,7 @@ public class Dictionary {
   }
 
   public String comment(String s) {
+    s = f2h(s);
     return translate(s, commentRule);
   }
 
@@ -327,6 +355,7 @@ public class Dictionary {
   public Cursor getWord(CharSequence code) {
     String s = code.toString();
     s = translate(s, lookupRule);
+    s = h2f(s);
     if (fuzzyRule != null) s = fuzzyText(s);
 
     boolean fullPyOn = isFullPy() && s.length() < 3;
