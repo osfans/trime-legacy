@@ -17,7 +17,7 @@
 package com.osfans.trime;
 
 import android.content.Context;
-//import android.util.Log;
+import android.util.Log;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.database.Cursor;
@@ -51,6 +51,7 @@ public class Dictionary {
   private String[]  namedFuzzyRules;
   private boolean[] fuzzyRulesPref;
   private String half;
+  private Integer max_code_length;
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -82,15 +83,20 @@ public class Dictionary {
     return true;
   }
 
-  private boolean isSyllable(String s) {
+  private boolean isMaxSyllable(String s){
+    if (max_code_length != null && max_code_length < s.length()) return false;
     if (syllableP == null) return true;
-    if (!hasDelimiter()) return syllableP.matcher(s).matches();
-    String[] ss = s.split(getDelimiter());
-    for (String i: ss) if(!syllableP.matcher(i).matches()) return false;
+    return syllableP.matcher(s).matches();
+  }
+
+  private boolean isSyllable(String s) {
+    if (!hasDelimiter()) return isMaxSyllable(s);
+    for (String i: s.split(getDelimiter())) if(!isMaxSyllable(s)) return false;
     return true;
   }
 
   public boolean isAutoSelect(CharSequence s) {
+    if (max_code_length != null && max_code_length == s.length()) return true;
     return (autoSelectSyllableP != null) && autoSelectSyllableP.matcher(s).matches();
   }
 
@@ -282,6 +288,8 @@ public class Dictionary {
     delimiter = (String)getValue("speller", "delimiter");
     alphabet = (String)getValue("speller", "alphabet");
     initials = (String)getValue("speller", "initials");
+    max_code_length = (Integer)getValue("speller", "max_code_length");
+
     preeditRule = getRule("translator", "preedit_format");
     commentRule = getRule("translator", "comment_format");
     table = (String)getValue("translator", "dictionary");

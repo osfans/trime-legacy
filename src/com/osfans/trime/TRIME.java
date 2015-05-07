@@ -333,7 +333,7 @@ public class TRIME extends InputMethodService implements
     } else if (isAlphabet(text)) {
         String r = composingText.toString();
         String s = dialectDictionary.correctSpell(r, text);
-        if (s == null && !dialectDictionary.hasDelimiter()) {
+        if (s == null && dialectDictionary.isAutoSelect(composingText)) {
             if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
             s = dialectDictionary.correctSpell("", text);
         }
