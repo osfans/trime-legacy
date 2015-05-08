@@ -306,7 +306,8 @@ public class Dictionary {
 
   private void initSchema() {
     int id = getSchemaId();
-    Cursor cursor = query(String.format("select * from schema where _id = %d", id), null);
+    String sql = "SELECT * FROM schema WHERE _id = %d OR _id = 0 ORDER BY _id DESC";
+    Cursor cursor = query(String.format(sql, id), null);
     if (cursor == null) return;
     mSchema = (Map<String,Object>)new Yaml().load(cursor.getString(cursor.getColumnIndex("full")));
     cursor.close();
