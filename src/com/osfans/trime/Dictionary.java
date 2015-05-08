@@ -46,7 +46,6 @@ public class Dictionary {
   private String table;
   private String delimiter, alphabet, initials;
 
-  private Pattern syllableP;
   private String[][] preeditRule, spellRule, lookupRule, commentRule, fuzzyRule;
   private String[]  namedFuzzyRules;
   private boolean[] fuzzyRulesPref;
@@ -85,15 +84,12 @@ public class Dictionary {
     return true;
   }
 
-  private boolean isMaxSyllable(String s){
-    if (max_code_length_ > 0 && max_code_length_ < s.length()) return false;
-    if (syllableP == null) return true;
-    return syllableP.matcher(s).matches();
-  }
-
   private boolean isSyllable(String s) {
-    if (!hasDelimiter()) return isMaxSyllable(s);
-    for (String i: s.split(getDelimiter())) if(!isMaxSyllable(s)) return false;
+    String sql = String.format("select py from %s where docid = 1 and hz match ?", table);
+    if(hasDelimiter()) s = s.replace(getDelimiter(),"* ");
+    Cursor cursor = query(sql, new String[]{s + "*"});
+    if (cursor == null) return false;
+    cursor.close();
     return true;
   }
 
@@ -323,7 +319,6 @@ public class Dictionary {
     commentRule = getRule("translator", "comment_format");
     table = GetString("translator", "dictionary");
 
-    syllableP = GetPattern("trime", "syllable");
     spellRule = getRule("trime", "spell");
     lookupRule = getRule("trime", "lookup");
     fuzzyRule = getRule("trime", "fuzzy");
@@ -357,7 +352,7 @@ public class Dictionary {
   }
 
   public String preedit(String s) {
-    return translate(s, preeditRule);
+    return translate(s, preeditRule).replace("\t", "'");
   }
 
   public String comment(String s) {
@@ -366,7 +361,7 @@ public class Dictionary {
   }
 
   public String[] getComment(CharSequence code) {
-    String sql = String.format("select py from %s where hz match ?", table);
+    String sql = String.format("select py from %s where docid > 1 and hz match ?", table);
     Cursor cursor = query(sql, new String[]{code.toString()});
     if (cursor == null) return null;
     int n = cursor.getCount();
@@ -390,16 +385,18 @@ public class Dictionary {
     String s = code.toString();
     s = translate(s, lookupRule);
     s = h2f(s);
+    Log.e("kyle", "query="+s);
     if (fuzzyRule != null) s = fuzzyText(s);
 
     boolean fullPyOn = isFullPy() && s.length() < 3;
-    if (hasDelimiter() && s.contains(getDelimiter())) return getPhrase(s.replace(getDelimiter(), "'"));
+    if (hasDelimiter() && s.contains(getDelimiter())) return getPhrase(s);
 
     Cursor cursor = null;
     String sql;
     //Log.e("kyle", "word start");
-    sql = String.format("select %s from %s where py match ? and not glob('* *', py) %s", getQueryCol(), table, getSingle());
+    sql = String.format("select %s from %s where docid > 1 and py match ? and not glob('* *', py) %s", getQueryCol(), table, getSingle());
     cursor = query(sql, new String[]{s});
+
     if (cursor == null && !fullPyOn) {
       s = s.replace(" OR", "* OR") + "*";
       cursor = query(sql + " limit 100", new String[]{s});
@@ -410,15 +407,15 @@ public class Dictionary {
 
   private Cursor getPhrase(CharSequence code) {
     boolean fullPyOn = isFullPy() && code.length() < 6;
-    String sql = String.format("select %s from %s where py match ? limit 100", getQueryCol(), table);
-    String s = String.format("\"^%s\"",code.toString().replace(" OR ", "\" OR \"^").replace("'", " "));
+    String sql = String.format("select %s from %s where docid > 1 and py match ? limit 100", getQueryCol(), table);
+    String s = String.format("\"^%s\"",code.toString().replace(" OR ", "\" OR \"^").replace(getDelimiter(), " "));
     //Log.e("kyle", "phrase start");
     Cursor cursor = query(sql, new String[]{s});
     if (cursor != null || fullPyOn) return cursor;
-    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace("'", " "));
+    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace(getDelimiter(), " "));
     cursor = query(sql, new String[]{s});
     if (cursor != null) return cursor;
-    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace("'", "* "));
+    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace(getDelimiter(), "* "));
     cursor = query(sql, new String[]{s});
     //Log.e("kyle", "phrase end");
     return cursor;
@@ -428,7 +425,7 @@ public class Dictionary {
     if (!isAssociation()) return null;
     String s = code.toString();
     int len = s.length();
-    String sqlFormat = "select distinct substr(hz,%d) from %s where hz match '^%s*' and length(hz) > %d limit 100";
+    String sqlFormat = "select distinct substr(hz,%d) from %s where docid > 1 and hz match '^%s*' and length(hz) > %d limit 100";
     return query(String.format(sqlFormat, len + 1, table, s, len), null);
   }
   
@@ -509,7 +506,7 @@ public class Dictionary {
   }
 
   public String getDelimiter() {
-    return hasDelimiter() ? delimiter.substring(0, 1) : "";
+    return hasDelimiter() ? "\t" : "";
   }
 
   public boolean isKeyboardPreview() {
