@@ -46,12 +46,14 @@ public class Dictionary {
   private String table;
   private String delimiter, alphabet, initials;
 
-  private Pattern syllableP, autoSelectSyllableP;
+  private Pattern syllableP;
   private String[][] preeditRule, spellRule, lookupRule, commentRule, fuzzyRule;
   private String[]  namedFuzzyRules;
   private boolean[] fuzzyRulesPref;
   private String half;
-  private Integer max_code_length;
+  private int max_code_length_;
+  private boolean auto_select_;
+  private Pattern auto_select_pattern_;
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -84,7 +86,7 @@ public class Dictionary {
   }
 
   private boolean isMaxSyllable(String s){
-    if (max_code_length != null && max_code_length < s.length()) return false;
+    if (max_code_length_ > 0 && max_code_length_ < s.length()) return false;
     if (syllableP == null) return true;
     return syllableP.matcher(s).matches();
   }
@@ -96,8 +98,8 @@ public class Dictionary {
   }
 
   public boolean isAutoSelect(CharSequence s) {
-    if (max_code_length != null && max_code_length == s.length()) return true;
-    return (autoSelectSyllableP != null) && autoSelectSyllableP.matcher(s).matches();
+    if (max_code_length_ > 0 && max_code_length_ == s.length()) return true; //最大碼長
+    return auto_select_ && (auto_select_pattern_ != null) && auto_select_pattern_.matcher(s).matches(); //正則上屏
   }
 
   public String correctSpell(String r, CharSequence text) {
@@ -253,6 +255,30 @@ public class Dictionary {
     return (ret != null) ? ret : o;
   }
 
+  private boolean GetBool(String k1, String k2) {
+    Object v = getValue(k1, k2);
+    if (v == null) return false;
+    return (Boolean) v;
+  }
+
+  private int GetInt(String k1, String k2) {
+    Object v = getValue(k1, k2);
+    if (v == null) return 0;
+    return (Integer) v;
+  }
+
+  private String GetString(String k1, String k2) {
+    Object v = getValue(k1, k2);
+    if (v == null) return null;
+    return (String) v;
+  }
+
+  private Pattern GetPattern(String k1, String k2) {
+    Object v = getValue(k1, k2);
+    if (v == null) return null;
+    return Pattern.compile((String)v);
+  }
+
   private void initHalf(){
       String a = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       StringBuilder s = new StringBuilder();
@@ -285,23 +311,22 @@ public class Dictionary {
     mSchema = (Map<String,Object>)new Yaml().load(cursor.getString(cursor.getColumnIndex("full")));
     cursor.close();
 
-    delimiter = (String)getValue("speller", "delimiter");
-    alphabet = (String)getValue("speller", "alphabet");
-    initials = (String)getValue("speller", "initials");
-    max_code_length = (Integer)getValue("speller", "max_code_length");
+    delimiter = GetString("speller", "delimiter");
+    alphabet = GetString("speller", "alphabet");
+    initials = GetString("speller", "initials");
+    max_code_length_ = GetInt("speller", "max_code_length");
+    auto_select_ = GetBool("speller", "auto_select");
+    auto_select_pattern_ = GetPattern("speller", "auto_select_pattern");
 
     preeditRule = getRule("translator", "preedit_format");
     commentRule = getRule("translator", "comment_format");
-    table = (String)getValue("translator", "dictionary");
+    table = GetString("translator", "dictionary");
 
-    String a = (String)getValue("trime", "syllable");
-    syllableP = (a!=null) ? Pattern.compile(a) : null;
-    a = (String) getValue("trime", "auto_select_syllable");
-    autoSelectSyllableP = (a!=null) ? Pattern.compile(a) : null;
+    syllableP = GetPattern("trime", "syllable");
     spellRule = getRule("trime", "spell");
     lookupRule = getRule("trime", "lookup");
     fuzzyRule = getRule("trime", "fuzzy");
-    keyboard = (Object)getValue("trime", "keyboard");
+    keyboard = getValue("trime", "keyboard");
     initNamedFuzzyRule();
     initHalf();
   }
