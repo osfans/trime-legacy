@@ -21,7 +21,7 @@
 - 支持unicode ext-A/B/C/D大字庫方言正字
 
 ## 自定方案
-- 參考[碼表格式說明](https://github.com/osfans/trime-tool/blob/master/data/README.md)，編寫自定義方案
+- 參考[碼表格式說明](https://github.com/rime/home/wiki/RimeWithSchemata#碼表與詞典)，編寫自定義方案
 - 使用[trime-tool]生成trime.db，放到assests目錄下，重新編譯生成新apk
 - 使用[Apktool](http://ibotpeaches.github.io/Apktool/)解包替換trime.db，並打包成新apk
 - 從設置中導入trime.db
@@ -41,6 +41,6 @@
 
 [trime-tool]: https://github.com/osfans/trime-tool/
 [opencc]: https://github.com/BYVoid/OpenCC
-[Rime]: https://code.google.com/p/rimeime/
+[Rime]: http://rime.im/
 [注音倉頡輸入法]: https://code.google.com/p/android-traditional-chinese-ime/
 [泰如拼音]: http://tieba.baidu.com/f?kw=%E6%B3%B0%E5%A6%82
