@@ -43,16 +43,20 @@ public class Dictionary {
 
   private Map<String,Object> mSchema, mDefaultSchema;
   private Object keyboard;
-  private String table;
+  private String table, schema_name;
   private String delimiter, alphabet, initials;
 
-  private String[][] preeditRule, spellRule, lookupRule, commentRule, fuzzyRule;
-  private String[]  namedFuzzyRules;
-  private boolean[] fuzzyRulesPref;
+  private String[][] preeditRule, commentRule;
   private String half;
   private int max_code_length_;
   private boolean auto_select_;
   private Pattern auto_select_pattern_;
+  private boolean has_phrase_gap, has_prism;
+  private String segment_sql, px_sql;
+  private String hz_sql, py_sql;
+  private String opencc_sql = "select t from opencc where opencc match ?";
+  private String schema_sql = "select * from schema";
+  private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,20";
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -84,75 +88,33 @@ public class Dictionary {
     return true;
   }
 
-  private boolean isSyllable(String s) {
-    String sql = String.format("select py from %s where docid = 1 and hz match ?", table);
-    if(hasDelimiter()) s = s.replace(getDelimiter(),"* ");
-    Cursor cursor = query(sql, new String[]{s + "*"});
-    if (cursor == null) return false;
-    cursor.close();
-    return true;
-  }
-
   public boolean isAutoSelect(CharSequence s) {
     if (max_code_length_ > 0 && max_code_length_ == s.length()) return true; //最大碼長
     return auto_select_ && (auto_select_pattern_ != null) && auto_select_pattern_.matcher(s).matches(); //正則上屏
   }
 
-  public String correctSpell(String r, CharSequence text) {
-    String s = translate(r + text, spellRule);
+  private boolean isSyllable(String s) {
+    Cursor cursor;
+    s = s.trim();
+    if (hasDelimiter()) {
+      s = s.replace(getDelimiter(), "*"+getDelimiter()) + "*";
+      cursor = query(segment_sql, new String[]{s});
+    } else {
+      cursor = query(segment_sql, new String[]{s + "*"});
+    }
+    if (cursor == null) return false;
+    cursor.close();
+    return true;
+  }
+
+  public String segment(String r, CharSequence text) {
+    String s = r + text;
     if (isSyllable(s)) return s;
     if (hasDelimiter()) {
-      s = translate(r + getDelimiter() + text, spellRule);
+      s = r + getDelimiter() + text;
       if (isSyllable(s)) return s;
     }
     return null;
-  }
-
-  private String fuzzyText(String s) {
-    if (fuzzyRule == null) return s;
-    int n = fuzzyRule.length;
-    if (n == 0) return s;
-    StringBuilder r = new StringBuilder(s);
-    ArrayList<Integer> b = new ArrayList<Integer>();
-    ArrayList<Integer> bn = new ArrayList<Integer>();
-    ArrayList<String> fuzzyList =  new ArrayList<String>();
-    if (fuzzyRulesPref != null) {
-      for (int i = 0; i < fuzzyRulesPref.length; i++) {
-        if (fuzzyRulesPref[i]) fuzzyList.add(namedFuzzyRules[i]);
-      }
-    }
-    for (int j=0; j<n; j++){
-      String[] rule = fuzzyRule[j];
-      if (rule[0].length() == 0 || fuzzyList.contains(rule[0])) {
-        Matcher m = Pattern.compile(rule[1]).matcher(s);
-        while(m.find()) {
-          b.add(j);
-          bn.add(m.start());
-        }
-      }
-    }
-    int cnt = b.size();
-    if (cnt == 0) return s;
-    String p = s;
-    for (int i = 1;  i < (1 << cnt); i++) {
-      p = s;
-      for (int j = 0; j < cnt; j++) {
-        int bj = b.get(j);
-        int bnj = bn.get(j);
-        String[] rule = fuzzyRule[bj];
-        if ((i & (1 << j)) != 0) {
-          StringBuffer sb = new StringBuffer(p.length());
-          Matcher m = Pattern.compile(rule[1]).matcher(p);
-          if (m.find(bnj)) m.appendReplacement(sb, rule[2]);
-          m.appendTail(sb);
-          m.reset();
-          p = sb.toString();
-        }
-      }
-      r.append(" OR ");
-      r.append(p);
-    }
-    return r.toString();
   }
 
   private String translate(String s, String[][] rules) {
@@ -184,47 +146,6 @@ public class Dictionary {
       return rules;
     }
     return null;
-  }
-
-  public void setFuzzyRule( int which, boolean isChecked) {
-    fuzzyRulesPref[which] = isChecked;
-    StringBuilder s = new StringBuilder();
-    for(boolean b: fuzzyRulesPref) s.append( b ? "1" : "0");
-
-    SharedPreferences.Editor edit = preferences.edit();
-    edit.putString(String.format("fuzzy%d", getSchemaId()), s.toString());
-    edit.commit();
-  }
-
-  private void initNamedFuzzyRule() {
-    ArrayList<String> fuzzyList = new ArrayList<String>();
-    if (fuzzyRule != null) {
-      for(String[] i: fuzzyRule) {
-        if(i[0].length() > 0) {
-          if (!fuzzyList.contains(i[0])) fuzzyList.add(i[0]);
-        }
-      }
-    }
-    if (fuzzyList.size()>0) {
-      fuzzyRulesPref =  new boolean[fuzzyList.size()];
-      namedFuzzyRules = new String[fuzzyList.size()];
-      fuzzyList.toArray(namedFuzzyRules);
-      String s = preferences.getString(String.format("fuzzy%d", getSchemaId()), "");
-      if (s.length() > 0) {
-        for(int i = 0; i < s.length(); i++) fuzzyRulesPref[i] = (s.charAt(i) == '1');
-      }
-    } else {
-      namedFuzzyRules = null;
-      fuzzyRulesPref = null;
-    }
-  }
-
-  public String[] getNamedFuzzyRules() {
-    return namedFuzzyRules;
-  }
-
-  public boolean[] getFuzzyRulesPref() {
-    return fuzzyRulesPref;
   }
 
   private Object getValue(String k1) {
@@ -275,16 +196,16 @@ public class Dictionary {
     return Pattern.compile((String)v);
   }
 
-  private void initHalf(){
-      String a = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      StringBuilder s = new StringBuilder();
-      for (char i: alphabet.toCharArray()) {
-        if (a.indexOf(i) >=0) s.append(i);
-      }
-      half = s.toString();
+  private void initHalf() {
+    String a = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    StringBuilder s = new StringBuilder();
+    for (char i: alphabet.toCharArray()) {
+      if (a.indexOf(i) >=0) s.append(i);
+    }
+    half = s.toString();
   }
 
-  private String h2f(String s){
+  private String h2f(String s) {
     if (half.isEmpty()) return s;
     for (int i: half.toCharArray()) {
       s = s.replace((char)i, (char)(i - 0x20 + 0xff00));
@@ -292,7 +213,7 @@ public class Dictionary {
     return s;
   }
 
-  private String f2h(String s){
+  private String f2h(String s) {
     if (half.isEmpty()) return s;
     for (int i: half.toCharArray()) {
       s = s.replace((char)(i - 0x20 + 0xff00), (char)i);
@@ -308,22 +229,37 @@ public class Dictionary {
     mSchema = (Map<String,Object>)new Yaml().load(cursor.getString(cursor.getColumnIndex("full")));
     cursor.close();
 
+    schema_name = GetString("schema", "schema_id");
     delimiter = GetString("speller", "delimiter");
     alphabet = GetString("speller", "alphabet");
     initials = GetString("speller", "initials");
     max_code_length_ = GetInt("speller", "max_code_length");
     auto_select_ = GetBool("speller", "auto_select");
     auto_select_pattern_ = GetPattern("speller", "auto_select_pattern");
+    has_prism = (getValue("speller", "algebra") != null);
 
     preeditRule = getRule("translator", "preedit_format");
     commentRule = getRule("translator", "comment_format");
-    table = GetString("translator", "dictionary");
 
-    spellRule = getRule("trime", "spell");
-    lookupRule = getRule("trime", "lookup");
-    fuzzyRule = getRule("trime", "fuzzy");
+    table = GetString("translator", "dictionary");
+    sql = "SELECT phrase_gap FROM dictionary WHERE name = ?";
+    cursor = query(sql, new String[]{table});
+    if (cursor != null) {
+      has_phrase_gap = (cursor.getInt(0) == 1);
+      cursor.close();
+    }
+
+    if (has_prism) {
+      px_sql = String.format("select py from `%s.prism` where px match ?", schema_name);
+      segment_sql= String.format("select _id from schema where px match ? and schema_id = '%s'", schema_name);
+    } else {
+      segment_sql = String.format("select pya from `%s` where pya match ? limit 0, 1", table);
+    }
+
+    hz_sql = "select %s from `" + table + "` where %s %s limit 0,20";
+    py_sql = String.format("select pya  from `%s` where hz match ? limit 0,20", table);
+
     keyboard = getValue("trime", "keyboard");
-    initNamedFuzzyRule();
     initHalf();
   }
 
@@ -334,7 +270,7 @@ public class Dictionary {
   public String getSchemaTitle() {
     StringBuilder sb = new StringBuilder();
     for(String i: new String[]{"name", "version"}) {
-        sb.append(getDefaultValue("schema", i, "") + " ");
+      sb.append(getDefaultValue("schema", i, "") + " ");
     }
     return sb.toString();
   }
@@ -348,10 +284,11 @@ public class Dictionary {
   }
 
   public Cursor getSchemas() {
-    return query("select * from schema", null);
+    return query(schema_sql, null);
   }
 
   public String preedit(String s) {
+    s = f2h(s);
     return translate(s, preeditRule).replace("\t", "'");
   }
 
@@ -361,8 +298,7 @@ public class Dictionary {
   }
 
   public String[] getComment(CharSequence code) {
-    String sql = String.format("select py from %s where docid > 1 and hz match ?", table);
-    Cursor cursor = query(sql, new String[]{code.toString()});
+    Cursor cursor = query(py_sql, new String[]{code.toString()});
     if (cursor == null) return null;
     int n = cursor.getCount();
     int i = 0;
@@ -374,6 +310,48 @@ public class Dictionary {
     return s;
   }
 
+  private String getWhere(String s, boolean fullPyOn) {
+    s = s.trim();
+    s = h2f(s);
+    boolean is_phrase = hasDelimiter() && s.contains(getDelimiter()) && !isSingle();
+    Cursor cursor;
+    if (is_phrase){
+      StringBuilder sb = new StringBuilder();
+      if (has_prism) {
+        for (String i: s.split(getDelimiter())) {
+          cursor = query(px_sql, new String[]{i});
+          if (cursor != null) {
+            sb.append(cursor.getString(0).replace(" ", fullPyOn ? " OR " : "* OR ") + getDelimiter());
+            cursor.close();
+          } else sb.append(i + getDelimiter());
+        }
+        s = sb.toString().trim();
+        sb.setLength(0);
+        if(!fullPyOn) s += "*";
+      } else if(!fullPyOn) s = s.replace(getDelimiter(), "*"+getDelimiter()) + "*";
+
+      String[] sl = s.split(getDelimiter(), 4);
+      sb.append(String.format("`%s` match '", table));
+      sb.append(" " + sl[0].replaceAll("([^ANDOR \t]+)", "pya:$1"));
+      sb.append(" " + sl[1].replaceAll("([^ANDOR \t]+)", "pyb:$1"));
+      if (sl.length == 2) sb.append("' and pyc == ''");
+      if (sl.length >= 3) sb.append(" " + sl[2].replaceAll("([^ANDOR \t]+)", "pyc:$1"));
+      if (sl.length == 3) sb.append("' and pyz == ''");
+      if (sl.length == 4) sb.append(" " + sl[3].replaceAll("([^ANDOR \t]+)", "pyz:$1") + "'");
+      s = sb.toString();
+    } else {
+      if (has_prism) {
+        cursor = query(px_sql, new String[]{s});
+        if (cursor != null) {
+          s = cursor.getString(0).replace(" ", fullPyOn ? " OR " : "* OR ");
+          cursor.close();
+        }
+      }
+      s = String.format("pya match '%s' and pyb == ''", fullPyOn ? s : s + "*");
+    }
+    return s;
+  }
+
   /**
    * Returns a string containing words as suggestions for the specified input.
    * 
@@ -381,43 +359,18 @@ public class Dictionary {
    * @return a concatenated string of characters, or an empty string if there
    *     is no word for that input.
    */
-  public Cursor getWord(CharSequence code) {
+  public Cursor queryWord(CharSequence code) {
     String s = code.toString();
-    s = translate(s, lookupRule);
-    s = h2f(s);
-    Log.e("kyle", "query="+s);
-    if (fuzzyRule != null) s = fuzzyText(s);
 
-    boolean fullPyOn = isFullPy() && s.length() < 3;
-    if (hasDelimiter() && s.contains(getDelimiter())) return getPhrase(s);
-
-    Cursor cursor = null;
-    String sql;
-    //Log.e("kyle", "word start");
-    sql = String.format("select %s from %s where docid > 1 and py match ? and not glob('* *', py) %s", getQueryCol(), table, getSingle());
-    cursor = query(sql, new String[]{s});
-
-    if (cursor == null && !fullPyOn) {
-      s = s.replace(" OR", "* OR") + "*";
-      cursor = query(sql + " limit 100", new String[]{s});
+    Log.e("kyle", "word start s = "+s);
+    String sql = String.format(hz_sql, getQueryCol(), getWhere(s, true), getSingle());
+    //Log.e("kyle", "word start sql = " + sql);
+    Cursor cursor = query(sql, null);
+    if (cursor == null/* && !isFullPy()*/) {
+      sql = String.format(hz_sql, getQueryCol(), getWhere(s, false), getSingle());
+      cursor = query(sql, null);
     }
-    //Log.e("kyle", "word end");
-    return cursor;
-  }
-
-  private Cursor getPhrase(CharSequence code) {
-    boolean fullPyOn = isFullPy() && code.length() < 6;
-    String sql = String.format("select %s from %s where docid > 1 and py match ? limit 100", getQueryCol(), table);
-    String s = String.format("\"^%s\"",code.toString().replace(" OR ", "\" OR \"^").replace(getDelimiter(), " "));
-    //Log.e("kyle", "phrase start");
-    Cursor cursor = query(sql, new String[]{s});
-    if (cursor != null || fullPyOn) return cursor;
-    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace(getDelimiter(), " "));
-    cursor = query(sql, new String[]{s});
-    if (cursor != null) return cursor;
-    s = String.format("\"^%s*\"",code.toString().replace(" OR ", "*\" OR \"^").replace(getDelimiter(), "* "));
-    cursor = query(sql, new String[]{s});
-    //Log.e("kyle", "phrase end");
+    Log.e("kyle", "word end");
     return cursor;
   }
 
@@ -425,8 +378,7 @@ public class Dictionary {
     if (!isAssociation()) return null;
     String s = code.toString();
     int len = s.length();
-    String sqlFormat = "select distinct substr(hz,%d) from %s where docid > 1 and hz match '^%s*' and length(hz) > %d limit 100";
-    return query(String.format(sqlFormat, len + 1, table, s, len), null);
+    return query(String.format(association_sql, len + 1, table, s, len), null);
   }
   
   /**
@@ -442,13 +394,13 @@ public class Dictionary {
      * by which the ContentProvider does not need to know the real column names
      */
     Cursor cursor = mDatabase.rawQuery(sql, selectionArgs);
-        if (cursor == null) {
-            return null;
-        } else if (!cursor.moveToFirst()) {
-            cursor.close();
-            return null;
-        }
-        return cursor;
+      if (cursor == null) {
+        return null;
+      } else if (!cursor.moveToFirst()) {
+        cursor.close();
+        return null;
+      }
+      return cursor;
   }
 
   private String mm(String text, String rule) {
@@ -462,13 +414,13 @@ public class Dictionary {
 
     while (start < end) {
       s = text.substring(start, end);
-      cursor =  query("select t from opencc where opencc match ?", new String[]{String.format("s:%s r:%s", s, rule)});
+      cursor =  query(opencc_sql, new String[]{String.format("s:%s r:%s", s, rule)});
       if (cursor == null) {
-          if (start + 1 == end) {
-            t.append(s);
-            start++;
-            end = l;
-          } else end--;
+        if (start + 1 == end) {
+          t.append(s);
+          start++;
+          end = l;
+        } else end--;
       } else {
         t.append(cursor.getString(0).split(" ")[0]);
         cursor.close();
@@ -498,11 +450,11 @@ public class Dictionary {
   }
 
   public boolean hasDelimiter() {
-      return (delimiter != null) && delimiter.length() > 0;
+    return has_phrase_gap && (delimiter != null) && delimiter.length() > 0;
   }
 
   public boolean isDelimiter(CharSequence s) {
-      return hasDelimiter() && s.length() > 0 && s.charAt(0) != ' ' && delimiter.contains(s);
+    return hasDelimiter() && s.length() > 0 && s.charAt(0) != ' ' && delimiter.contains(s);
   }
 
   public String getDelimiter() {
@@ -510,11 +462,15 @@ public class Dictionary {
   }
 
   public boolean isKeyboardPreview() {
-      return preferences.getBoolean("pref_keyboard_preview", true);
+    return preferences.getBoolean("pref_keyboard_preview", true);
+  }
+
+  private boolean isSingle() {
+    return preferences.getBoolean("pref_single", false);
   }
 
   private String getSingle() {
-    return preferences.getBoolean("pref_single", false) ? " and length(hz) == 1" : "";
+    return isSingle() ? " and length(hz) == 1" : "";
   }
 
   private boolean isAssociation() {
@@ -522,7 +478,7 @@ public class Dictionary {
   }
 
   private String getQueryCol() {
-    return preferences.getBoolean("pref_py_prompt", false) ? "hz,py" : "hz";
+    return preferences.getBoolean("pref_py_prompt", false) ? "hz, pya" : "hz";
   }
 
   public boolean isInitChinese() {

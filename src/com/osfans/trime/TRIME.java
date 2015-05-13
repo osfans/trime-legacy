@@ -332,15 +332,15 @@ public class TRIME extends InputMethodService implements
         }
     } else if (isAlphabet(text)) {
         String r = composingText.toString();
-        String s = dialectDictionary.correctSpell(r, text);
+        String s = dialectDictionary.segment(r, text);
         if (s == null && dialectDictionary.isAutoSelect(composingText)) {
             if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
-            s = dialectDictionary.correctSpell("", text);
+            s = dialectDictionary.segment("", text);
         }
         if (s != null) {
             composingText.setLength(0);
             composingText.append(s);
-            Cursor cursor = dialectDictionary.getWord(composingText);
+            Cursor cursor = dialectDictionary.queryWord(composingText);
             setCandidates(cursor, true);
             if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
                 if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
@@ -408,26 +408,6 @@ public class TRIME extends InputMethodService implements
       updateComposingText();
     }
   }
-    private void setSchema() {
-        AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(this)
-            .setTitle(dialectDictionary.getSchemaTitle())
-            .setMultiChoiceItems(dialectDictionary.getNamedFuzzyRules(), dialectDictionary.getFuzzyRulesPref(),
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    public void onClick(DialogInterface di, int which, boolean isChecked) {
-                        //di.dismiss();
-                        dialectDictionary.setFuzzyRule(which, isChecked);
-                    }
-                });
-        mOptionsDialog = builder.create();
-        Window window = mOptionsDialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
-        if (candidatesContainer != null) lp.token = candidatesContainer.getWindowToken();
-        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-        window.setAttributes(lp);
-        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        mOptionsDialog.show();
-    }
 
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
@@ -469,12 +449,6 @@ public class TRIME extends InputMethodService implements
                         initKeyboard();
                         bindKeyboardToInputView();
                     }
-                }
-            });
-            if (dialectDictionary.getNamedFuzzyRules() != null) builder.setNeutralButton(R.string.set_schema, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    di.dismiss();
-                    setSchema();
                 }
             });
         } else {
