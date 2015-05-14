@@ -57,6 +57,7 @@ public class Dictionary {
   private String opencc_sql = "select t from opencc where opencc match ?";
   private String schema_sql = "select * from schema";
   private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,20";
+  private Pattern rule_sep = Pattern.compile("\\W");
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -120,6 +121,7 @@ public class Dictionary {
   private String translate(String s, String[][] rules) {
     if (rules == null) return s;
     for (String[] rule:  rules) {
+      //Log.e("kyle", "apply rule "+rule[0]+":"+rule[1]+"->"+rule[2]);
       if (rule[0].contentEquals("xlit")) {
         String[] rulea = rule[1].split(rule[1].contains("|") ? "\\|" : "");
         String[] ruleb = rule[2].split(rule[2].contains("|") ? "\\|" : "");
@@ -127,21 +129,23 @@ public class Dictionary {
         if (n == ruleb.length) {
           for (int i = 0; i < n; i++) if (rulea[i].length() > 0) s = s.replace(rulea[i], ruleb[i]);
         }
-      } else s = s.replaceAll(rule[1],rule[2]);
+      } else if(rule[0].contentEquals("xform"))  s = s.replaceAll(rule[1],rule[2]);
     }
     return s;
   }
 
   private String[][] getRule(String k1, String k2) {
     List<String> rule = (List<String>)getValue(k1, k2);
-    if (rule!=null && rule.size() > 0) {
+    if (rule != null && rule.size() > 0) {
       int n = rule.size();
       String[][] rules = new String[n][4];
       for(int i = 0; i < n; i++) {
         String s = rule.get(i);
-        rules[i] = s.split(s.contains(" ") ? " " : "(?<!\\\\)/", 4);
-        for(int j = 0; j < rules[i].length; j++)
-          rules[i][j] = rules[i][j].replace("\\/","/");
+        Matcher m = rule_sep.matcher(s);
+        if (m.find()) {
+          rules[i] = s.split(m.group(), 4);
+          //Log.e("kyle", "get rule="+rules[i][0]+",1="+rules[i][1]+"->"+rule[2]);
+        }
       }
       return rules;
     }
@@ -289,7 +293,7 @@ public class Dictionary {
 
   public String preedit(String s) {
     s = f2h(s);
-    return translate(s, preeditRule).replace("\t", "'");
+    return translate(s, preeditRule).replace(getDelimiter(), "'");
   }
 
   public String comment(String s) {
