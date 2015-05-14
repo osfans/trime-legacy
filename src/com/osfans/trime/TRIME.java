@@ -486,7 +486,9 @@ public class TRIME extends InputMethodService implements
   private boolean handleEnter(int keyCode) {
     if (keyCode == '\n') {
       if (hasComposingText()) {
-        commitText(composingText);
+        String s = composingText.toString().trim();
+        if (dialectDictionary.hasDelimiter()) s = s.replace(dialectDictionary.getDelimiter(), " ");
+        commitText(s);
        } else if (enterAsLineBreak) {
         commitText("\n");
       } else {

@@ -97,6 +97,7 @@ public class Dictionary {
   private boolean isSyllable(String s) {
     Cursor cursor;
     s = s.trim();
+    s = h2f(s);
     if (hasDelimiter()) {
       s = s.replace(getDelimiter(), "*"+getDelimiter()) + "*";
       cursor = query(segment_sql, new String[]{s});
@@ -261,7 +262,7 @@ public class Dictionary {
     }
 
     hz_sql = "select %s from `" + table + "` where %s %s limit 0,20";
-    py_sql = String.format("select pya  from `%s` where hz match ? limit 0,20", table);
+    py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 0,20", table);
 
     keyboard = getValue("trime", "keyboard");
     initHalf();
@@ -293,10 +294,13 @@ public class Dictionary {
 
   public String preedit(String s) {
     s = f2h(s);
-    return translate(s, preeditRule).replace(getDelimiter(), "'");
+    s = translate(s, preeditRule);
+    if (hasDelimiter()) s = s.replace(getDelimiter(), "'");
+    return s;
   }
 
   public String comment(String s) {
+    s = s.trim();
     s = f2h(s);
     return translate(s, commentRule);
   }
@@ -482,7 +486,7 @@ public class Dictionary {
   }
 
   private String getQueryCol() {
-    return preferences.getBoolean("pref_py_prompt", false) ? "hz, pya" : "hz";
+    return preferences.getBoolean("pref_py_prompt", false) ? "hz, trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py" : "hz";
   }
 
   public boolean isInitChinese() {
