@@ -56,7 +56,7 @@ public class Dictionary {
   private String hz_sql, py_sql;
   private String opencc_sql = "select t from opencc where opencc match ?";
   private String schema_sql = "select * from schema";
-  private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,20";
+  private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,100";
   private Pattern rule_sep = Pattern.compile("\\W");
 
   protected Dictionary(Context context) {
@@ -261,8 +261,8 @@ public class Dictionary {
       segment_sql = String.format("select pya from `%s` where pya match ? limit 0, 1", table);
     }
 
-    hz_sql = "select %s from `" + table + "` where %s %s limit 0,20";
-    py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 0,20", table);
+    hz_sql = "select %s from `" + table + "` where %s %s limit 0,100";
+    py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 0,100", table);
 
     keyboard = getValue("trime", "keyboard");
     initHalf();
