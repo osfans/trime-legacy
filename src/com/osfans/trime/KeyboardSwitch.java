@@ -41,6 +41,7 @@ public class KeyboardSwitch {
   public void reset(){
     currentId = 0;
     currentKeyboard = keyboards[currentId];
+    currentKeyboard.setChinese(true);
   }
 
   public void init(Object o) {
@@ -91,10 +92,11 @@ public class KeyboardSwitch {
             || (variation == InputType.TYPE_TEXT_VARIATION_URI)
             || (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD)
             || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) || !isChinese()) {
-          currentId = 1;
-          lastId = 1;
+          currentId = 0;
+          lastId = 0;
           currentKeyboard = keyboards[currentId];
           currentKeyboard.setShifted(currentKeyboard.isShifted());
+          currentKeyboard.setChinese(!currentKeyboard.isChinese());
         } else reset();
      }
   }
@@ -127,7 +129,10 @@ public class KeyboardSwitch {
       currentId = lastId;
       lastId = tmp;
       currentKeyboard = keyboards[currentId];
-      return true; 
+      return true;
+    } else if (keyCode == Keyboard.KEYCODE_MODE_CHINESE) {
+      currentKeyboard.toggleChinese();
+      return true;
     }
     // Return false if the key isn't consumed to switch a keyboard.
     return false;

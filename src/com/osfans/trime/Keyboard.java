@@ -87,6 +87,7 @@ public class Keyboard {
     public static final int KEYCODE_MODE_LAST = -20;
     public static final int KEYCODE_MODE_PREV = -21;
     public static final int KEYCODE_MODE_NEXT = -22;
+    public static final int KEYCODE_MODE_CHINESE = -23;
     public static final int KEYCODE_MODE_SWITCH = -30;
     
     /** Keyboard label **/
@@ -109,6 +110,7 @@ public class Keyboard {
     
     /** Key instance for the shift key, if present */
     private Key mShiftKey;
+    private Key mChineseKey;
     
     /** Key index for the shift key, if present */
     private int mShiftKeyIndex = -1;
@@ -142,6 +144,7 @@ public class Keyboard {
 
     /** Keyboard mode, or zero, if none.  */
     private int mKeyboardMode;
+    private boolean mChineseMode;
 
     // Variables for pre-computing nearest keys.
     
@@ -842,6 +845,7 @@ public class Keyboard {
     if (defaultWidth == 0) defaultWidth = mDefaultWidth;
     List<Map<String,Object>> lm = (List<Map<String,Object>>)m.get("keys");
     mKeyboardMode = (Integer)getValue(m, "mode", 0);
+    mChineseMode = (Boolean)getValue(m, "chinese", false);
     int defaultHGap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
     if (defaultHGap == 0) defaultHGap = mDefaultHorizontalGap;
 
@@ -927,6 +931,13 @@ public class Keyboard {
       } else if(s.contentEquals("<switch_next>")){
         key.codes = new int[] {KEYCODE_MODE_NEXT};
         if (key.label==null)	key.label = "⬇";
+      } else if(s.contentEquals("<chinese>")){
+        key.modifier = true;
+        key.sticky = true;
+        key.codes = new int[] {KEYCODE_MODE_CHINESE};
+        if (key.label==null)	key.label = "CN";
+        mChineseKey = key;
+        setChinese(true);
       }
       if(key.codes[0]<=' ') key.text = null;
       else if (key.label == null) key.label = key.text;
@@ -949,6 +960,22 @@ public class Keyboard {
   }
 
   public boolean isChinese() {
-    return mKeyboardMode == 0;
+    return mChineseMode;
+  }
+
+  public boolean toggleChinese() {
+    mChineseMode = !mChineseMode;
+    return mChineseMode;
+  }
+
+  public boolean setChinese(boolean shiftState) {
+    if (mChineseKey != null) {
+      mChineseKey.on = shiftState;
+    }
+    if (mChineseMode != shiftState) {
+      mChineseMode = shiftState;
+      return true;
+    }
+    return false;
   }
 }

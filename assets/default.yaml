@@ -157,53 +157,9 @@ speller:
 trime:
   keyboard:
   - mode: 0
-    keys:
-    - {symbol: '！', text: '1'}
-    - {symbol: '@', text: '2'}
-    - {symbol: '#', text: '3'}
-    - {symbol: '$', text: '4'}
-    - {symbol: '%', text: '5'}
-    - {symbol: '……', text: '6'}
-    - {symbol: '&', text: '7'}
-    - {symbol: '*', text: '8'}
-    - {symbol: '（', text: '9'}
-    - {symbol: '）', text: '0'}
-    - {symbol: '~', text: q}
-    - {symbol: '`', text: w}
-    - {symbol: '+', text: e}
-    - {symbol: '=', text: r}
-    - {symbol: '《', text: t}
-    - {symbol: '》', text: y}
-    - {symbol: '{', text: u}
-    - {symbol: '}', text: i}
-    - {symbol: '[', text: o}
-    - {symbol: ']', text: p}
-    - {width: 5}
-    - {symbol: '——', text: a}
-    - {symbol: '-', text: s}
-    - {symbol: '/', text: d}
-    - {symbol: '|', text: f}
-    - {symbol: '\', text: g}
-    - {symbol: "'", text: h}
-    - {symbol: '"', text: j}
-    - {symbol: '：', text: k}
-    - {symbol: '；', text: l}
-    - {text: <shift>}
-    - {text: z}
-    - {text: x}
-    - {text: c}
-    - {symbol: '‘',text: v}
-    - {symbol: '’',text: b}
-    - {symbol: '“', text: n}
-    - {symbol: '”', text: m}
-    - {text: <delete>, width: 20}
-    - {label: "中", switch: 1, text: <switch>}
-    - {label: '123', switch: 2, text: <switch>, symbol: '...', symbolCode: -11}
-    - {symbol: '、', text: '，'}
-    - {text: <space>, width: 40}
-    - {symbol: '？', text: '。'}
-    - {text: <enter>, width: 20, symbol: '反查', symbolCode: -12}
-  - mode: 1
+    chinese: true
+    columns: 11
+    width: 9
     keys:
     - {symbol: '!', text: '1'}
     - {symbol: '@', text: '2'}
@@ -215,27 +171,30 @@ trime:
     - {symbol: '*', text: '8'}
     - {symbol: '(', text: '9'}
     - {symbol: ')', text: '0'}
-    - {symbol: '~', text: q}
-    - {symbol: '`', text: w}
-    - {symbol: '+', text: e}
-    - {symbol: '=', text: r}
-    - {symbol: '<', text: t}
-    - {symbol: '>', text: y}
-    - {symbol: '{', text: u}
-    - {symbol: '}', text: i}
-    - {symbol: '[', text: o}
-    - {symbol: ']', text: p}
+    - {text: <delete>, width: 10}
+    - {text: q}
+    - {text: w}
+    - {text: e}
+    - {text: r}
+    - {text: t}
+    - {text: y}
+    - {text: u}
+    - {text: i}
+    - {text: o}
+    - {text: p}
+    - {symbol: '"', text: "'", width: 10}
     - {width: 5}
-    - {symbol: '_', text: a}
-    - {symbol: '-', text: s}
-    - {symbol: '/', text: d}
-    - {symbol: '|', text: f}
-    - {symbol: '\', text: g}
-    - {symbol: "'", text: h}
-    - {symbol: '"', text: j}
-    - {symbol: ':', text: k}
-    - {symbol: ';', text: l}
-    - {text: <shift>}
+    - {text: a}
+    - {text: s}
+    - {text: d}
+    - {text: f}
+    - {text: g}
+    - {text: h}
+    - {text: j}
+    - {text: k}
+    - {text: l}
+    - {symbol: ':', text: ';'}
+    - {text: <shift>, width: 10}
     - {text: z}
     - {text: x}
     - {text: c}
@@ -243,14 +202,20 @@ trime:
     - {text: b}
     - {text: n}
     - {text: m}
-    - {text: <delete>, width: 20}
-    - {label: "英", switch: 0, text: <switch>}
-    - {label: '123', switch: 2, text: <switch>}
-    - {text: ','}
-    - {text: <space>, width: 40}
-    - {symbol: '?', text: '.'}
-    - {text: <enter>, width: 20}
-  - mode: 2
+    - {symbol: '<', text: ','}
+    - {symbol: '>', text: '.'}
+    - {symbol: '?', text: '/'}
+    - {label: "中", text: <chinese>, width: 10, symbolCode: -10}
+    - {label: '123', switch: 1, text: <switch>, symbol: '...', symbolCode: -11}
+    - {symbol: '~', text: "`"}
+    - {symbol: '{', text: '['}
+    - {symbol: '}', text: ']'}
+    - {text: <space>, width: 13}
+    - {symbol: '_', text: '-'}
+    - {symbol: '+', text: '='}
+    - {symbol: '|', text: '\'}
+    - {text: <enter>, symbol: '反查', symbolCode: -12, width: 14}
+  - mode: 1
     width: 20
     keys:
     - {text: '+'}
@@ -274,7 +239,7 @@ trime:
     - {text: '.'}
     - {text: ','}
     - {text: '='}
-    - {text: <switch_last>}
+    - {text: <switch>, switch: 0}
     - {text: <space>}
     - {text: <delete>}
     - {text: <enter>}
