@@ -53,6 +53,8 @@
     <string name="tw2sp">台湾词汇⇒简体</string>
     <string name="hk2s">香港繁体⇒简体</string>
 
+    <string name="pref_embed_first">嵌入首选</string>
+
     <string name="pref_commit_py_title">输出编码</string>
     <string name="pref_commit_py_summary">出字时标出编码，如：拼音(pin yin)</string>
     <string name="pref_importdb">导入码表</string>

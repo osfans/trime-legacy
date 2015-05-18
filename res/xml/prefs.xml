@@ -106,6 +106,12 @@
             android:title="@string/pref_commit_py_title"
             android:summary="@string/pref_commit_py_summary"
             android:persistent="true"/>
+
+        <CheckBoxPreference
+            android:key="pref_embed_first"
+            android:title="@string/pref_embed_first"
+            android:defaultValue="false"
+            android:persistent="true"/>
     </PreferenceCategory>
 
     <Preference

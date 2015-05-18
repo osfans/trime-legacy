@@ -328,7 +328,7 @@ public class TRIME extends InputMethodService implements
     if (isDelimiter(text)) {
         if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
             composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
-            updateComposingText();
+            updateComposingText(composingText.toString());
         }
     } else if (isAlphabet(text)) {
         String r = composingText.toString();
@@ -345,7 +345,7 @@ public class TRIME extends InputMethodService implements
             if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
                 if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
             } else {
-                updateComposingText();
+                updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
             }
         }
     } else {
@@ -392,11 +392,11 @@ public class TRIME extends InputMethodService implements
     return composingText.length() > 0;
   }
 
-  private void updateComposingText() {
+  private void updateComposingText(String s) {
     InputConnection ic = getCurrentInputConnection();
     if (ic != null) {
       // Set cursor position 1 to advance the cursor to the text end.
-      ic.setComposingText(dialectDictionary.preedit(composingText.toString()), 1);
+      ic.setComposingText(s, 1);
     }
   }
 
@@ -405,7 +405,7 @@ public class TRIME extends InputMethodService implements
       // Clear composing only when there's composing-text to avoid the selected
       // text being cleared unexpectedly.
       composingText.setLength(0);
-      updateComposingText();
+      updateComposingText("");
     }
   }
 

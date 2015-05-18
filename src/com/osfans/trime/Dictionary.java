@@ -292,10 +292,14 @@ public class Dictionary {
     return query(schema_sql, null);
   }
 
-  public String preedit(String s) {
-    s = f2h(s);
-    s = translate(s, preeditRule);
-    if (hasDelimiter()) s = s.replace(getDelimiter(), "'");
+  public String preedit(String s, Cursor cursor) {
+    if (isEmbedFirst() && cursor != null) {
+      s = cursor.getString(0);
+    } else {
+      s = f2h(s);
+      s = translate(s, preeditRule);
+      if (hasDelimiter()) s = s.replace(getDelimiter(), "'");
+    }
     return s;
   }
 
@@ -491,6 +495,10 @@ public class Dictionary {
 
   public boolean isInitChinese() {
     return preferences.getBoolean("pref_init_chinese", false);
+  }
+
+  private boolean isEmbedFirst() {
+    return preferences.getBoolean("pref_embed_first", false);
   }
 
   public int getSchemaId() {
