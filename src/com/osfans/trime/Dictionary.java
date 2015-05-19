@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.MergeCursor;
 
 import java.util.regex.*;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class Dictionary {
   private String hz_sql, py_sql;
   private String opencc_sql = "select t from opencc where opencc match ?";
   private String schema_sql = "select * from schema";
-  private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,100";
+  private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 100";
   private Pattern rule_sep = Pattern.compile("\\W");
   private String reverse_dictionary, reverse_prefix, reverse_tips, reverse_sql;
   private String[][] reverse_preedit_format, reverse_comment_format;
@@ -99,27 +100,17 @@ public class Dictionary {
   }
 
   private boolean isSyllable(String s) {
-    Cursor cursor;
-    s = s.trim();
-    s = h2f(s);
-    if (hasDelimiter()) {
-      s = s.replace(getDelimiter(), "*"+getDelimiter()) + "*";
-      cursor = query(segment_sql, new String[]{s});
-    } else {
-      cursor = query(segment_sql, new String[]{s + "*"});
-    }
+    s = h2f(s.trim());
+    if (hasDelimiter()) s = s.replace(getDelimiter(), "*" + getDelimiter());
+    Cursor cursor = query(segment_sql, new String[]{s + "*"});
     if (cursor == null) return false;
     cursor.close();
     return true;
   }
 
   public String segment(String r, CharSequence text) {
-    String s = r + text;
-    if (isSyllable(s)) return s;
-    if (hasDelimiter()) {
-      s = r + getDelimiter() + text;
-      if (isSyllable(s)) return s;
-    }
+    if (isSyllable(r + text)) return r + text;
+    if (hasDelimiter() && isSyllable(r + getDelimiter() + text)) return r + getDelimiter() + text;
     return null;
   }
 
@@ -128,8 +119,8 @@ public class Dictionary {
     for (String[] rule:  rules) {
       //Log.e("kyle", "apply rule "+rule[0]+":"+rule[1]+"->"+rule[2]);
       if (rule[0].contentEquals("xlit")) {
-        String[] rulea = rule[1].split(rule[1].contains("|") ? "\\|" : "");
-        String[] ruleb = rule[2].split(rule[2].contains("|") ? "\\|" : "");
+        String[] rulea = rule[1].split("");
+        String[] ruleb = rule[2].split("");
         int n = rulea.length;
         if (n == ruleb.length) {
           for (int i = 0; i < n; i++) if (rulea[i].length() > 0) s = s.replace(rulea[i], ruleb[i]);
@@ -262,11 +253,11 @@ public class Dictionary {
       px_sql = String.format("select py from `%s.prism` where px match ?", schema_name);
       segment_sql= String.format("select _id from schema where px match ? and schema_id = '%s'", schema_name);
     } else {
-      segment_sql = String.format("select pya from `%s` where pya match ? limit 0, 1", table);
+      segment_sql = String.format("select pya from `%s` where pya match ? limit 1", table);
     }
 
-    hz_sql = "select %s from `" + table + "` where %s %s limit 0,100";
-    py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 0,100", table);
+    hz_sql = "select %s from `" + table + "` where %s %s limit 100";
+    py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 100", table);
 
     keyboard = getValue("trime", "keyboard");
     initHalf();
@@ -278,7 +269,7 @@ public class Dictionary {
       reverse_preedit_format = getRule("reverse_lookup", "preedit_format");
       reverse_comment_format = getRule("reverse_lookup", "comment_format");
       reverse_pattern = Pattern.compile(((Map<String,String>)getValue("recognizer", "patterns")).get("reverse_lookup"));
-      reverse_sql = String.format("select `%s`.hz, `%s`.pya from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 0, 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
+      reverse_sql = String.format("select `%s`.hz, `%s`.pya from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
     }
   }
 
@@ -310,7 +301,7 @@ public class Dictionary {
     if (isEmbedFirst() && cursor != null) {
       s = cursor.getString(0);
     } else {
-      s = f2h(s);
+      s = f2h(s.trim());
       if (isReverse(s) && reverse_preedit_format != null) {
         s = s.substring(reverse_prefix.length());
         s = reverse_tips + translate(s, reverse_preedit_format);
@@ -323,8 +314,7 @@ public class Dictionary {
   }
 
   public String comment(String s) {
-    s = s.trim();
-    s = f2h(s);
+    s = f2h(s.trim());
     return translate(s, is_reverse ? reverse_comment_format : commentRule);
   }
 
@@ -341,45 +331,44 @@ public class Dictionary {
     return s;
   }
 
+  private String queryPrism(String s) {
+    Cursor cursor = query(px_sql, new String[]{s});
+    if (cursor != null) {
+      s = cursor.getString(0).replace(" ", " OR ");
+      cursor.close();
+    }
+    return s;
+  }
+
   private String getWhere(String s, boolean fullPyOn) {
-    s = s.trim();
-    s = h2f(s);
+    s = h2f(s.trim());
     boolean is_phrase = hasDelimiter() && s.contains(getDelimiter()) && !isSingle();
-    Cursor cursor;
-    if (is_phrase){
+    if (is_phrase) {
       StringBuilder sb = new StringBuilder();
       if (has_prism) {
         for (String i: s.split(getDelimiter())) {
-          cursor = query(px_sql, new String[]{i});
-          if (cursor != null) {
-            sb.append(cursor.getString(0).replace(" ", fullPyOn ? " OR " : "* OR ") + getDelimiter());
-            cursor.close();
-          } else sb.append(i + getDelimiter());
+          sb.append(queryPrism(i) + getDelimiter());
         }
         s = sb.toString().trim();
-        sb.setLength(0);
-        if(!fullPyOn) s += "*";
-      } else if(!fullPyOn) s = s.replace(getDelimiter(), "*"+getDelimiter()) + "*";
+      }
+      //if (!fullPyOn) s = s.replaceAll("([^ANDOR \t]+)", "$1* -$1");
 
       String[] sl = s.split(getDelimiter(), 4);
+      sb.setLength(0);
       sb.append(String.format("`%s` match '", table));
       sb.append(" " + sl[0].replaceAll("([^ANDOR \t]+)", "pya:$1"));
       sb.append(" " + sl[1].replaceAll("([^ANDOR \t]+)", "pyb:$1"));
-      if (sl.length == 2) sb.append("' and pyc == ''");
+      if (sl.length == 2) sb.append("' AND pyc == ''");
       if (sl.length >= 3) sb.append(" " + sl[2].replaceAll("([^ANDOR \t]+)", "pyc:$1"));
-      if (sl.length == 3) sb.append("' and pyz == ''");
+      if (sl.length == 3) sb.append("' AND pyz == ''");
       if (sl.length == 4) sb.append(" " + sl[3].replaceAll("([^ANDOR \t]+)", "pyz:$1") + "'");
       s = sb.toString();
     } else {
-      if (has_prism) {
-        cursor = query(px_sql, new String[]{s});
-        if (cursor != null) {
-          s = cursor.getString(0).replace(" ", fullPyOn ? " OR " : "* OR ");
-          cursor.close();
-        }
-      }
-      s = String.format("pya match '%s' and pyb == ''", fullPyOn ? s : s + "*");
+      if (has_prism) s = queryPrism(s);
+      if (!fullPyOn) s = s.replaceAll("([^ANDOR \t]+)", "$1* -$1");
+      s = String.format("pya match '%s' AND pyb == ''", s);
     }
+    Log.e("kyle", "sql = " + s);
     return s;
   }
 
@@ -395,16 +384,18 @@ public class Dictionary {
     if (isReverse(s)) return queryReverse(s);
     is_reverse = false;
 
-    Log.e("kyle", "word start s = "+s);
     String sql = String.format(hz_sql, getQueryCol(), getWhere(s, true), getSingle());
-    //Log.e("kyle", "word start sql = " + sql);
     Cursor cursor = query(sql, null);
-    if (cursor == null/* && !isFullPy()*/) {
-      sql = String.format(hz_sql, getQueryCol(), getWhere(s, false), getSingle());
-      cursor = query(sql, null);
-    }
-    Log.e("kyle", "word end");
-    return cursor;
+    if (isFullPy()) return cursor;
+    if (cursor != null && cursor.getCount() == 100) return cursor;
+    if (hasDelimiter() && s.contains(getDelimiter()) && !isSingle()) return cursor;
+
+    Cursor cursor1; //模糊搜索
+    sql = String.format(hz_sql, getQueryCol(), getWhere(s, false), getSingle());
+    cursor1 = query(sql, null);
+    if (cursor1 == null) return cursor;
+    if (cursor == null) return cursor1;
+    return new MergeCursor(new Cursor[]{cursor, cursor1});
   }
 
   public Cursor getAssociation(CharSequence code) {
@@ -550,6 +541,11 @@ public class Dictionary {
     if (!isReverse(s)) return null;
     is_reverse = true;
     s = s.substring(reverse_prefix.length());
-    return query(reverse_sql, new String[]{s});
+    Cursor cursor = query(reverse_sql, new String[]{s});
+    if (cursor != null && cursor.getCount() == 100) return cursor;
+    Cursor cursor1 = query(reverse_sql, new String[]{s + "* -" + s});
+    if (cursor1 == null) return cursor;
+    if (cursor == null) return cursor1;
+    return new MergeCursor(new Cursor[]{cursor, cursor1});
   }
 }
