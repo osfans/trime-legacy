@@ -58,6 +58,10 @@ public class Dictionary {
   private String schema_sql = "select * from schema";
   private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 0,100";
   private Pattern rule_sep = Pattern.compile("\\W");
+  private String reverse_dictionary, reverse_prefix, reverse_tips, reverse_sql;
+  private String[][] reverse_preedit_format, reverse_comment_format;
+  private Pattern reverse_pattern;
+  private boolean is_reverse;
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -266,6 +270,16 @@ public class Dictionary {
 
     keyboard = getValue("trime", "keyboard");
     initHalf();
+
+    reverse_dictionary = GetString("reverse_lookup", "dictionary");
+    if (reverse_dictionary != null) {
+      reverse_prefix = GetString("reverse_lookup", "prefix");
+      reverse_tips = GetString("reverse_lookup", "tips");
+      reverse_preedit_format = getRule("reverse_lookup", "preedit_format");
+      reverse_comment_format = getRule("reverse_lookup", "comment_format");
+      reverse_pattern = Pattern.compile(((Map<String,String>)getValue("recognizer", "patterns")).get("reverse_lookup"));
+      reverse_sql = String.format("select `%s`.hz, `%s`.pya from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 0, 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
+    }
   }
 
   public Object getKeyboards() {
@@ -297,8 +311,13 @@ public class Dictionary {
       s = cursor.getString(0);
     } else {
       s = f2h(s);
-      s = translate(s, preeditRule);
-      if (hasDelimiter()) s = s.replace(getDelimiter(), "'");
+      if (isReverse(s) && reverse_preedit_format != null) {
+        s = s.substring(reverse_prefix.length());
+        s = reverse_tips + translate(s, reverse_preedit_format);
+      } else {
+        s = translate(s, preeditRule);
+        if (hasDelimiter()) s = s.replace(getDelimiter(), "'");
+      }
     }
     return s;
   }
@@ -306,7 +325,7 @@ public class Dictionary {
   public String comment(String s) {
     s = s.trim();
     s = f2h(s);
-    return translate(s, commentRule);
+    return translate(s, is_reverse ? reverse_comment_format : commentRule);
   }
 
   public String[] getComment(CharSequence code) {
@@ -373,6 +392,8 @@ public class Dictionary {
    */
   public Cursor queryWord(CharSequence code) {
     String s = code.toString();
+    if (isReverse(s)) return queryReverse(s);
+    is_reverse = false;
 
     Log.e("kyle", "word start s = "+s);
     String sql = String.format(hz_sql, getQueryCol(), getWhere(s, true), getSingle());
@@ -519,5 +540,16 @@ public class Dictionary {
 
   public int getKeyTextSize() {
     return Integer.parseInt(preferences.getString("pref_key_font_size", "22"));
+  }
+
+  public boolean isReverse(String s) {
+    return reverse_dictionary != null && reverse_pattern != null && reverse_pattern.matcher(s).matches();
+  }
+
+  private Cursor queryReverse(String s) {
+    if (!isReverse(s)) return null;
+    is_reverse = true;
+    s = s.substring(reverse_prefix.length());
+    return query(reverse_sql, new String[]{s});
   }
 }

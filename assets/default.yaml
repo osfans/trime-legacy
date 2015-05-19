@@ -214,7 +214,7 @@ trime:
     - {symbol: '_', text: '-'}
     - {symbol: '+', text: '='}
     - {symbol: '|', text: '\'}
-    - {text: <enter>, symbol: '反查', symbolCode: -12, width: 14}
+    - {text: <enter>, symbol: '???', symbolCode: -12, width: 14}
   - mode: 1
     width: 20
     keys:

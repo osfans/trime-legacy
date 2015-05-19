@@ -325,7 +325,12 @@ public class TRIME extends InputMethodService implements
         }
         return;
     }
-    if (isDelimiter(text)) {
+    if (isChinese() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
+          composingText.append(text);
+          Cursor cursor = dialectDictionary.queryWord(composingText);
+          setCandidates(cursor, true);
+          updateComposingText(dialectDictionary.preedit(composingText.toString(), null));
+    } else if (isDelimiter(text)) {
         if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
             composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
             updateComposingText(composingText.toString());
