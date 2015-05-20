@@ -467,6 +467,10 @@ public class Dictionary {
     return mSwitches.getStatus("ascii_mode");
   }
 
+  public boolean getFullShape() {
+    return mSwitches.getStatus("full_shape");
+  }
+
   public Cursor queryStatus() {
     return mSwitches.queryStatus();
   }

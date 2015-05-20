@@ -272,7 +272,7 @@ public class TRIME extends InputMethodService implements
         } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
             return false;
         }
-        if (!isChinese()) return false;
+        if (isAsciiMode()) return false;
 
         char c = (char)event.getUnicodeChar();
         String s = String.valueOf(c);
@@ -310,52 +310,58 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean isAlphabet(CharSequence s) {
-    return isChinese() && dialectDictionary.isAlphabet(s, hasComposingText());
+    return dialectDictionary.isAlphabet(s, hasComposingText());
   }
 
   private boolean isDelimiter(CharSequence s) {
-    return isChinese() && hasComposingText() && dialectDictionary.isDelimiter(s);
+    return hasComposingText() && dialectDictionary.isDelimiter(s);
+  }
+
+  private CharSequence transform(CharSequence text) {
+    boolean up = inputView.isShifted();
+    boolean full = dialectDictionary.getFullShape();
+    if (text.length() == 0 || !(up || full)) return text;
+    StringBuilder sb = new StringBuilder();
+    for (int i: text.toString().toCharArray()){
+      if (up) i = Character.toUpperCase(i); //大寫
+      if (full && i >= 0x20 && i <= 0x7E) i = i - 0x20 + 0xff00; //全角
+      sb.append((char)i);
+    }
+    return sb.toString();
   }
 
   public void onText(CharSequence text) {
-    if(inputView.isShifted() && text.length() > 0) { //換檔輸出大寫字母
-        for (char c: text.toString().toCharArray()){
-            c = Character.toUpperCase(c);
-            commitText(String.valueOf(c));
-        }
-        return;
-    }
-    if (isChinese() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
-          composingText.append(text);
-          Cursor cursor = dialectDictionary.queryWord(composingText);
-          setCandidates(cursor, true);
-          updateComposingText(dialectDictionary.preedit(composingText.toString(), null));
-    } else if (isDelimiter(text)) {
+    if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
+      composingText.append(text);
+      Cursor cursor = dialectDictionary.queryWord(composingText);
+      setCandidates(cursor, true);
+      updateComposingText(dialectDictionary.preedit(composingText.toString(), null));
+    } else if (!isAsciiMode() && isDelimiter(text)) {
         if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
-            composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
-            updateComposingText(composingText.toString());
+          composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
+          updateComposingText(composingText.toString());
         }
-    } else if (isAlphabet(text)) {
-        String r = composingText.toString();
-        String s = dialectDictionary.segment(r, text);
-        if (s == null && dialectDictionary.isAutoSelect(composingText)) {
-            if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
-            s = dialectDictionary.segment("", text);
+    } else if (!isAsciiMode() && isAlphabet(text)) {
+      String r = composingText.toString();
+      String s = dialectDictionary.segment(r, text);
+      if (s == null && dialectDictionary.isAutoSelect(composingText)) {
+        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
+        s = dialectDictionary.segment("", text);
+      }
+      if (s != null) {
+        composingText.setLength(0);
+        composingText.append(s);
+        Cursor cursor = dialectDictionary.queryWord(composingText);
+        setCandidates(cursor, true);
+        if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
+          if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
+        } else {
+          updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
         }
-        if (s != null) {
-            composingText.setLength(0);
-            composingText.append(s);
-            Cursor cursor = dialectDictionary.queryWord(composingText);
-            setCandidates(cursor, true);
-            if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
-                if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
-            } else {
-                updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
-            }
-        }
+      }
     } else {
-        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
-        commitText(text);
+      if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //頂字
+      commitText(transform(text));
     }
   }
 
@@ -578,12 +584,12 @@ public class TRIME extends InputMethodService implements
     return false;
   }
 
-    private boolean isChinese() {
-      return !dialectDictionary.getAsciiMode() && !keyboardSwitch.getAsciiMode();
+    private boolean isAsciiMode() {
+      return dialectDictionary.getAsciiMode() || keyboardSwitch.getAsciiMode();
     }
 
   private boolean handleComposing(int keyCode) {
-    if(canCompose && isChinese()) {
+    if(canCompose && !isAsciiMode()) {
       String s = String.valueOf((char) keyCode);
       if (isAlphabet(s) || isDelimiter(s)) {
         onText(s);
@@ -600,10 +606,7 @@ public class TRIME extends InputMethodService implements
    * other handling-methods.
    */
   private void handleKey(int keyCode) {
-    if (isInputViewShown() && inputView.isShifted()) {
-      keyCode = Character.toUpperCase(keyCode);
-    }
-    commitText(String.valueOf((char) keyCode));
+    commitText(transform(String.valueOf((char) keyCode)));
   }
 
   /**
