@@ -36,7 +36,6 @@
     <string name="pref_key_font_size">鍵盤字號</string>
 
     <string name="pref_function">功能設定</string>
-    <string name="pref_init_chinese">初始中文</string>
     <string name="pref_full_py_title">全碼輸入</string>
     <string name="pref_full_py_summary">禁用漸進提示，出字慢時建議開啟</string>
     <string name="pref_single_title">單字模式</string>

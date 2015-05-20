@@ -25,6 +25,17 @@ switcher:
   abbreviate_options: true
   option_list_separator: '／'
 
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中文, 西文 ]
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: simplification
+    states: [ 漢字, 汉字 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
 menu:
   page_size: 5
 
@@ -157,7 +168,7 @@ speller:
 trime:
   keyboard:
   - mode: 0
-    chinese: true
+    ascii_mode: false
     columns: 11
     width: 9
     keys:
@@ -194,7 +205,7 @@ trime:
     - {text: k}
     - {text: l}
     - {symbol: ':', text: ';'}
-    - {text: <shift>, width: 10}
+    - {text: <shift>, width: 10, symbolCode: -11}
     - {text: z}
     - {text: x}
     - {text: c}
@@ -205,16 +216,15 @@ trime:
     - {symbol: '<', text: ','}
     - {symbol: '>', text: '.'}
     - {symbol: '?', text: '/'}
-    - {label: "中", text: <chinese>, width: 10, symbolCode: -10}
-    - {label: '123', switch: 1, text: <switch>, symbol: '...', symbolCode: -11}
+    - {label: '123', switch: 1, width: 10, text: <switch>, symbol: '...', symbolCode: -10}
     - {symbol: '~', text: "`"}
     - {symbol: '{', text: '['}
     - {symbol: '}', text: ']'}
-    - {text: <space>, width: 13}
+    - {text: <space>, width: 18}
     - {symbol: '_', text: '-'}
     - {symbol: '+', text: '='}
     - {symbol: '|', text: '\'}
-    - {text: <enter>, symbol: '???', symbolCode: -12, width: 14}
+    - {text: <enter>, symbol: '???', symbolCode: -12, width: 18}
   - mode: 1
     width: 20
     keys:

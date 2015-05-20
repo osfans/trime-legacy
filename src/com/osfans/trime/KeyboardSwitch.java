@@ -41,7 +41,6 @@ public class KeyboardSwitch {
   public void reset(){
     currentId = 0;
     currentKeyboard = keyboards[currentId];
-    currentKeyboard.setChinese(true);
   }
 
   public void init(Object o) {
@@ -73,10 +72,6 @@ public class KeyboardSwitch {
   public Keyboard getCurrentKeyboard() {
     return currentKeyboard;
   }
-
-  public boolean isChinese() {
-    return currentKeyboard != null && currentKeyboard.isChinese();
-  }
   
   /**
    * Switches to the appropriate keyboard based on the type of text being
@@ -91,14 +86,22 @@ public class KeyboardSwitch {
         if ((variation == InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
             || (variation == InputType.TYPE_TEXT_VARIATION_URI)
             || (variation == InputType.TYPE_TEXT_VARIATION_PASSWORD)
-            || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) || !isChinese()) {
+            || (variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)) {
           currentId = 0;
           lastId = 0;
           currentKeyboard = keyboards[currentId];
           currentKeyboard.setShifted(currentKeyboard.isShifted());
-          currentKeyboard.setChinese(!currentKeyboard.isChinese());
         } else reset();
      }
+  }
+
+  private boolean switchMode(int newId) {
+    if(newId >= keyboards.length) newId = 0;
+    if(newId < 0) newId = keyboards.length - 1;
+    lastId = currentId;
+    currentId = newId;
+    currentKeyboard = keyboards[currentId];
+    return true;
   }
 
   /**
@@ -107,34 +110,22 @@ public class KeyboardSwitch {
    * @return {@code true} if the keyboard is switched; otherwise {@code false}.
    */
   public boolean onKey(int keyCode) {
+    int newId = -10;
     if (keyCode <= Keyboard.KEYCODE_MODE_SWITCH) {
-      lastId = currentId;
-      currentId = Keyboard.KEYCODE_MODE_SWITCH - keyCode;
-      currentKeyboard = keyboards[currentId];
-      return true;
+      newId = Keyboard.KEYCODE_MODE_SWITCH - keyCode;
     } else if (keyCode == Keyboard.KEYCODE_MODE_NEXT) {
-      lastId = currentId;
-      currentId++;
-      if(currentId>=keyboards.length) currentId = 0;
-      currentKeyboard = keyboards[currentId];
-      return true;
+      newId = currentId + 1;
     } else if (keyCode == Keyboard.KEYCODE_MODE_PREV) {
-      lastId = currentId;
-      currentId--;
-      if(currentId<0) currentId = keyboards.length - 1;
-      currentKeyboard = keyboards[currentId];
-      return true;
+      newId = currentId - 1;
     } else if (keyCode == Keyboard.KEYCODE_MODE_LAST) {
-      int tmp = currentId;
-      currentId = lastId;
-      lastId = tmp;
-      currentKeyboard = keyboards[currentId];
-      return true;
-    } else if (keyCode == Keyboard.KEYCODE_MODE_CHINESE) {
-      currentKeyboard.toggleChinese();
-      return true;
+      newId = lastId;
     }
+    if (newId >= -1) return switchMode(newId);
     // Return false if the key isn't consumed to switch a keyboard.
     return false;
+  }
+
+  public boolean getAsciiMode() {
+    return currentKeyboard.getAsciiMode();
   }
 }

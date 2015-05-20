@@ -17,11 +17,13 @@
 package com.osfans.trime;
 
 import android.content.Context;
+import android.content.ContentValues;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.database.Cursor;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -89,13 +91,13 @@ public class CandidatesContainer extends LinearLayout {
     return candidateView.pickHighlighted(index);
   }
  
-	private boolean isFirst() {
-		return (cursor != null) && cursor.isFirst();
-	}
+  private boolean isFirst() {
+    return (cursor != null) && cursor.isFirst();
+  }
 
-	private boolean isLast() {
-		return (cursor != null) && (cursor.getPosition() + currentWordSkip + currentWordCount >= cursor.getCount());
-	}
+  private boolean isLast() {
+    return (cursor != null) && (cursor.getPosition() + currentWordSkip + currentWordCount >= cursor.getCount());
+  }
 
   private void movePage(int direction) {
     if (cursor == null || cursor.getCount() == 0) {
@@ -110,45 +112,51 @@ public class CandidatesContainer extends LinearLayout {
     }
   }
 
-  private String[] getCandidates(int direction) {
+  private ContentValues[] getCandidates(int direction) {
     if ((direction > 0 && isLast()) || (direction < 0 && isFirst()) ) {
-            currentWordCount = 0;
-            currentWordSkip = 0;
-            return null;
+      currentWordCount = 0;
+      currentWordSkip = 0;
+      return null;
     }
-    
+
     int p = 0;
     if (direction > 0 && currentWordCount + currentWordSkip> 0)  {
-        cursor.move(currentWordCount + currentWordSkip);
-        p = cursor.getPosition();
+      cursor.move(currentWordCount + currentWordSkip);
+      p = cursor.getPosition();
     } else if (direction < 0) cursor.move(-1);
     
     float n = 0;
-    ArrayList<String> candidates = new ArrayList<String>();
+    ArrayList<ContentValues> candidates = new ArrayList<ContentValues>();
     int max_len = candidateView.getCandMaxLen();
     int max_num = candidateView.getCandNum();
+    String hz;
+    int i = 0;
     currentWordSkip = 0;
     do {
-        String word = cursor.getString(0);
-        String py = cursor.getColumnCount() > 1 ? dialectDictionary.comment(cursor.getString(1)) : "";
-        String s = String.format("%s\t%s", word, py);
-        if (candidates.contains(s)) { //單屏去重
-             currentWordSkip++;
-             continue;
-        }
-        n += candidateView.len(word);
-        if (n > max_len && candidates.size() > 0) {
-            if(direction < 0) cursor.move(1);
-            break;
-        }
-        if(direction < 0) candidates.add(0, s);
-        else candidates.add(s);
-        if (n >= max_len || candidates.size() >= max_num) break;
-    } while (cursor.move(direction>=0?1:-1));
-    if(direction >=0) cursor.moveToPosition(p);
-    else if(direction<0 && cursor.isBeforeFirst()) cursor.moveToFirst();
+      ContentValues s = new ContentValues();
+      hz = cursor.getString(0);
+      s.put("hz", hz);
+      i = cursor.getColumnIndex("py");
+      if (i >= 0) s.put("py", dialectDictionary.comment(cursor.getString(i)));
+      i = cursor.getColumnIndex("switch");
+      if (i >= 0) s.put("switch", cursor.getString(i));
+      if (candidates.contains(s)) { //單屏去重
+        currentWordSkip++;
+        continue;
+      }
+      n += candidateView.len(hz);
+      if (n > max_len && candidates.size() > 0) {
+        if (direction < 0) cursor.move(1);
+        break;
+      }
+      if (direction < 0) candidates.add(0, s);
+      else candidates.add(s);
+      if (n >= max_len || candidates.size() >= max_num) break;
+    } while (cursor.move(direction >=0 ? 1 : -1));
+    if (direction >= 0) cursor.moveToPosition(p);
+    else if (direction < 0 && cursor.isBeforeFirst()) cursor.moveToFirst();
     currentWordCount = candidates.size(); 
-    String[] ret = new String[currentWordCount];
+    ContentValues[] ret = new ContentValues[currentWordCount];
     candidates.toArray(ret);
     return ret;
   }
@@ -157,5 +165,4 @@ public class CandidatesContainer extends LinearLayout {
     arrow.setEnabled(enabled);
     //arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
   }
-
 }

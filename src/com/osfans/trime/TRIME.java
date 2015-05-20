@@ -17,6 +17,7 @@
 package com.osfans.trime;
 
 import android.content.res.Configuration;
+import android.content.ContentValues;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.util.Log;
@@ -162,6 +163,7 @@ public class TRIME extends InputMethodService implements
     // Clear composing as any active composing text will be finished, same as in
     // onFinishInputView, onFinishCandidatesView, and onUnbindInput.
     clearComposingText();
+    //setCandidatesViewShown(false);
     super.onFinishInput();
   }
 
@@ -182,7 +184,6 @@ public class TRIME extends InputMethodService implements
   @Override
   public void onUnbindInput() {
     clearComposingText();
-    if (dialectDictionary != null && dialectDictionary.isInitChinese()) keyboardSwitch.reset(); //初始中文
     super.onUnbindInput();
   }
 
@@ -219,9 +220,8 @@ public class TRIME extends InputMethodService implements
     // Select a keyboard based on the input type of the editing field.
     keyboardSwitch.init(getMaxWidth());
     keyboardSwitch.onStartInput(inputType);
-    setCandidatesViewShown(true);
+    //setCandidatesViewShown(true);
     escape();
-    setCandidatesViewShown(false);
   }
   /**
    * Commits the given text to the editing field.
@@ -296,8 +296,8 @@ public class TRIME extends InputMethodService implements
 
   public void onKey(int primaryCode, int[] keyCodes) {
     if (keyboardSwitch.onKey(primaryCode)) {
-      escape();
       bindKeyboardToInputView();
+      escape();
       return;
     }
     if (handleOption(primaryCode) || handleCapsLock(primaryCode)
@@ -384,13 +384,20 @@ public class TRIME extends InputMethodService implements
     requestHideSelf(0);
   }
 
-  public void onPickCandidate(String candidate) {
+  public void onPickCandidate(ContentValues candidate) {
     // Commit the picked candidate and suggest its following words.
-    String[] s = candidate.split("\t", 2);
-    String sc = dialectDictionary.openCC(s[0]);
-    String py = s[1].length() > 0 ? s[1] : composingText.toString();
-    commitText(composingText.length() > 0 && dialectDictionary.isCommitPy() ? String.format("%s(%s)", sc, py) : sc);
-    setCandidates(dialectDictionary.getAssociation(s[0]), false);
+    if (candidate == null) return;
+    if (candidate.containsKey("switch")) {
+      dialectDictionary.toggleStatus(candidate.getAsString("switch"));
+      setCandidates(null, false);
+      return;
+    }
+    String hz = candidate.getAsString("hz");
+    String py = candidate.getAsString("py");
+    String sc = dialectDictionary.openCC(hz); //簡繁轉換
+    if (dialectDictionary.isCommitPy()) sc = String.format("%s(%s)", sc, py); //輸出編碼
+    commitText(sc);
+    setCandidates(dialectDictionary.getAssociation(hz), false); //詞語聯想
   }
 
   public boolean hasComposingText() {
@@ -416,8 +423,9 @@ public class TRIME extends InputMethodService implements
 
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
+      if (!hasComposingText() && cursor == null) cursor = dialectDictionary.queryStatus();
       candidatesContainer.setCandidates(cursor, highlightDefault, dialectDictionary);
-      setCandidatesViewShown(canCompose && isChinese());
+      setCandidatesViewShown(canCompose);
     }
   }
 
@@ -571,18 +579,18 @@ public class TRIME extends InputMethodService implements
   }
 
     private boolean isChinese() {
-        return keyboardSwitch.isChinese();
+      return !dialectDictionary.getAsciiMode() && !keyboardSwitch.getAsciiMode();
     }
 
   private boolean handleComposing(int keyCode) {
     if(canCompose && isChinese()) {
-        String s = String.valueOf((char) keyCode);
-        if (isAlphabet(s) || isDelimiter(s)) {
-            onText(s);
-            return true;
-        } else {
-            if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
-        }
+      String s = String.valueOf((char) keyCode);
+      if (isAlphabet(s) || isDelimiter(s)) {
+        onText(s);
+        return true;
+      } else {
+        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
+      }
     }
     return false;
   }

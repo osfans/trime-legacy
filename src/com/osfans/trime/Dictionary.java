@@ -23,10 +23,12 @@ import android.preference.PreferenceManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.MergeCursor;
+import android.database.MatrixCursor;
 
 import java.util.regex.*;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.io.IOException;
 
@@ -43,6 +45,9 @@ public class Dictionary {
   private final SharedPreferences preferences;
 
   private Map<String,Object> mSchema, mDefaultSchema;
+  private List<Map<String,Object>> mSwitches;
+  private Map<String, Boolean> mStatus;
+
   private Object keyboard;
   private String table, schema_name;
   private String delimiter, alphabet, initials;
@@ -63,6 +68,7 @@ public class Dictionary {
   private String[][] reverse_preedit_format, reverse_comment_format;
   private Pattern reverse_pattern;
   private boolean is_reverse;
+  private String py_pattern = "([^ANDOR \t]+)";
 
   protected Dictionary(Context context) {
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -269,8 +275,10 @@ public class Dictionary {
       reverse_preedit_format = getRule("reverse_lookup", "preedit_format");
       reverse_comment_format = getRule("reverse_lookup", "comment_format");
       reverse_pattern = Pattern.compile(((Map<String,String>)getValue("recognizer", "patterns")).get("reverse_lookup"));
-      reverse_sql = String.format("select `%s`.hz, `%s`.pya from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
+      reverse_sql = String.format("select `%s`.hz, `%s`.pya as py from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
     }
+    mSwitches = (List<Map<String,Object>>)getValue("switches");
+    initStatus();
   }
 
   public Object getKeyboards() {
@@ -351,24 +359,22 @@ public class Dictionary {
         }
         s = sb.toString().trim();
       }
-      //if (!fullPyOn) s = s.replaceAll("([^ANDOR \t]+)", "$1* -$1");
 
       String[] sl = s.split(getDelimiter(), 4);
       sb.setLength(0);
       sb.append(String.format("`%s` match '", table));
-      sb.append(" " + sl[0].replaceAll("([^ANDOR \t]+)", "pya:$1"));
-      sb.append(" " + sl[1].replaceAll("([^ANDOR \t]+)", "pyb:$1"));
+      sb.append(" " + sl[0].replaceAll(py_pattern, "pya:$1"));
+      sb.append(" " + sl[1].replaceAll(py_pattern, "pyb:$1"));
       if (sl.length == 2) sb.append("' AND pyc == ''");
-      if (sl.length >= 3) sb.append(" " + sl[2].replaceAll("([^ANDOR \t]+)", "pyc:$1"));
+      if (sl.length >= 3) sb.append(" " + sl[2].replaceAll(py_pattern, "pyc:$1"));
       if (sl.length == 3) sb.append("' AND pyz == ''");
-      if (sl.length == 4) sb.append(" " + sl[3].replaceAll("([^ANDOR \t]+)", "pyz:$1") + "'");
+      if (sl.length == 4) sb.append(" " + sl[3].replaceAll(py_pattern, "pyz:$1") + "'");
       s = sb.toString();
     } else {
       if (has_prism) s = queryPrism(s);
-      if (!fullPyOn) s = s.replaceAll("([^ANDOR \t]+)", "$1* -$1");
+      if (!fullPyOn) s = s.replaceAll(py_pattern, "$1* -$1");
       s = String.format("pya match '%s' AND pyb == ''", s);
     }
-    Log.e("kyle", "sql = " + s);
     return s;
   }
 
@@ -505,10 +511,6 @@ public class Dictionary {
     return preferences.getBoolean("pref_py_prompt", false) ? "hz, trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py" : "hz";
   }
 
-  public boolean isInitChinese() {
-    return preferences.getBoolean("pref_init_chinese", false);
-  }
-
   private boolean isEmbedFirst() {
     return preferences.getBoolean("pref_embed_first", false);
   }
@@ -547,5 +549,44 @@ public class Dictionary {
     if (cursor1 == null) return cursor;
     if (cursor == null) return cursor1;
     return new MergeCursor(new Cursor[]{cursor, cursor1});
+  }
+
+  private void initStatus() {
+    mStatus = new HashMap<String,Boolean>();
+    for (Map<String, Object> m: mSwitches) {
+      mStatus.put((String)m.get("name"), false);
+    }
+  }
+
+  public boolean toggleStatus(String k) {
+    boolean v = !mStatus.get(k);
+    mStatus.put(k, v);
+    return v;
+  }
+
+  private boolean getStatus(String k) {
+    return mStatus.containsKey(k) ? mStatus.get(k) : false;
+  }
+
+  private boolean setStatus(String k, boolean v) {
+    mStatus.put(k, v);
+    return v;
+  }
+
+  public boolean getAsciiMode() {
+    return getStatus("ascii_mode");
+  }
+
+  public Cursor queryStatus() {
+    MatrixCursor menuCursor;
+    if (mSwitches == null) return null;
+    menuCursor = new MatrixCursor(new String[] {"hz", "switch"});
+    for (Map<String, Object> m: mSwitches) {
+      String k = (String)m.get("name");
+      boolean v = mStatus.containsKey(k) ? mStatus.get(k) : false;
+      menuCursor.addRow(new Object[] {((List<String>)(m.get("states"))).get(v ? 1 : 0), k});
+    }
+    menuCursor.moveToFirst();
+    return menuCursor;
   }
 }
