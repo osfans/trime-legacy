@@ -23,12 +23,9 @@ import android.preference.PreferenceManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.MergeCursor;
-import android.database.MatrixCursor;
 
 import java.util.regex.*;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.io.IOException;
 
@@ -42,11 +39,10 @@ public class Dictionary {
 
   private SQLiteDatabase mDatabase;
   private DictionaryHelper mHelper;
-  private final SharedPreferences preferences;
+  private final SharedPreferences mPref;
+  private Switches mSwitches;
 
   private Map<String,Object> mSchema, mDefaultSchema;
-  private List<Map<String,Object>> mSwitches;
-  private Map<String, Boolean> mStatus;
 
   private Object keyboard;
   private String table, schema_name;
@@ -71,7 +67,7 @@ public class Dictionary {
   private String py_pattern = "([^ANDOR \t]+)";
 
   protected Dictionary(Context context) {
-    preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    mPref = PreferenceManager.getDefaultSharedPreferences(context);
     initDefaultSchema(context);
     mHelper = new DictionaryHelper(context);
   }
@@ -277,8 +273,7 @@ public class Dictionary {
       reverse_pattern = Pattern.compile(((Map<String,String>)getValue("recognizer", "patterns")).get("reverse_lookup"));
       reverse_sql = String.format("select `%s`.hz, `%s`.pya as py from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
     }
-    mSwitches = (List<Map<String,Object>>)getValue("switches");
-    initStatus();
+    mSwitches = new Switches(getValue("switches"));
   }
 
   public Object getKeyboards() {
@@ -468,15 +463,15 @@ public class Dictionary {
   }
 
   public boolean isCommitPy() {
-    return preferences.getBoolean("pref_commit_py", false);
+    return mPref.getBoolean("pref_commit_py", false);
   }
 
   public String getOpenCC() {
-    return preferences.getString("pref_opencc", "");
+    return mPref.getString("pref_opencc", "");
   }
 
   private boolean isFullPy() {
-    return preferences.getBoolean("pref_full_py", false);
+    return mPref.getBoolean("pref_full_py", false);
   }
 
   public boolean hasDelimiter() {
@@ -492,11 +487,11 @@ public class Dictionary {
   }
 
   public boolean isKeyboardPreview() {
-    return preferences.getBoolean("pref_keyboard_preview", true);
+    return mPref.getBoolean("pref_keyboard_preview", true);
   }
 
   private boolean isSingle() {
-    return preferences.getBoolean("pref_single", false);
+    return mPref.getBoolean("pref_single", false);
   }
 
   private String getSingle() {
@@ -504,23 +499,23 @@ public class Dictionary {
   }
 
   private boolean isAssociation() {
-    return preferences.getBoolean("pref_association", false);
+    return mPref.getBoolean("pref_association", false);
   }
 
   private String getQueryCol() {
-    return preferences.getBoolean("pref_py_prompt", false) ? "hz, trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py" : "hz";
+    return mPref.getBoolean("pref_py_prompt", false) ? "hz, trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py" : "hz";
   }
 
   private boolean isEmbedFirst() {
-    return preferences.getBoolean("pref_embed_first", false);
+    return mPref.getBoolean("pref_embed_first", false);
   }
 
   public int getSchemaId() {
-    return preferences.getInt("_id", 0);
+    return mPref.getInt("_id", 0);
   }
 
   public boolean setSchemaId(int id) {
-    SharedPreferences.Editor edit = preferences.edit();
+    SharedPreferences.Editor edit = mPref.edit();
     edit.putInt("_id", id);
     boolean ret = edit.commit();
     if (ret) initSchema();
@@ -528,11 +523,11 @@ public class Dictionary {
   }
 
   public int getCandTextSize() {
-    return Integer.parseInt(preferences.getString("pref_cand_font_size", "22"));
+    return Integer.parseInt(mPref.getString("pref_cand_font_size", "22"));
   }
 
   public int getKeyTextSize() {
-    return Integer.parseInt(preferences.getString("pref_key_font_size", "22"));
+    return Integer.parseInt(mPref.getString("pref_key_font_size", "22"));
   }
 
   public boolean isReverse(String s) {
@@ -551,42 +546,16 @@ public class Dictionary {
     return new MergeCursor(new Cursor[]{cursor, cursor1});
   }
 
-  private void initStatus() {
-    mStatus = new HashMap<String,Boolean>();
-    for (Map<String, Object> m: mSwitches) {
-      mStatus.put((String)m.get("name"), false);
-    }
-  }
-
   public boolean toggleStatus(String k) {
-    boolean v = !mStatus.get(k);
-    mStatus.put(k, v);
-    return v;
-  }
-
-  private boolean getStatus(String k) {
-    return mStatus.containsKey(k) ? mStatus.get(k) : false;
-  }
-
-  private boolean setStatus(String k, boolean v) {
-    mStatus.put(k, v);
-    return v;
+    boolean v = !mSwitches.getStatus(k);
+    return mSwitches.setStatus(k, v);
   }
 
   public boolean getAsciiMode() {
-    return getStatus("ascii_mode");
+    return mSwitches.getStatus("ascii_mode");
   }
 
   public Cursor queryStatus() {
-    MatrixCursor menuCursor;
-    if (mSwitches == null) return null;
-    menuCursor = new MatrixCursor(new String[] {"hz", "switch"});
-    for (Map<String, Object> m: mSwitches) {
-      String k = (String)m.get("name");
-      boolean v = mStatus.containsKey(k) ? mStatus.get(k) : false;
-      menuCursor.addRow(new Object[] {((List<String>)(m.get("states"))).get(v ? 1 : 0), k});
-    }
-    menuCursor.moveToFirst();
-    return menuCursor;
+    return mSwitches.queryStatus();
   }
 }
