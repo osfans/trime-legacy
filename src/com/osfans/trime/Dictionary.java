@@ -25,11 +25,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.MergeCursor;
 
 import java.util.regex.*;
-import java.util.Map;
-import java.util.List;
 import java.io.IOException;
-
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Reads a word-dictionary and provides word-suggestions as a list of characters
@@ -41,10 +37,8 @@ public class Dictionary {
   private DictionaryHelper mHelper;
   private final SharedPreferences mPref;
   private Switches mSwitches;
+  private Schema mSchema;
 
-  private Map<String,Object> mSchema, mDefaultSchema;
-
-  private Object keyboard;
   private String table, schema_name;
   private String delimiter, alphabet, initials;
 
@@ -59,7 +53,6 @@ public class Dictionary {
   private String opencc_sql = "select t from opencc where opencc match ?";
   private String schema_sql = "select * from schema";
   private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 100";
-  private Pattern rule_sep = Pattern.compile("\\W");
   private String reverse_dictionary, reverse_prefix, reverse_tips, reverse_sql;
   private String[][] reverse_preedit_format, reverse_comment_format;
   private Pattern reverse_pattern;
@@ -68,7 +61,11 @@ public class Dictionary {
 
   protected Dictionary(Context context) {
     mPref = PreferenceManager.getDefaultSharedPreferences(context);
-    initDefaultSchema(context);
+    try {
+      mSchema = new Schema(context.getAssets().open("default.yaml"));
+    } catch (IOException e) {
+      throw new RuntimeException("Error load default.yaml", e);
+    }
     mHelper = new DictionaryHelper(context);
   }
 
@@ -79,14 +76,6 @@ public class Dictionary {
 
   public DictionaryHelper getHelper() {
     return mHelper;
-  }
-
-  private void initDefaultSchema(Context context) {
-    try {
-      mDefaultSchema = (Map<String,Object>)new Yaml().load(context.getAssets().open("default.yaml"));
-    } catch (IOException e) {
-      throw new RuntimeException("Error load default.yaml", e);
-    }
   }
 
   public boolean isAlphabet(CharSequence cs, boolean hasComposingText) {
@@ -132,72 +121,6 @@ public class Dictionary {
     return s;
   }
 
-  private String[][] getRule(String k1, String k2) {
-    List<String> rule = (List<String>)getValue(k1, k2);
-    if (rule != null && rule.size() > 0) {
-      int n = rule.size();
-      String[][] rules = new String[n][4];
-      for(int i = 0; i < n; i++) {
-        String s = rule.get(i);
-        Matcher m = rule_sep.matcher(s);
-        if (m.find()) {
-          rules[i] = s.split(m.group(), 4);
-          //Log.e("kyle", "get rule="+rules[i][0]+",1="+rules[i][1]+"->"+rule[2]);
-        }
-      }
-      return rules;
-    }
-    return null;
-  }
-
-  private Object getValue(String k1) {
-    if (mSchema.containsKey(k1)) return mSchema.get(k1);
-    if (mDefaultSchema.containsKey(k1)) return mDefaultSchema.get(k1);
-    return null;
-  }
-
-  private Object getValue(String k1, String k2) {
-    Map<String, Object> m;
-    if (mSchema.containsKey(k1)) {
-      m = (Map<String, Object>)mSchema.get(k1);
-      if (m != null && m.containsKey(k2)) return m.get(k2);
-    }
-    if (mDefaultSchema.containsKey(k1)) {
-      m = (Map<String, Object>)mDefaultSchema.get(k1);
-      if (m != null && m.containsKey(k2)) return m.get(k2);
-    }
-    return null;
-  }
-
-  private Object getDefaultValue(String k1, String k2, Object o) {
-    Object ret = getValue(k1, k2);
-    return (ret != null) ? ret : o;
-  }
-
-  private boolean GetBool(String k1, String k2) {
-    Object v = getValue(k1, k2);
-    if (v == null) return false;
-    return (Boolean) v;
-  }
-
-  private int GetInt(String k1, String k2) {
-    Object v = getValue(k1, k2);
-    if (v == null) return 0;
-    return (Integer) v;
-  }
-
-  private String GetString(String k1, String k2) {
-    Object v = getValue(k1, k2);
-    if (v == null) return null;
-    return (String) v;
-  }
-
-  private Pattern GetPattern(String k1, String k2) {
-    Object v = getValue(k1, k2);
-    if (v == null) return null;
-    return Pattern.compile((String)v);
-  }
-
   private void initHalf() {
     String a = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     StringBuilder s = new StringBuilder();
@@ -228,22 +151,22 @@ public class Dictionary {
     String sql = "SELECT * FROM schema WHERE _id = %d OR _id = 0 ORDER BY _id DESC";
     Cursor cursor = query(String.format(sql, id), null);
     if (cursor == null) return;
-    mSchema = (Map<String,Object>)new Yaml().load(cursor.getString(cursor.getColumnIndex("full")));
+    mSchema.load(cursor.getString(cursor.getColumnIndex("full")));
     cursor.close();
 
-    schema_name = GetString("schema", "schema_id");
-    delimiter = GetString("speller", "delimiter");
-    alphabet = GetString("speller", "alphabet");
-    initials = GetString("speller", "initials");
-    max_code_length_ = GetInt("speller", "max_code_length");
-    auto_select_ = GetBool("speller", "auto_select");
-    auto_select_pattern_ = GetPattern("speller", "auto_select_pattern");
-    has_prism = (getValue("speller", "algebra") != null);
+    schema_name = mSchema.getString("schema/schema_id");
+    delimiter = mSchema.getString("speller/delimiter");
+    alphabet = mSchema.getString("speller/alphabet");
+    initials = mSchema.getString("speller/initials");
+    max_code_length_ = mSchema.getInt("speller/max_code_length");
+    auto_select_ = mSchema.getBool("speller/auto_select");
+    auto_select_pattern_ = mSchema.getPattern("speller/auto_select_pattern");
+    has_prism = mSchema.hasPrism();
 
-    preeditRule = getRule("translator", "preedit_format");
-    commentRule = getRule("translator", "comment_format");
+    preeditRule = mSchema.getRule("translator/preedit_format");
+    commentRule = mSchema.getRule("translator/comment_format");
 
-    table = GetString("translator", "dictionary");
+    table = mSchema.getString("translator/dictionary");
     sql = "SELECT phrase_gap FROM dictionary WHERE name = ?";
     cursor = query(sql, new String[]{table});
     if (cursor != null) {
@@ -257,43 +180,32 @@ public class Dictionary {
     } else {
       segment_sql = String.format("select pya from `%s` where pya match ? limit 1", table);
     }
-
     hz_sql = "select %s from `" + table + "` where %s %s limit 100";
     py_sql = String.format("select trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py from `%s` where hz match ? limit 100", table);
 
-    keyboard = getValue("trime", "keyboard");
-    initHalf();
-
-    reverse_dictionary = GetString("reverse_lookup", "dictionary");
+    reverse_dictionary = mSchema.getString("reverse_lookup/dictionary");
     if (reverse_dictionary != null) {
-      reverse_prefix = GetString("reverse_lookup", "prefix");
-      reverse_tips = GetString("reverse_lookup", "tips");
-      reverse_preedit_format = getRule("reverse_lookup", "preedit_format");
-      reverse_comment_format = getRule("reverse_lookup", "comment_format");
-      reverse_pattern = Pattern.compile(((Map<String,String>)getValue("recognizer", "patterns")).get("reverse_lookup"));
+      reverse_prefix = mSchema.getString("reverse_lookup/prefix");
+      reverse_tips =  mSchema.getString("reverse_lookup/tips");
+      reverse_preedit_format = mSchema.getRule("reverse_lookup/preedit_format");
+      reverse_comment_format = mSchema.getRule("reverse_lookup/comment_format");
+      reverse_pattern = mSchema.getReversePattern();
       reverse_sql = String.format("select `%s`.hz, `%s`.pya as py from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
     }
-    mSwitches = new Switches(getValue("switches"));
+    initHalf();
+    mSwitches = new Switches(mSchema.getValue("switches"));
   }
 
   public Object getKeyboards() {
-    return keyboard;
+    return mSchema.getKeyboards();
   }
 
   public String getSchemaTitle() {
-    StringBuilder sb = new StringBuilder();
-    for(String i: new String[]{"name", "version"}) {
-      sb.append(getDefaultValue("schema", i, "") + " ");
-    }
-    return sb.toString();
+    return mSchema.getTitle();
   }
 
   public String[] getSchemaInfo() {
-    StringBuilder sb = new StringBuilder();
-    for(String i: new String[]{"author", "description"}) {
-      sb.append(getDefaultValue("schema", i, "") + "\n");
-    }
-    return sb.toString().replace("\n\n", "\n").split("\n");
+    return mSchema.getInfo();
   }
 
   public Cursor getSchemas() {
