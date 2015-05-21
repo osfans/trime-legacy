@@ -45,7 +45,10 @@ public class Punct {
 
   public MatrixCursor query(CharSequence s, boolean full) {
     MatrixCursor cursor = new MatrixCursor(new String[] {"hz"});
-    String k = full ? "full_shape" : "half_shape";
+    String k;
+    if (s.length() > 1) k = "symbols";
+    else if (full) k = "full_shape";
+    else k = "half_shape";
     if (mPunct.containsKey(k)) {
       Map<String,Object> m = (Map<String,Object>)(mPunct.get(k));
       if (m.containsKey(s)) { 

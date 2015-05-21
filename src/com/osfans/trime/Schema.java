@@ -143,10 +143,12 @@ public class Schema {
     return getValue("speller/algebra") != null;
   }
 
-  public Pattern getReversePattern() {
+  public Pattern getRecognizerPattern(String s) {
     Object o = getValue("recognizer/patterns");
     if (o == null) return null;
-    return Pattern.compile(((Map<String,String>)o).get("reverse_lookup"));
+    Map<String,String> m = (Map<String,String>)o;
+    if (m.containsKey(s)) return Pattern.compile(m.get(s));
+    return null;
   }
 
   public Switches getSwitches() {

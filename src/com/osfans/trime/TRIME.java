@@ -326,7 +326,13 @@ public class TRIME extends InputMethodService implements
 
   public void onText(CharSequence text) {
     if (candidatesContainer != null && !hasComposingText()) candidatesContainer.pickHighlighted(-1); //頂標點
-    if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
+    if (!dialectDictionary.getAsciiPunct() && dialectDictionary.isPunct(composingText.toString() + text)) { //符號
+      composingText.append(text);
+      String s = composingText.toString();
+      updateComposingText(s);
+      Cursor cursor = dialectDictionary.queryPunct(s);
+      setCandidates(cursor, true);
+    } else if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
       composingText.append(text);
       Cursor cursor = dialectDictionary.queryWord(composingText);
       setCandidates(cursor, true);
@@ -365,6 +371,7 @@ public class TRIME extends InputMethodService implements
             if(cursor.getCount() == 1) candidatesContainer.pickHighlighted(0);
             else {
               composingText.setLength(0);
+              if (dialectDictionary.isPunct(text + "test")) composingText.append(text); //符號
               updateComposingText(cursor.getString(0));
             }
           }

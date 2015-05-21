@@ -55,7 +55,7 @@ public class Dictionary {
   private String association_sql = "select distinct substr(hz,%d) from `%s` where hz match '^%s*' and length(hz) > %d limit 100";
   private String reverse_dictionary, reverse_prefix, reverse_tips, reverse_sql;
   private String[][] reverse_preedit_format, reverse_comment_format;
-  private Pattern reverse_pattern;
+  private Pattern reverse_pattern, punct_pattern;
   private boolean is_reverse;
   private String py_pattern = "([^ANDOR \t]+)";
 
@@ -186,12 +186,13 @@ public class Dictionary {
       reverse_tips =  mSchema.getString("reverse_lookup/tips");
       reverse_preedit_format = mSchema.getRule("reverse_lookup/preedit_format");
       reverse_comment_format = mSchema.getRule("reverse_lookup/comment_format");
-      reverse_pattern = mSchema.getReversePattern();
+      reverse_pattern = mSchema.getRecognizerPattern("reverse_lookup");
       reverse_sql = String.format("select a.hz as hz, a.pya as py from `%s` as a, `%s` as b where b.pya match ? and b.pyb = '' and a.hz match b.hz limit 100", table, reverse_dictionary);
     }
     initHalf();
     mSwitches = mSchema.getSwitches();
     mPunct = mSchema.getPunct();
+    punct_pattern = mSchema.getRecognizerPattern("punct");
   }
 
   public Object getKeyboards() {
@@ -442,6 +443,10 @@ public class Dictionary {
 
   public boolean isReverse(String s) {
     return reverse_dictionary != null && reverse_pattern != null && reverse_pattern.matcher(s).matches();
+  }
+
+  public boolean isPunct(String s) {
+    return s.length() > 1 && punct_pattern != null && punct_pattern.matcher(s).matches();
   }
 
   private Cursor queryReverse(String s) {
