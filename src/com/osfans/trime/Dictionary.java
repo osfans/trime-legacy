@@ -190,7 +190,7 @@ public class Dictionary {
       reverse_preedit_format = mSchema.getRule("reverse_lookup/preedit_format");
       reverse_comment_format = mSchema.getRule("reverse_lookup/comment_format");
       reverse_pattern = mSchema.getReversePattern();
-      reverse_sql = String.format("select `%s`.hz, `%s`.pya as py from `%s`, `%s` where `%s`.pya match ? and `%s`.pyb = '' and `%s` match 'hz:' || `%s`.hz limit 100", table, table, table, reverse_dictionary,  reverse_dictionary, reverse_dictionary, table, reverse_dictionary);
+      reverse_sql = String.format("select a.hz as hz, a.pya as py from `%s` as a, `%s` as b where b.pya match ? and b.pyb = '' and a.hz match b.hz limit 100", table, reverse_dictionary);
     }
     initHalf();
     mSwitches = new Switches(mSchema.getValue("switches"));
