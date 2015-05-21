@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.MergeCursor;
 
 import java.util.regex.*;
-import java.io.IOException;
 
 /**
  * Reads a word-dictionary and provides word-suggestions as a list of characters
@@ -38,6 +37,7 @@ public class Dictionary {
   private final SharedPreferences mPref;
   private Switches mSwitches;
   private Schema mSchema;
+  private Punct mPunct;
 
   private String table, schema_name;
   private String delimiter, alphabet, initials;
@@ -61,11 +61,8 @@ public class Dictionary {
 
   protected Dictionary(Context context) {
     mPref = PreferenceManager.getDefaultSharedPreferences(context);
-    try {
-      mSchema = new Schema(context.getAssets().open("default.yaml"));
-    } catch (IOException e) {
-      throw new RuntimeException("Error load default.yaml", e);
-    }
+      mSchema = new Schema(context);
+
     mHelper = new DictionaryHelper(context);
   }
 
@@ -193,7 +190,8 @@ public class Dictionary {
       reverse_sql = String.format("select a.hz as hz, a.pya as py from `%s` as a, `%s` as b where b.pya match ? and b.pyb = '' and a.hz match b.hz limit 100", table, reverse_dictionary);
     }
     initHalf();
-    mSwitches = new Switches(mSchema.getValue("switches"));
+    mSwitches = mSchema.getSwitches();
+    mPunct = mSchema.getPunct();
   }
 
   public Object getKeyboards() {
@@ -467,11 +465,19 @@ public class Dictionary {
     return mSwitches.getStatus("ascii_mode");
   }
 
+  public boolean getAsciiPunct() {
+    return getAsciiMode() || mSwitches.getStatus("ascii_punct");
+  }
+
   public boolean getFullShape() {
     return mSwitches.getStatus("full_shape");
   }
 
   public Cursor queryStatus() {
-    return mSwitches.queryStatus();
+    return mSwitches.query();
+  }
+
+  public Cursor queryPunct(CharSequence s) {
+    return mPunct.query(s, getFullShape());
   }
 }

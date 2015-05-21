@@ -47,7 +47,7 @@ public class Switches {
     return v;
   }
 
-  public MatrixCursor queryStatus() {
+  public MatrixCursor query() {
     MatrixCursor menuCursor;
     if (mSwitches == null) return null;
     menuCursor = new MatrixCursor(new String[] {"hz", "switch"});

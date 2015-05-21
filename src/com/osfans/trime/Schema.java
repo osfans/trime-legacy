@@ -16,19 +16,31 @@
 
 package com.osfans.trime;
 
+import android.content.Context;
+
 import java.util.Map;
 import java.util.List;
 import java.util.regex.*;
-import java.io.InputStream;
+import java.io.IOException;
 
 import org.yaml.snakeyaml.Yaml;
 
 public class Schema {
   private Map<String,Object> mSchema, mDefaultSchema;
   private Pattern rule_sep = Pattern.compile("\\W");
+  private Context mContext;
 
-  public Schema(InputStream o) {
-    mDefaultSchema = (Map<String,Object>)new Yaml().load(o);
+  public Schema(Context context) {
+    mContext = context;
+    mDefaultSchema = loadPreset("default");
+  }
+
+  private Map<String,Object> loadPreset(String name) {
+    try{
+      return (Map<String,Object>)new Yaml().load(mContext.getAssets().open(name + ".yaml"));
+    } catch (IOException e) {
+      throw new RuntimeException("Error load " + name + ".yaml", e);
+    }
   }
 
   public void load(String s) {
@@ -135,5 +147,17 @@ public class Schema {
     Object o = getValue("recognizer/patterns");
     if (o == null) return null;
     return Pattern.compile(((Map<String,String>)o).get("reverse_lookup"));
+  }
+
+  public Switches getSwitches() {
+    return new Switches(getValue("switches"));
+  }
+
+  public Punct getPunct() {
+    String s = getString("punctuator/import_preset");
+    Object o;
+    if (s == null) o = getValue("punctuator");
+    else o = loadPreset(s).get("punctuator");
+    return new Punct(o);
   }
 }

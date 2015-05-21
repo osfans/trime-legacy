@@ -321,17 +321,11 @@ public class TRIME extends InputMethodService implements
   private CharSequence transform(CharSequence text) {
     boolean up = inputView.isShifted();
     boolean full = dialectDictionary.getFullShape();
-    if (text.length() == 0 || !(up || full)) return text;
-    StringBuilder sb = new StringBuilder();
-    for (int i: text.toString().toCharArray()){
-      if (up) i = Character.toUpperCase(i); //大寫
-      if (full && i >= 0x20 && i <= 0x7E) i = i - 0x20 + 0xff00; //全角
-      sb.append((char)i);
-    }
-    return sb.toString();
+    return Punct.transform(text, up, full);
   }
 
   public void onText(CharSequence text) {
+    if (candidatesContainer != null && !hasComposingText()) candidatesContainer.pickHighlighted(-1); //頂標點
     if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
       composingText.append(text);
       Cursor cursor = dialectDictionary.queryWord(composingText);
@@ -362,7 +356,20 @@ public class TRIME extends InputMethodService implements
       }
     } else {
       if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //頂字
-      commitText(transform(text));
+      if (!dialectDictionary.getAsciiPunct()) { //中文標點
+        Cursor cursor = dialectDictionary.queryPunct(text);
+        if (cursor == null) commitText(transform(text));
+        else {
+          setCandidates(cursor, true);
+          if (candidatesContainer != null) {
+            if(cursor.getCount() == 1) candidatesContainer.pickHighlighted(0);
+            else {
+              composingText.setLength(0);
+              updateComposingText(cursor.getString(0));
+            }
+          }
+        }
+      } else commitText(transform(text));
     }
   }
 
