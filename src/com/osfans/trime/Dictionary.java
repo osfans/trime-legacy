@@ -426,6 +426,18 @@ public class Dictionary {
     return mPref.getInt("_id", 0);
   }
 
+  public boolean isInvalidCommit() {
+    return mPref.getString("pref_invalid_action", "0").contentEquals("1");
+  }
+
+  public boolean isInvalidClear() {
+    return mPref.getString("pref_invalid_action", "0").contentEquals("2");
+  }
+
+  public boolean isInvalidAction() {
+    return !mPref.getString("pref_invalid_action", "0").contentEquals("0");
+  }
+
   public boolean setSchemaId(int id) {
     SharedPreferences.Editor edit = mPref.edit();
     edit.putInt("_id", id);

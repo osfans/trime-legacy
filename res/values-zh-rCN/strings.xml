@@ -53,6 +53,10 @@
     <string name="hk2s">香港繁体⇒简体</string>
 
     <string name="pref_embed_first">嵌入首选</string>
+    <string name="pref_invalid_action">空码处理</string>
+    <string name="pref_invalid_deny">禁止空码</string>
+    <string name="pref_invalid_commit">空码上屏</string>
+    <string name="pref_invalid_clear">空码清屏</string>
 
     <string name="pref_commit_py_title">输出编码</string>
     <string name="pref_commit_py_summary">出字时标出编码，如：拼音(pin yin)</string>

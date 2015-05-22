@@ -353,6 +353,10 @@ public class TRIME extends InputMethodService implements
         } else {
           updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
         }
+      } else { //空碼處理
+        if (dialectDictionary.isInvalidClear()) escape(); //空碼清屏
+        else if (dialectDictionary.isInvalidCommit() && candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //空碼上屏
+        if (dialectDictionary.isInvalidAction())onText(text);
       }
     } else if (!isAsciiMode() && dialectDictionary.isPunct(composingText.toString() + text)) { //符號
       composingText.append(text);

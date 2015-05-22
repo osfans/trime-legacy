@@ -107,6 +107,13 @@
             android:title="@string/pref_embed_first"
             android:defaultValue="false"
             android:persistent="true"/>
+
+        <ListPreference
+            android:key="pref_invalid_action"
+            android:defaultValue="0"
+            android:title="@string/pref_invalid_action"
+            android:entries="@array/pref_invalid_entries"
+            android:entryValues="@array/pref_invalid_values" />
     </PreferenceCategory>
 
     <Preference
