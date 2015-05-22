@@ -77,9 +77,12 @@ public class Dictionary {
 
   public boolean isAlphabet(String cs) {
     if (cs.length() == 0) return false;
+    if (hasDelimiter()) cs = cs.replace(getDelimiter(), "");
     String[] ss = cs.split("");
     if (initials != null && !initials.contains(ss[1])) return false;
-    for(String s: ss) if(!alphabet.contains(s)) return false;
+    for(String s: ss) {
+      if(!alphabet.contains(s)) return false;
+    }
     return true;
   }
 
