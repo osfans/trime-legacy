@@ -43,6 +43,10 @@ public class Punct {
     return sb.toString();
   }
 
+  public boolean hasSymbols() {
+    return mPunct.containsKey("symbols");
+  }
+
   public MatrixCursor query(CharSequence s, boolean full) {
     MatrixCursor cursor = new MatrixCursor(new String[] {"hz"});
     String k;
@@ -60,14 +64,12 @@ public class Punct {
           Map<String, Object> mo = (Map<String, Object>) o;
           if (mo.containsKey("commit")) {
             cursor.addRow(new Object[] {(String)mo.get("commit")});
-              Log.e("kyle", "k="+k+",commit="+mo.get("commit"));
           } else if (mo.containsKey("pair")) {
             List<String> ls = (List<String>)mo.get("pair");
             int index = 0;
             if (mPair.containsKey(s)) index = 1 - mPair.get(s);
             cursor.addRow(new Object[] {ls.get(index)});
             mPair.put(s.toString(), index);
-            Log.e("kyle", "i="+index+",ls="+ls.get(index));
           }
         }
         cursor.moveToFirst();

@@ -75,9 +75,10 @@ public class Dictionary {
     return mHelper;
   }
 
-  public boolean isAlphabet(CharSequence cs, boolean hasComposingText) {
-    if (!hasComposingText && initials != null && cs.length() == 1 && !initials.contains(cs)) return false;
-    String[] ss = cs.toString().split("");
+  public boolean isAlphabet(String cs) {
+    if (cs.length() == 0) return false;
+    String[] ss = cs.split("");
+    if (initials != null && !initials.contains(ss[1])) return false;
     for(String s: ss) if(!alphabet.contains(s)) return false;
     return true;
   }
@@ -192,7 +193,7 @@ public class Dictionary {
     initHalf();
     mSwitches = mSchema.getSwitches();
     mPunct = mSchema.getPunct();
-    punct_pattern = mSchema.getRecognizerPattern("punct");
+    if (mPunct.hasSymbols()) punct_pattern = mSchema.getRecognizerPattern("punct");
   }
 
   public Object getKeyboards() {
@@ -446,7 +447,7 @@ public class Dictionary {
   }
 
   public boolean isPunct(String s) {
-    return s.length() > 1 && punct_pattern != null && punct_pattern.matcher(s).matches();
+    return !getAsciiPunct() && !isAlphabet(s) && punct_pattern != null && punct_pattern.matcher(s).matches();
   }
 
   private Cursor queryReverse(String s) {
@@ -471,7 +472,7 @@ public class Dictionary {
   }
 
   public boolean getAsciiPunct() {
-    return getAsciiMode() || mSwitches.getStatus("ascii_punct");
+    return mSwitches.getStatus("ascii_punct");
   }
 
   public boolean getFullShape() {

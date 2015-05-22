@@ -142,7 +142,7 @@ public class Keyboard {
 
     /** Keyboard mode, or zero, if none.  */
     private int mKeyboardMode;
-    private boolean mAsciiMode;
+    private int mAsciiMode;
 
     // Variables for pre-computing nearest keys.
     
@@ -843,7 +843,7 @@ public class Keyboard {
     if (defaultWidth == 0) defaultWidth = mDefaultWidth;
     List<Map<String,Object>> lm = (List<Map<String,Object>>)m.get("keys");
     mKeyboardMode = (Integer)getValue(m, "mode", 0);
-    mAsciiMode = (Boolean)getValue(m, "ascii_mode", true);
+    mAsciiMode = (Integer)getValue(m, "ascii_mode", 1);
     int defaultHGap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
     if (defaultHGap == 0) defaultHGap = mDefaultHorizontalGap;
 
@@ -951,6 +951,6 @@ public class Keyboard {
   }
 
   public boolean getAsciiMode() {
-    return mAsciiMode;
+    return mAsciiMode != 0;
   }
 }

@@ -168,7 +168,7 @@ speller:
 trime:
   keyboard:
   - mode: 0
-    ascii_mode: false
+    ascii_mode: 0
     columns: 11
     width: 9
     keys:

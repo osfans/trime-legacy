@@ -311,11 +311,11 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean isAlphabet(CharSequence s) {
-    return dialectDictionary.isAlphabet(s, hasComposingText());
+    return !isAsciiMode() && dialectDictionary.isAlphabet(composingText.toString() + s);
   }
 
   private boolean isDelimiter(CharSequence s) {
-    return hasComposingText() && dialectDictionary.isDelimiter(s);
+    return !isAsciiMode() && hasComposingText() && dialectDictionary.isDelimiter(s);
   }
 
   private CharSequence transform(CharSequence text) {
@@ -326,23 +326,17 @@ public class TRIME extends InputMethodService implements
 
   public void onText(CharSequence text) {
     if (candidatesContainer != null && !hasComposingText()) candidatesContainer.pickHighlighted(-1); //頂標點
-    if (!dialectDictionary.getAsciiPunct() && dialectDictionary.isPunct(composingText.toString() + text)) { //符號
-      composingText.append(text);
-      String s = composingText.toString();
-      updateComposingText(s);
-      Cursor cursor = dialectDictionary.queryPunct(s);
-      setCandidates(cursor, true);
-    } else if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
+    if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
       composingText.append(text);
       Cursor cursor = dialectDictionary.queryWord(composingText);
       setCandidates(cursor, true);
       updateComposingText(dialectDictionary.preedit(composingText.toString(), null));
-    } else if (!isAsciiMode() && isDelimiter(text)) {
-        if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
-          composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
-          updateComposingText(composingText.toString());
-        }
-    } else if (!isAsciiMode() && isAlphabet(text)) {
+    } else if (isDelimiter(text)) {
+      if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
+        composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
+        updateComposingText(composingText.toString());
+      }
+    } else if (isAlphabet(text)) {
       String r = composingText.toString();
       String s = dialectDictionary.segment(r, text);
       if (s == null && dialectDictionary.isAutoSelect(composingText)) {
@@ -360,9 +354,15 @@ public class TRIME extends InputMethodService implements
           updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
         }
       }
+    } else if (!isAsciiMode() && dialectDictionary.isPunct(composingText.toString() + text)) { //符號
+      composingText.append(text);
+      String s = composingText.toString();
+      updateComposingText(s);
+      Cursor cursor = dialectDictionary.queryPunct(s);
+      setCandidates(cursor, true);
     } else {
       if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //頂字
-      if (!dialectDictionary.getAsciiPunct()) { //中文標點
+      if (!isAsciiMode() && !dialectDictionary.getAsciiPunct()) { //中文標點
         Cursor cursor = dialectDictionary.queryPunct(text);
         if (cursor == null) commitText(transform(text));
         else {
@@ -371,7 +371,6 @@ public class TRIME extends InputMethodService implements
             if(cursor.getCount() == 1) candidatesContainer.pickHighlighted(0);
             else {
               composingText.setLength(0);
-              if (dialectDictionary.isPunct(text + "test")) composingText.append(text); //符號
               updateComposingText(cursor.getString(0));
             }
           }
