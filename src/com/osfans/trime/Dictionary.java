@@ -302,7 +302,7 @@ public class Dictionary {
 
     String sql = String.format(hz_sql, getQueryCol(), getWhere(s, true), getSingle());
     Cursor cursor = query(sql, null);
-    if (isFullPy()) return cursor;
+    if (cursor != null && isFullPy()) return cursor;
     if (cursor != null && cursor.getCount() == 100) return cursor;
     if (hasDelimiter() && s.contains(getDelimiter()) && !isSingle()) return cursor;
 
