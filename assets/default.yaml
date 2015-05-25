@@ -169,8 +169,6 @@ trime:
   keyboard:
   - mode: 0
     ascii_mode: 0
-    columns: 11
-    width: 9
     keys:
     - {symbol: '!', text: '1'}
     - {symbol: '@', text: '2'}
@@ -182,30 +180,27 @@ trime:
     - {symbol: '*', text: '8'}
     - {symbol: '(', text: '9'}
     - {symbol: ')', text: '0'}
-    - {text: <delete>, width: 10}
-    - {text: q}
-    - {text: w}
-    - {text: e}
-    - {text: r}
-    - {text: t}
-    - {text: y}
-    - {text: u}
-    - {text: i}
-    - {text: o}
-    - {text: p}
-    - {symbol: '"', text: "'", width: 10}
+    - {symbol: '_', text: q}
+    - {symbol: '-', text: w}
+    - {symbol: '+', text: e}
+    - {symbol: '=', text: r}
+    - {symbol: '|', text: t}
+    - {symbol: '\', text: y}
+    - {symbol: '[', text: u}
+    - {symbol: ']', text: i}
+    - {symbol: '{', text: o}
+    - {symbol: '}', text: p}
     - {width: 5}
-    - {text: a}
-    - {text: s}
+    - {symbol: '`', text: a}
+    - {symbol: '~', text: s}
     - {text: d}
     - {text: f}
     - {text: g}
     - {text: h}
     - {text: j}
-    - {text: k}
-    - {text: l}
-    - {symbol: ':', text: ';'}
-    - {text: <shift>, width: 10, symbolCode: -11}
+    - {symbol: ':', text: k}
+    - {symbol: ';', text: l}
+    - {text: <shift>}
     - {text: z}
     - {text: x}
     - {text: c}
@@ -213,18 +208,14 @@ trime:
     - {text: b}
     - {text: n}
     - {text: m}
+    - {text: <delete>, width: 20}
+    - {label: '123', switch: 1, width: 15, text: <switch>, symbol: '...', symbolCode: -10}
+    - {symbol: '"', text: "'"}
     - {symbol: '<', text: ','}
+    - {text: <space>, width: 30}
     - {symbol: '>', text: '.'}
     - {symbol: '?', text: '/'}
-    - {label: '123', switch: 1, width: 10, text: <switch>, symbol: '...', symbolCode: -10}
-    - {symbol: '~', text: "`"}
-    - {symbol: '{', text: '['}
-    - {symbol: '}', text: ']'}
-    - {text: <space>, width: 18}
-    - {symbol: '_', text: '-'}
-    - {symbol: '+', text: '='}
-    - {symbol: '|', text: '\'}
-    - {text: <enter>, symbol: '???', symbolCode: -12, width: 18}
+    - {text: <enter>, symbol: '???', symbolCode: -12, width: 15}
   - mode: 1
     width: 20
     keys:
