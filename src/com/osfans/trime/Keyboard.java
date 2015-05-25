@@ -270,7 +270,7 @@ public class Keyboard {
         /** Popup characters */
         public CharSequence popupCharacters;
         
-        public CharSequence symbol;
+        public String symbol, symbolLabel;
         public int symbolCode;
 
         public CharSequence labelPreview;
@@ -887,6 +887,7 @@ public class Keyboard {
       key.label = (String)getValue(mk, "label", null);
       key.labelPreview = (String)getValue(mk, "preview", null);
       key.symbol = (String)getValue(mk, "symbol", null);
+      key.symbolLabel = (String)getValue(mk, "symbolLabel", null);
       key.symbolCode = (Integer)getValue(mk, "symbolCode", 0);
       
       String s = (String)key.text;

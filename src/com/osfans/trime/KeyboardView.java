@@ -634,7 +634,8 @@ public class KeyboardView extends View implements View.OnClickListener {
             keyBackground.setState(drawableState);
             
             // Switch the character to uppercase if shift is pressed
-            String label = key.label == null? null : adjustCase(key.label).toString();
+            String label = key.label == null ? null : adjustCase(key.label).toString();
+            String symbol = key.symbolLabel == null ? key.symbol : key.symbolLabel;
             
             final Rect bounds = keyBackground.getBounds();
             if (key.width != bounds.right || 
@@ -660,13 +661,13 @@ public class KeyboardView extends View implements View.OnClickListener {
                     (key.width - padding.left - padding.right) / 2
                             + padding.left,
                     (key.height - padding.top - padding.bottom) / 2
-                            + (paint.getTextSize() - paint.descent()) / 2 + padding.top,
+                            + (paint.getTextSize() - paint.descent()) / 2 + padding.top + (symbol != null ? (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2 : 0),
                     paint);
 
-  if(key.symbol!=null) {
+  if (symbol != null) {
       mPaintSymbol.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
 
-	  canvas.drawText((String)key.symbol,
+	  canvas.drawText(symbol,
           (key.width - padding.left - padding.right) / 2 
           + padding.left,
   2 + (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2  + padding.top,
