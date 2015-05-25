@@ -422,7 +422,7 @@ public class TRIME extends InputMethodService implements
     String hz = candidate.getAsString("hz");
     String py = candidate.getAsString("py");
     String sc = dialectDictionary.openCC(hz); //簡繁轉換
-    if (dialectDictionary.isCommitPy()) sc = String.format("%s(%s)", sc, py); //輸出編碼
+    if (dialectDictionary.isCommitPy() && py != null) sc = String.format("%s(%s)", sc, py); //輸出編碼
     commitText(sc);
     setCandidates(dialectDictionary.getAssociation(hz), false); //詞語聯想
   }
