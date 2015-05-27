@@ -450,7 +450,10 @@ public class TRIME extends InputMethodService implements
 
   private void setCandidates(Cursor cursor, boolean highlightDefault) {
     if (candidatesContainer != null) {
-      if (!hasComposingText() && cursor == null) cursor = dialectDictionary.queryStatus();
+      if (!hasComposingText() && cursor == null) {
+        cursor = dialectDictionary.queryStatus();
+        highlightDefault = false;
+      }
       candidatesContainer.setCandidates(cursor, highlightDefault, dialectDictionary);
       setCandidatesViewShown(canCompose);
     }
@@ -516,8 +519,7 @@ public class TRIME extends InputMethodService implements
 
   private boolean handleClear(int keyCode) {
     if (keyCode == Keyboard.KEYCODE_CLEAR) {
-      clearComposingText();
-      setCandidates(null, true);
+      escape();
       return true;
     }
     return false;
