@@ -25,5 +25,5 @@
     <dimen name="pinyin_text_size">12sp</dimen>
     <dimen name="key_text_size">20sp</dimen>
     <dimen name="label_text_size">16sp</dimen>
-    <dimen name="symbol_text_size">12sp</dimen>
+    <dimen name="symbol_text_size">10sp</dimen>
 </resources>

@@ -34,7 +34,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-//import android.util.Log;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -185,7 +185,7 @@ public class KeyboardView extends View implements View.OnClickListener {
     private int mStartX;
     private int mStartY;
 
-    private boolean mProximityCorrectOn;
+    private boolean mProximityCorrectOn = true;
     
     private Paint mPaint;
     private Rect mPadding;
@@ -625,6 +625,7 @@ public class KeyboardView extends View implements View.OnClickListener {
         }
         canvas.drawColor(0x00000000, PorterDuff.Mode.CLEAR);
         final int keyCount = keys.length;
+        final float symbolTop = (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2;
         for (int i = 0; i < keyCount; i++) {
             final Key key = keys[i];
             if (drawSingleKey && invalidKey != key) {
@@ -636,6 +637,9 @@ public class KeyboardView extends View implements View.OnClickListener {
             // Switch the character to uppercase if shift is pressed
             String label = key.label == null ? null : adjustCase(key.label).toString();
             String symbol = key.symbolLabel == null ? key.symbol : key.symbolLabel;
+            String hint = key.hint;
+            int left = (key.width - padding.left - padding.right) / 2 + padding.left;
+            int top = padding.top;
             
             final Rect bounds = keyBackground.getBounds();
             if (key.width != bounds.right || 
@@ -657,22 +661,21 @@ public class KeyboardView extends View implements View.OnClickListener {
                 // Draw a drop shadow for the text
                 paint.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
                 // Draw the text
-                canvas.drawText(label,
-                    (key.width - padding.left - padding.right) / 2
-                            + padding.left,
+                canvas.drawText(label, left,
                     (key.height - padding.top - padding.bottom) / 2
-                            + (paint.getTextSize() - paint.descent()) / 2 + padding.top + (symbol != null ? (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2 : 0),
+                            + (paint.getTextSize() - paint.descent()) / 2 + top,
                     paint);
 
-  if (symbol != null) {
-      mPaintSymbol.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
+                if (symbol != null) {
+                    mPaintSymbol.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
+                    canvas.drawText(symbol, left, symbolTop + top, mPaintSymbol);
+                }
 
-	  canvas.drawText(symbol,
-          (key.width - padding.left - padding.right) / 2 
-          + padding.left,
-  2 + (mPaintSymbol.getTextSize() - mPaintSymbol.descent()) / 2  + padding.top,
-          mPaintSymbol); 
-  }
+                if (hint != null) {
+                    mPaintSymbol.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
+                    canvas.drawText(hint, left, key.height  - padding.bottom - symbolTop + top, mPaintSymbol);
+                }
+
                 // Turn off drop shadow
                 paint.setShadowLayer(0, 0, 0, 0);
             } else if (key.icon != null) {
