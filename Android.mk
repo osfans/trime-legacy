@@ -7,7 +7,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := \
          $(call all-subdir-java-files)
 
-LOCAL_STATIC_JAVA_LIBRARIES := libsnakeyaml
+LOCAL_STATIC_JAVA_LIBRARIES := libsnakeyaml android-support-v4
 
 #LOCAL_AAPT_FLAGS := -0 .db
 
@@ -17,7 +17,7 @@ include $(BUILD_PACKAGE)
 
 include $(CLEAR_VARS)
 
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := libsnakeyaml:libs/snakeyaml-1.10-android.jar
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := libsnakeyaml:libs/snakeyaml-1.15-local-android.jar
 
 include $(BUILD_MULTI_PREBUILT)
 
