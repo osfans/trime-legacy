@@ -56,6 +56,7 @@ public class TRIME extends InputMethodService implements
   protected int dictionaryId;
   private AlertDialog mOptionsDialog;
   private static TRIME self;
+  private Rime mRime;
 
   @Override
   public void onCreate() {
@@ -65,6 +66,7 @@ public class TRIME extends InputMethodService implements
     effect = new SoundMotionEffect(this);
     keyboardSwitch = new KeyboardSwitch(this);
     initDictionary();
+    mRime = Rime.getRime();
 
     orientation = getResources().getConfiguration().orientation;
     // Use the following line to debug IME service.
@@ -75,6 +77,7 @@ public class TRIME extends InputMethodService implements
   public void onDestroy() {
     super.onDestroy();
     self = null;
+    mRime.destroy();
   }
 
   public static TRIME getService() {
@@ -228,6 +231,7 @@ public class TRIME extends InputMethodService implements
    * Commits the given text to the editing field.
    */
   private void commitText(CharSequence text) {
+    if (text == null) return;
     InputConnection ic = getCurrentInputConnection();
     if (ic != null) {
       if (text.length() > 1) {
@@ -240,6 +244,7 @@ public class TRIME extends InputMethodService implements
       }
       escape();
     }
+    mRime.commitComposition();
   }
 
   private CharSequence getLastText() {
@@ -283,7 +288,7 @@ public class TRIME extends InputMethodService implements
         }
 
         if (keyCode == KeyEvent.KEYCODE_DEL) {
-            keyChar = Keyboard.KEYCODE_DELETE;
+            keyChar = Keyboard.XK_BackSpace;
         } else if (s.length() == 1) {
             keyChar = (int)c;
         }
@@ -299,15 +304,14 @@ public class TRIME extends InputMethodService implements
     if (keyboardSwitch.onKey(primaryCode)) {
       bindKeyboardToInputView();
       escape();
-      return;
-    }
-    if (handleOption(primaryCode) || handleCapsLock(primaryCode)
+    } else if(mRime.onKey(primaryCode)) {
+      if(mRime.getCommit()) commitText(mRime.getCommitText());
+      updateComposingText();
+    } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleEnter(primaryCode) || handleSpace(primaryCode) || handleSelect(primaryCode)
         || handleClear(primaryCode) || handleDelete(primaryCode)
         || handleReverse(primaryCode) || handleComposing(primaryCode)) {
-      return;
-    }
-    handleKey(primaryCode);
+    } else handleKey(primaryCode);
   }
 
   private boolean isAlphabet(CharSequence s) {
@@ -325,65 +329,9 @@ public class TRIME extends InputMethodService implements
   }
 
   public void onText(CharSequence text) {
-    if (candidatesContainer != null && !hasComposingText()) candidatesContainer.pickHighlighted(-1); //頂標點
-    if (!isAsciiMode() && dialectDictionary.isReverse(composingText.toString() + text)) { //反查輸入
-      composingText.append(text);
-      Cursor cursor = dialectDictionary.queryWord(composingText);
-      setCandidates(cursor, true);
-      updateComposingText(dialectDictionary.preedit(composingText.toString(), null));
-    } else if (isDelimiter(text)) {
-      if (!composingText.toString().endsWith(dialectDictionary.getDelimiter())) {
-        composingText.append(dialectDictionary.getDelimiter());  //手動切分音节
-        updateComposingText(composingText.toString());
-      }
-    } else if (isAlphabet(text)) {
-      String r = composingText.toString();
-      String s = dialectDictionary.segment(r, text);
-      if (s == null && dialectDictionary.isAutoSelect(composingText)) {
-        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //自動上屏
-        s = dialectDictionary.segment("", text);
-      }
-      if (s != null) {
-        composingText.setLength(0);
-        composingText.append(s);
-        Cursor cursor = dialectDictionary.queryWord(composingText);
-        setCandidates(cursor, true);
-        if (dialectDictionary.isAutoSelect(composingText) && cursor != null && cursor.getCount() == 1) {
-          if (candidatesContainer != null) candidatesContainer.pickHighlighted(0);
-        } else {
-          updateComposingText(dialectDictionary.preedit(composingText.toString(), cursor));
-        }
-      } else { //空碼處理
-        if (dialectDictionary.isInvalidClear()) escape(); //空碼清屏
-        else if (dialectDictionary.isInvalidCommit() && candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //空碼上屏
-        if (dialectDictionary.isInvalidAction()) {
-          composingText.setLength(0);
-          onText(text);
-        }
-      }
-    } else if (!isAsciiMode() && dialectDictionary.isPunct(composingText.toString() + text)) { //符號
-      composingText.append(text);
-      String s = composingText.toString();
-      updateComposingText(s);
-      Cursor cursor = dialectDictionary.queryPunct(s);
-      setCandidates(cursor, true);
-    } else {
-      if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1); //頂字
-      if (!isAsciiMode() && !dialectDictionary.getAsciiPunct()) { //中文標點
-        Cursor cursor = dialectDictionary.queryPunct(text);
-        if (cursor == null) commitText(transform(text));
-        else {
-          setCandidates(cursor, true);
-          if (candidatesContainer != null) {
-            if(cursor.getCount() == 1) candidatesContainer.pickHighlighted(0);
-            else {
-              composingText.setLength(0);
-              updateComposingText(cursor.getString(0));
-            }
-          }
-        }
-      } else commitText(transform(text));
-    }
+    mRime.onText(text);
+    if(mRime.getCommit()) commitText(mRime.getCommitText());
+    updateComposingText();
   }
 
   public void onPress(int primaryCode) {
@@ -411,30 +359,24 @@ public class TRIME extends InputMethodService implements
     requestHideSelf(0);
   }
 
-  public void onPickCandidate(ContentValues candidate) {
+  public void onPickCandidate(int i) {
     // Commit the picked candidate and suggest its following words.
-    if (candidate == null) return;
-    if (candidate.containsKey("switch")) {
-      dialectDictionary.toggleStatus(candidate.getAsString("switch"));
-      setCandidates(null, false);
-      return;
+    if (mRime.selectCandidate(i)) {
+      if (mRime.getCommit()) commitText(mRime.getCommitText());
+      updateComposingText();
     }
-    String hz = candidate.getAsString("hz");
-    String py = candidate.getAsString("py");
-    String sc = dialectDictionary.openCC(hz); //簡繁轉換
-    if (dialectDictionary.isCommitPy() && py != null) sc = String.format("%s(%s)", sc, py); //輸出編碼
-    commitText(sc);
-    setCandidates(dialectDictionary.getAssociation(hz), false); //詞語聯想
   }
 
   public boolean hasComposingText() {
-    return composingText.length() > 0;
+    return mRime.hasComposingText();
   }
 
-  private void updateComposingText(String s) {
+  private void updateComposingText() {
     InputConnection ic = getCurrentInputConnection();
     if (ic != null) {
       // Set cursor position 1 to advance the cursor to the text end.
+      setCandidates(true);
+      String s = mRime.getComposingText();
       ic.setComposingText(s, 1);
     }
   }
@@ -444,17 +386,14 @@ public class TRIME extends InputMethodService implements
       // Clear composing only when there's composing-text to avoid the selected
       // text being cleared unexpectedly.
       composingText.setLength(0);
-      updateComposingText("");
+      updateComposingText();
     }
   }
 
-  private void setCandidates(Cursor cursor, boolean highlightDefault) {
+  private void setCandidates(boolean highlightDefault) {
     if (candidatesContainer != null) {
-      if (!hasComposingText() && cursor == null) {
-        cursor = dialectDictionary.queryStatus();
-        highlightDefault = false;
-      }
-      candidatesContainer.setCandidates(cursor, highlightDefault, dialectDictionary);
+      if (!hasComposingText()) highlightDefault = false;
+      candidatesContainer.setCandidates(highlightDefault);
       setCandidatesViewShown(canCompose);
     }
   }
@@ -526,7 +465,7 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleEnter(int keyCode) {
-    if (keyCode == '\n') {
+    if (keyCode == Keyboard.XK_Return) {
       if (hasComposingText()) {
         String s = composingText.toString().trim();
         if (dialectDictionary.hasDelimiter()) s = s.replace(dialectDictionary.getDelimiter(), " ");
@@ -561,7 +500,7 @@ public class TRIME extends InputMethodService implements
 
   private boolean handleDelete(int keyCode) {
     // Handle delete-key only when no composing text. 
-    if ((keyCode == Keyboard.KEYCODE_DELETE)) {
+    if ((keyCode == Keyboard.XK_BackSpace)) {
         if (composingText.length() == 1) {
             escape();
         } else if (hasComposingText()) {
@@ -637,6 +576,6 @@ public class TRIME extends InputMethodService implements
    */
   private void escape() {
     clearComposingText();
-    setCandidates(null, false);
+    setCandidates(false);
   }
 }

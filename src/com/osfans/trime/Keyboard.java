@@ -88,7 +88,21 @@ public class Keyboard {
     public static final int KEYCODE_MODE_PREV = -21;
     public static final int KEYCODE_MODE_NEXT = -22;
     public static final int KEYCODE_MODE_SWITCH = -30;
-    
+
+    public static final int XK_BackSpace = 0xff08;  /* Back space, back char */
+    public static final int XK_Tab = 0xff09;
+    public static final int XK_Linefeed = 0xff0a;  /* Linefeed, LF */
+    public static final int XK_Clear = 0xff0b;
+    public static final int XK_Return = 0xff0d;  /* Return, enter */
+    public static final int XK_Pause = 0xff13;  /* Pause, hold */
+    public static final int XK_Scroll_Lock = 0xff14;
+    public static final int XK_Sys_Req = 0xff15;
+    public static final int XK_Escape = 0xff1b;
+    public static final int XK_Delete = 0xffff;  /* Delete, rubout */
+    public static final int XK_Mode_switch = 0xff7e;  /* Character set switch */
+    public static final int XK_Page_Up = 0xff55;
+    public static final int XK_Page_Down = 0xff56;
+
     /** Keyboard label **/
     //private CharSequence mLabel;
 
@@ -895,10 +909,11 @@ public class Keyboard {
       int c = s.codePointAt(0);
       key.codes = new int[]{c};
 
-      if (s.contentEquals("<space>")){
+      if (s.contentEquals("space")){
         key.codes = new int[] {' '};
         if (key.label==null) key.label = "␣";
         key.repeatable = true;
+        key.text = null;
       } else if(s.contentEquals("<shift>")){
         key.codes = new int[] {KEYCODE_SHIFT};
         if (key.label==null) key.label = "⇪";
@@ -907,16 +922,17 @@ public class Keyboard {
         mShiftKey = key;
         mShiftKeyIndex = mKeys.size()-2;
         mModifierKeys.add(key);
-      } else if(s.contentEquals("<delete>")){
-        key.codes = new int[] {KEYCODE_DELETE};
+      } else if(s.contentEquals("BackSpace")){
+        key.codes = new int[] {XK_BackSpace};
         if (key.label==null) key.label = "⌫";
         key.repeatable = true;
+        key.text = null;
       } else if(s.contentEquals("<clear>")){
         key.codes = new int[] {KEYCODE_CLEAR};
         if (key.label==null) key.label = "⎚";
-      } else if(s.contentEquals("<enter>")){
-        key.codes = new int[] {'\n'};
-        key.text = "\n";
+      } else if(s.contentEquals("Return")){
+        key.codes = new int[] {XK_Return};
+        key.text = null;
         if (key.label==null) key.label = "⏎";
       } else if(s.contentEquals("<switch>")){
         key.codes = new int[] {KEYCODE_MODE_SWITCH - (Integer)getValue(mk, "switch", 0)};

@@ -208,14 +208,14 @@ trime:
     - {text: b}
     - {text: n}
     - {text: m}
-    - {text: <delete>, width: 20}
+    - {text: BackSpace, width: 20}
     - {label: '123', switch: 1, width: 15, text: <switch>, symbol: '...', symbolCode: -10}
     - {symbol: '"', text: "'"}
     - {symbol: '<', text: ','}
-    - {text: <space>, width: 30}
+    - {text: space, width: 30}
     - {symbol: '>', text: '.'}
     - {symbol: '?', text: '/'}
-    - {text: <enter>, symbol: '???', symbolCode: -12, width: 15}
+    - {text: Return, symbol: '???', symbolCode: -12, width: 15}
   - mode: 1
     width: 20
     keys:
@@ -241,6 +241,6 @@ trime:
     - {text: ','}
     - {text: '='}
     - {text: <switch>, switch: 0}
-    - {text: <space>}
-    - {text: <delete>}
-    - {text: <enter>}
+    - {text: space}
+    - {text: BackSpace}
+    - {text: Return}

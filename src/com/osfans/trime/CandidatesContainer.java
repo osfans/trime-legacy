@@ -17,15 +17,11 @@
 package com.osfans.trime;
 
 import android.content.Context;
-import android.content.ContentValues;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.database.Cursor;
 import android.util.Log;
-
-import java.util.ArrayList;
 
 /**
  * Contains all candidates in pages where users could move forward (next page)
@@ -39,14 +35,11 @@ public class CandidatesContainer extends LinearLayout {
   private CandidateView candidateView;
   private Button leftArrow;
   private Button rightArrow;
-  private Cursor cursor;
-  private boolean highlightDefault;
-  private int currentWordCount;
-  private int currentWordSkip;
-  private Dictionary dialectDictionary;
+  private Rime mRime;
 
   public CandidatesContainer(Context context, AttributeSet attrs) {
     super(context, attrs);
+    mRime = Rime.getRime();
   }
   
   @Override
@@ -58,14 +51,14 @@ public class CandidatesContainer extends LinearLayout {
     leftArrow = (Button) findViewById(R.id.arrow_left);
     leftArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        movePage(-1);
+        movePage(Keyboard.XK_Page_Up);
       }
     });
 
     rightArrow = (Button) findViewById(R.id.arrow_right);
     rightArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        movePage(1);
+        movePage(Keyboard.XK_Page_Down);
       }
     });
   }
@@ -75,90 +68,23 @@ public class CandidatesContainer extends LinearLayout {
     candidateView.setCandidateViewListener(listener);
   }
   
-  public void setCandidates(Cursor words, boolean highlightDefault, Dictionary dialectDictionary) {
+  public void setCandidates(boolean highlightDefault) {
     // All the words will be split into pages and shown in the candidate-view.
-    if (cursor != null) cursor.close();
-    cursor = words;
-    this.highlightDefault = highlightDefault;
-    currentWordCount = 0;
-    currentWordSkip = 0;
+    candidateView.highlightDefault(highlightDefault);
     movePage(0);
-    this.dialectDictionary = dialectDictionary;
   }
 
   public boolean pickHighlighted(int index) {
-    if (index >= currentWordCount) return false;
     return candidateView.pickHighlighted(index);
-  }
- 
-  private boolean isFirst() {
-    return (cursor != null) && cursor.isFirst();
-  }
-
-  private boolean isLast() {
-    return (cursor != null) && (cursor.getPosition() + currentWordSkip + currentWordCount >= cursor.getCount());
   }
 
   private void movePage(int direction) {
-    if (cursor == null || cursor.getCount() == 0) {
-      candidateView.setCandidates(null);
-      enableArrow(leftArrow, false);
-      enableArrow(rightArrow, false);
-    } else {
-      candidateView.setCandidates(getCandidates(direction));
-      if (highlightDefault) candidateView.highlightDefault();
-      enableArrow(leftArrow, !isFirst());
-      enableArrow(rightArrow, !isLast());
+    if (direction != 0 ) {
+      mRime.onKey(direction);
+      candidateView.highlightDefault(true);
     }
-  }
-
-  private ContentValues[] getCandidates(int direction) {
-    if ((direction > 0 && isLast()) || (direction < 0 && isFirst()) ) {
-      currentWordCount = 0;
-      currentWordSkip = 0;
-      return null;
-    }
-
-    int p = 0;
-    if (direction > 0 && currentWordCount + currentWordSkip> 0)  {
-      cursor.move(currentWordCount + currentWordSkip);
-      p = cursor.getPosition();
-    } else if (direction < 0) cursor.move(-1);
-    
-    float n = 0;
-    ArrayList<ContentValues> candidates = new ArrayList<ContentValues>();
-    int max_len = candidateView.getCandMaxLen();
-    int max_num = candidateView.getCandNum();
-    String hz;
-    int i = 0;
-    currentWordSkip = 0;
-    do {
-      ContentValues s = new ContentValues();
-      hz = cursor.getString(0);
-      s.put("hz", hz);
-      i = cursor.getColumnIndex("py");
-      if (i >= 0) s.put("py", dialectDictionary.comment(cursor.getString(i)));
-      i = cursor.getColumnIndex("switch");
-      if (i >= 0) s.put("switch", cursor.getString(i));
-      if (candidates.contains(s)) { //單屏去重
-        currentWordSkip++;
-        continue;
-      }
-      n += candidateView.len(hz);
-      if (n > max_len && candidates.size() > 0) {
-        if (direction < 0) cursor.move(1);
-        break;
-      }
-      if (direction < 0) candidates.add(0, s);
-      else candidates.add(s);
-      if (n >= max_len || candidates.size() >= max_num) break;
-    } while (cursor.move(direction >=0 ? 1 : -1));
-    if (direction >= 0) cursor.moveToPosition(p);
-    else if (direction < 0 && cursor.isBeforeFirst()) cursor.moveToFirst();
-    currentWordCount = candidates.size(); 
-    ContentValues[] ret = new ContentValues[currentWordCount];
-    candidates.toArray(ret);
-    return ret;
+    enableArrow(leftArrow, !mRime.isFirst());
+    enableArrow(rightArrow, !mRime.isLast());
   }
 
   private void enableArrow(Button arrow, boolean enabled) {

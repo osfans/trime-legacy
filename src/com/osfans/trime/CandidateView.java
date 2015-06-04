@@ -17,7 +17,6 @@
 package com.osfans.trime;
 
 import android.content.Context;
-import android.content.ContentValues;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -40,15 +39,15 @@ public class CandidateView extends View {
    * Listens to candidate-view actions.
    */
   public static interface CandidateViewListener {
-    void onPickCandidate(ContentValues candidate);
+    void onPickCandidate(int index);
   }
 
   public static final int MAX_CANDIDATE_COUNT = 20;
   private static final int CANDIDATE_TOUCH_OFFSET = -12;
 
   private CandidateViewListener listener;
-  private ContentValues[] candidates = null;
   private int highlightIndex;
+  private Rime mRime;
 
   private Drawable candidateHighlight;
   private Drawable candidateSeparator;
@@ -82,6 +81,7 @@ public class CandidateView extends View {
     paintpy.setStrokeWidth(0);
 
     setWillNotDraw(false);
+    mRime = Rime.getRime();
   }
   
   public void setCandidateViewListener(CandidateViewListener listener) {
@@ -89,22 +89,13 @@ public class CandidateView extends View {
   }
 
   /**
-   * Sets the candidates being shown, and the view will be updated accordingly.
-   * 
-   * @param candidates a string contains 0 to MAX_CANDIDATE_COUNT candidates.
-   */
-  public void setCandidates(ContentValues[] candidates) {
-    this.candidates = candidates;
-    updateCandidateWidth();
-    removeHighlight();
-  }
-
-  /**
    * Highlight the first candidate as the default candidate.
    */
-  public void highlightDefault() {
-    if (candidates.length > 0) {
-      highlightIndex = 0;
+  public void highlightDefault(boolean highlightDefault) {
+    removeHighlight();
+    updateCandidateWidth();
+    if (mRime.getCandNum() > 0 && highlightDefault) {
+      highlightIndex = mRime.getCandHighlightIndex();
       invalidate();
     }    
   }
@@ -116,7 +107,7 @@ public class CandidateView extends View {
    */
   public boolean pickHighlighted(int index) {
     if ((highlightIndex >= 0) && (listener != null)) {
-      listener.onPickCandidate(getCandidate(index < 0 ? highlightIndex : index));
+      listener.onPickCandidate(index < 0 ? highlightIndex : index);
       return true;
     }
     return false;
@@ -146,7 +137,7 @@ public class CandidateView extends View {
   }
 
   private void drawCandidates(Canvas canvas) {
-    final int count = candidates!=null ? candidates.length : 0;
+    final int count = mRime.getCandNum();
 
     float size = getCandFontSize();
     if (size != paint.getTextSize()) {
@@ -163,18 +154,18 @@ public class CandidateView extends View {
       candidateRect[0].bottom);
     candidateSeparator.draw(canvas);
 
-    boolean hasPy = getCandidatePy(0) != null;
+    boolean hasPy = mRime.getComment(0) != null;
     final int y =
         (int) (((getHeight() + (hasPy ? paintpy.getTextSize() : 0) - paint.getTextSize()) / 2) - paint.ascent());
     for (int i = 0; i < count; i++) {
       // Calculate a position where the text could be centered in the rectangle.
-      String candidateHz = getCandDisplay(getCandidateHz(i));
-      float x = (int) ((candidateRect[i].left + candidateRect[i].right - paint.measureText(candidateHz)) / 2);
-      canvas.drawText(candidateHz, x, y, paint);
+      String candidate = getCandDisplay(mRime.getCandidate(i));
+      float x = (int) ((candidateRect[i].left + candidateRect[i].right - paint.measureText(candidate)) / 2);
+      canvas.drawText(candidate, x, y, paint);
       if (hasPy) {
-        String candidatePy = getCandidatePy(i);
-        float x2 = (int) ((candidateRect[i].left + candidateRect[i].right - paintpy.measureText(candidatePy)) / 2);
-        canvas.drawText(candidatePy, x2, - paintpy.ascent(), paintpy);
+        String comment = mRime.getComment(i);
+        float x2 = (int) ((candidateRect[i].left + candidateRect[i].right - paintpy.measureText(comment)) / 2);
+        canvas.drawText(comment, x2, - paintpy.ascent(), paintpy);
       }
       // Draw the separator at the right edge of each candidate.
       candidateSeparator.setBounds(
@@ -242,41 +233,19 @@ public class CandidateView extends View {
    */
   private int getCandidateIndex(int x, int y) {
     Rect r = new Rect();
+    int n = mRime.getCandNum();
     for (int i = 0; i < MAX_CANDIDATE_COUNT; i++) {
-      if (candidates!= null && candidateRect[i] != null) {
+      if (n > 0) {
         // Enlarge the rectangle to be more responsive to user clicks.
         r.set(candidateRect[i]);
         r.inset(0, CANDIDATE_TOUCH_OFFSET);
         if (r.contains(x, y)) {
           // Returns -1 if there is no candidate in the hitting rectangle.
-          return (i < candidates.length) ? i : -1;
+          return (i < n) ? i : -1;
         }
       }
     }
     return -1;
-  }
-
-  /**
-   * Returns the candidate by the given candidate index.
-   * 
-   * @param index should be >= 0 and < candidates.length().
-   */
-  private ContentValues getCandidate(int index) {
-    return (candidates!=null && candidates.length > index) ? candidates[index] : null;
-  }
-
-  private String getCandidateHz(int index) {
-    return getCandidateKey(index, "hz");
-  }
-
-  private String getCandidatePy(int index) {
-    return getCandidateKey(index, "py");
-  }
-
-  private String getCandidateKey(int index, String k) {
-    ContentValues r = getCandidate(index);
-    if (r != null && r.containsKey(k)) return r.getAsString(k);
-    return null;
   }
 
   public float len(String s) {
@@ -307,7 +276,7 @@ public class CandidateView extends View {
   }
 
   private int getCandidateWidth(int index) {
-    return (int)(len(getCandidateHz(index)) * getCandFontSize());
+    return (int)(len(mRime.getCandidate(index)) * getCandFontSize());
   }
 
   public int getCandMaxLen() {
