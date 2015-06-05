@@ -154,16 +154,15 @@ public class CandView extends View {
       candidateRect[0].bottom);
     candidateSeparator.draw(canvas);
 
-    boolean hasPy = mRime.getComment(0) != null;
     final int y =
-        (int) (((getHeight() + (hasPy ? paintpy.getTextSize() : 0) - paint.getTextSize()) / 2) - paint.ascent());
+        (int) (((getHeight() + paintpy.getTextSize() - paint.getTextSize()) / 2) - paint.ascent());
     for (int i = 0; i < count; i++) {
       // Calculate a position where the text could be centered in the rectangle.
       String candidate = getCandDisplay(mRime.getCandidate(i));
       float x = (int) ((candidateRect[i].left + candidateRect[i].right - paint.measureText(candidate)) / 2);
       canvas.drawText(candidate, x, y, paint);
-      if (hasPy) {
-        String comment = mRime.getComment(i);
+      String comment = mRime.getComment(i);
+      if (comment != null) {
         float x2 = (int) ((candidateRect[i].left + candidateRect[i].right - paintpy.measureText(comment)) / 2);
         canvas.drawText(comment, x2, - paintpy.ascent(), paintpy);
       }
