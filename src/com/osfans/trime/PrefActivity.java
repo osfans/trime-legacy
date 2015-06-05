@@ -33,7 +33,7 @@ import android.webkit.WebViewClient;
 /**
  * Manages IME preferences. 
  */
-public class ImePreferenceActivity extends PreferenceActivity {
+public class PrefActivity extends PreferenceActivity {
 
   private final String licenseUrl = "file:///android_asset/licensing.html";
 

@@ -33,19 +33,19 @@ import android.util.TypedValue;
 /**
  * View to show candidate words.
  */
-public class CandidateView extends View {
+public class CandView extends View {
 
   /**
    * Listens to candidate-view actions.
    */
-  public static interface CandidateViewListener {
+  public static interface CandViewListener {
     void onPickCandidate(int index);
   }
 
   public static final int MAX_CANDIDATE_COUNT = 20;
   private static final int CANDIDATE_TOUCH_OFFSET = -12;
 
-  private CandidateViewListener listener;
+  private CandViewListener listener;
   private int highlightIndex;
   private Rime mRime;
 
@@ -59,7 +59,7 @@ public class CandidateView extends View {
   private final String candMaxPhraseKey = "pref_cand_max_phrase";
   private final SharedPreferences preferences;
 
-  public CandidateView(Context context, AttributeSet attrs) {
+  public CandView(Context context, AttributeSet attrs) {
     super(context, attrs);
 
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -84,17 +84,17 @@ public class CandidateView extends View {
     mRime = Rime.getRime();
   }
   
-  public void setCandidateViewListener(CandidateViewListener listener) {
+  public void setCandViewListener(CandViewListener listener) {
     this.listener = listener;
   }
 
   /**
    * Highlight the first candidate as the default candidate.
    */
-  public void highlightDefault(boolean highlightDefault) {
+  public void update() {
     removeHighlight();
     updateCandidateWidth();
-    if (mRime.getCandNum() > 0 && highlightDefault) {
+    if (mRime.getCandNum() > 0) {
       highlightIndex = mRime.getCandHighlightIndex();
       invalidate();
     }    

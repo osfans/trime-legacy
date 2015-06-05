@@ -36,14 +36,14 @@ import android.content.Intent;
 /**
  * Abstract class extended by all Dialect IME.
  */
-public class TRIME extends InputMethodService implements 
-    KeyboardView.OnKeyboardActionListener, CandidateView.CandidateViewListener {
+public class Trime extends InputMethodService implements 
+    KeyboardView.OnKeyboardActionListener, CandView.CandViewListener {
 
   protected KeyboardView inputView;
-  private CandidatesContainer candidatesContainer;
+  private CandContainer candidatesContainer;
   private KeyboardSwitch keyboardSwitch;
-  private Dictionary dialectDictionary;
-  private SoundMotionEffect effect;
+  private Pref mPref;
+  private Effect effect;
   private int orientation;
 
   private boolean canCompose;
@@ -52,15 +52,15 @@ public class TRIME extends InputMethodService implements
   private boolean isLeftQuote = true;
 
   private AlertDialog mOptionsDialog;
-  private static TRIME self;
+  private static Trime self;
   private Rime mRime;
 
   @Override
   public void onCreate() {
     super.onCreate();
     self = this;
-    dialectDictionary = new Dictionary(this);
-    effect = new SoundMotionEffect(this);
+    mPref = new Pref(this);
+    effect = new Effect(this);
     keyboardSwitch = new KeyboardSwitch(this);
     initKeyboard();
     mRime = Rime.getRime();
@@ -77,12 +77,12 @@ public class TRIME extends InputMethodService implements
     mRime.destroy();
   }
 
-  public static TRIME getService() {
+  public static Trime getService() {
     return self;
   }
 
   private void initKeyboard() {
-    keyboardSwitch.init(dialectDictionary.getKeyboards());
+    keyboardSwitch.init();
   }
 
   @Override
@@ -125,18 +125,18 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public View onCreateCandidatesView() {
-    candidatesContainer = (CandidatesContainer) getLayoutInflater().inflate(
+    candidatesContainer = (CandContainer) getLayoutInflater().inflate(
         R.layout.candidates, null);
-    candidatesContainer.setCandidateViewListener(this);
+    candidatesContainer.setCandViewListener(this);
     return candidatesContainer;
   }
     
-    @Override
-    public void onStartInput(EditorInfo attribute, boolean restarting) {
-        super.onStartInput(attribute, restarting);
-        editorstart(attribute.inputType);
-        effect.reset();
-    }
+  @Override
+  public void onStartInput(EditorInfo attribute, boolean restarting) {
+    super.onStartInput(attribute, restarting);
+    editorstart(attribute.inputType);
+    effect.reset();
+  }
 
   @Override
   public void onStartInputView(EditorInfo attribute, boolean restarting) {
@@ -148,7 +148,7 @@ public class TRIME extends InputMethodService implements
   public void onFinishInput() {
     // Clear composing as any active composing text will be finished, same as in
     // onFinishInputView, onFinishCandidatesView, and onUnbindInput.
-    clearComposingText();
+    clearComposing();
     //setCandidatesViewShown(false);
     super.onFinishInput();
   }
@@ -162,13 +162,13 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public void onFinishCandidatesView(boolean finishingInput) {
-    clearComposingText();
+    clearComposing();
     super.onFinishCandidatesView(finishingInput);
   }
 
   @Override
   public void onUnbindInput() {
-    clearComposingText();
+    clearComposing();
     super.onUnbindInput();
   }
 
@@ -176,10 +176,10 @@ public class TRIME extends InputMethodService implements
     if (inputView != null) {
       // Bind the selected keyboard to the input view.
       Keyboard sk = (Keyboard)keyboardSwitch.getCurrentKeyboard();
-      int i = dialectDictionary.getKeyTextSize();
+      int i = mPref.getKeyTextSize();
       inputView.setTextSize(i);
       inputView.setKeyboard(sk);
-      inputView.setPreviewEnabled(dialectDictionary.isKeyboardPreview());
+      inputView.setPreviewEnabled(mPref.isKeyboardPreview());
       //updateCursorCapsToInputView();
     }
   }
@@ -239,11 +239,13 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
+    Log.e("Trime", "keycode="+keyCode+",event="+event);
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
-      clearComposingText(); //返回鍵清屏
+      clearComposing(); //返回鍵清屏
       if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
         return true;
       }
+      else Log.e("Trime", "inputview not handled");
     }
 
     if (processKey(event)) return true;
@@ -257,7 +259,7 @@ public class TRIME extends InputMethodService implements
       keyChar = Keyboard.KEYCODE_MODE_NEXT;
       onKey(keyChar, null);
       return true;
-    } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
+    } else if (keyCode == KeyEvent.KEYCODE_DEL && !mRime.hasComposingText()) {
       return false;
     }
 
@@ -287,7 +289,7 @@ public class TRIME extends InputMethodService implements
       escape();
     } else if(mRime.onKey(primaryCode)) {
       if(mRime.getCommit()) commitText(mRime.getCommitText());
-      updateComposingText();
+      updateComposing();
     } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleClear(primaryCode) || handleDelete(primaryCode)) {
     } else handleKey(primaryCode);
@@ -296,7 +298,7 @@ public class TRIME extends InputMethodService implements
   public void onText(CharSequence text) {
     mRime.onText(text);
     if(mRime.getCommit()) commitText(mRime.getCommitText());
-    updateComposingText();
+    updateComposing();
   }
 
   public void onPress(int primaryCode) {
@@ -328,35 +330,26 @@ public class TRIME extends InputMethodService implements
     // Commit the picked candidate and suggest its following words.
     if (mRime.selectCandidate(i)) {
       if (mRime.getCommit()) commitText(mRime.getCommitText());
-      updateComposingText();
+      updateComposing();
     }
   }
 
-  public boolean hasComposingText() {
-    return mRime.hasComposingText();
-  }
-
-  private void updateComposingText() {
+  private void updateComposing() {
     InputConnection ic = getCurrentInputConnection();
     if (ic != null) {
       // Set cursor position 1 to advance the cursor to the text end.
-      setCandidates(true);
       String s = mRime.getComposingText();
       ic.setComposingText(s, 1);
     }
-  }
-
-  public void clearComposingText() {
-    mRime.clearComposition();
-    updateComposingText();
-  }
-
-  private void setCandidates(boolean highlightDefault) {
     if (candidatesContainer != null) {
-      if (!hasComposingText()) highlightDefault = false;
-      candidatesContainer.setCandidates(highlightDefault);
+      candidatesContainer.updatePage(0);
       setCandidatesViewShown(canCompose);
     }
+  }
+
+  public void clearComposing() {
+    mRime.clearComposition();
+    updateComposing();
   }
 
   private boolean handleOption(int keyCode) {
@@ -376,7 +369,7 @@ public class TRIME extends InputMethodService implements
             public void onClick(DialogInterface di, int id) {
                 di.dismiss();
                 Intent iSetting = new Intent();
-                iSetting.setClass(TRIME.this, ImePreferenceActivity.class);
+                iSetting.setClass(Trime.this, PrefActivity.class);
                 iSetting.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
                 startActivity(iSetting);
                 escape(); //全局設置時清屏
@@ -422,7 +415,6 @@ public class TRIME extends InputMethodService implements
   private boolean handleDelete(int keyCode) {
     // Handle delete-key only when no composing text. 
     if (keyCode == Keyboard.XK_BackSpace) {
-      escape();
       sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
       return true;
     }
@@ -441,7 +433,6 @@ public class TRIME extends InputMethodService implements
    * Simulates PC Esc-key function by clearing all composing-text or candidates.
    */
   private void escape() {
-    clearComposingText();
-    setCandidates(false);
+    clearComposing();
   }
 }

@@ -24,18 +24,18 @@ import android.text.InputType;
 public class KeyboardSwitch {
 
   private final Context context;
+  private Schema mSchema;
 
   private Keyboard[] keyboards;
   private Keyboard currentKeyboard;
   private int currentId, lastId;
-  private List<Object> keys;
-
   private int currentDisplayWidth;
 
   public KeyboardSwitch(Context context) {
     this.context = context;
     currentId = 0;
     lastId = 0;
+    mSchema = new Schema(context);
   }
 
   public void reset(){
@@ -43,15 +43,13 @@ public class KeyboardSwitch {
     currentKeyboard = keyboards[currentId];
   }
 
-  public void init(Object o) {
-   
-    keys = (List<Object>)o;    
+  public void init() {
+    List<Object> keys = (List<Object>)mSchema.getKeyboards();
     int n = keys.size();
     keyboards = new Keyboard[n];
     for (int i = 0; i < n; i++ ) {
-        keyboards[i] = new Keyboard(context, keys.get(i));
+      keyboards[i] = new Keyboard(context, keys.get(i));
     }
-
     reset();
   }
 
@@ -66,7 +64,7 @@ public class KeyboardSwitch {
     }
 
     currentDisplayWidth = displayWidth;
-    init(keys);
+    init();
   }
 
   public Keyboard getCurrentKeyboard() {

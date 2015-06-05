@@ -20,28 +20,12 @@ import android.content.Context;
 import android.util.Log;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.MergeCursor;
 
-import java.util.regex.*;
-
-/**
- * Reads a word-dictionary and provides word-suggestions as a list of characters
- * for the specified input.
- */
-public class Dictionary {
+public class Pref {
   private final SharedPreferences mPref;
-  private final Schema mSchema;
 
-
-  protected Dictionary(Context context) {
+  protected Pref(Context context) {
     mPref = PreferenceManager.getDefaultSharedPreferences(context);
-    mSchema = new Schema(context);
-  }
-
-  public Object getKeyboards() {
-    return mSchema.getKeyboards();
   }
 
   public boolean isCommitPy() {

@@ -17,7 +17,7 @@
  */
 -->
 
-<com.osfans.trime.CandidatesContainer
+<com.osfans.trime.CandContainer
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/candidates_container"
         android:orientation="horizontal"
@@ -35,7 +35,8 @@
         android:layout_height="fill_parent"
         android:clickable="true"
         />
-    <com.osfans.trime.CandidateView
+
+    <com.osfans.trime.CandView
         android:id="@+id/candidate_view"
         android:layout_width="fill_parent"
         android:layout_height="@dimen/candidate_view_height"
@@ -52,4 +53,4 @@
         android:clickable="true"
         />
 
-</com.osfans.trime.CandidatesContainer>
+</com.osfans.trime.CandContainer>

@@ -27,17 +27,17 @@ import android.util.Log;
  * Contains all candidates in pages where users could move forward (next page)
  * or move backward (previous) page to select one of these candidates. 
  */
-public class CandidatesContainer extends LinearLayout {
+public class CandContainer extends LinearLayout {
 
   private static final int ARROW_ALPHA_ENABLED = 0xff;
   private static final int ARROW_ALPHA_DISABLED = 0x40;
 
-  private CandidateView candidateView;
+  private CandView candidateView;
   private Button leftArrow;
   private Button rightArrow;
   private Rime mRime;
 
-  public CandidatesContainer(Context context, AttributeSet attrs) {
+  public CandContainer(Context context, AttributeSet attrs) {
     super(context, attrs);
     mRime = Rime.getRime();
   }
@@ -46,49 +46,39 @@ public class CandidatesContainer extends LinearLayout {
   protected void onFinishInflate() {
     super.onFinishInflate();
 
-    candidateView = (CandidateView) findViewById(R.id.candidate_view);
+    candidateView = (CandView) findViewById(R.id.candidate_view);
 
     leftArrow = (Button) findViewById(R.id.arrow_left);
     leftArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        movePage(Keyboard.XK_Page_Up);
+        updatePage(Keyboard.XK_Page_Up);
       }
     });
 
     rightArrow = (Button) findViewById(R.id.arrow_right);
     rightArrow.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        movePage(Keyboard.XK_Page_Down);
+        updatePage(Keyboard.XK_Page_Down);
       }
     });
   }
 
-  public void setCandidateViewListener(
-      CandidateView.CandidateViewListener listener) {
-    candidateView.setCandidateViewListener(listener);
-  }
-  
-  public void setCandidates(boolean highlightDefault) {
-    // All the words will be split into pages and shown in the candidate-view.
-    candidateView.highlightDefault(highlightDefault);
-    movePage(0);
+  public void setCandViewListener(
+      CandView.CandViewListener listener) {
+    candidateView.setCandViewListener(listener);
   }
 
-  public boolean pickHighlighted(int index) {
-    return candidateView.pickHighlighted(index);
-  }
-
-  private void movePage(int keyCode) {
+  public void updatePage(int keyCode) {
     if (keyCode != 0 ) {
-      TRIME.getService().onKey(keyCode, null);
-      candidateView.highlightDefault(true);
+      Trime.getService().onKey(keyCode, null);
     }
+    candidateView.update();
     enableArrow(leftArrow, !mRime.isFirst());
     enableArrow(rightArrow, !mRime.isLast());
   }
 
   private void enableArrow(Button arrow, boolean enabled) {
     arrow.setEnabled(enabled);
-    //arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
+    arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
   }
 }

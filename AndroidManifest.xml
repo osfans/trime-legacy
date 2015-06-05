@@ -27,7 +27,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application android:label="@string/ime_name" android:icon="@drawable/icon">
 
-        <service android:name="TRIME" android:label="@string/ime_name"
+        <service android:name="Trime" android:label="@string/ime_name"
                 android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
@@ -35,7 +35,7 @@
             <meta-data android:name="android.view.im" android:resource="@xml/method" />
         </service>
 
-        <activity android:name="ImePreferenceActivity" android:label="@string/ime_name">
+        <activity android:name="PrefActivity" android:label="@string/ime_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT" />

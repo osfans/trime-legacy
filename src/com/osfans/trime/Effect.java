@@ -25,7 +25,7 @@ import android.preference.PreferenceManager;
 /**
  * Plays sound and motion effect.
  */
-public class SoundMotionEffect {
+public class Effect {
   private static final int VIBRATE_DURATION = 30;
   private static final float FX_VOLUME = -1.0f;
 
@@ -39,7 +39,7 @@ public class SoundMotionEffect {
   private boolean soundOn;
   private AudioManager audioManager;
 
-  public SoundMotionEffect(Context context) {
+  public Effect(Context context) {
     this.context = context;
     preferences = PreferenceManager.getDefaultSharedPreferences(context);
   }
