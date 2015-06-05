@@ -298,6 +298,7 @@ public class Trime extends InputMethodService implements
   public void onText(CharSequence text) {
     mRime.onText(text);
     if(mRime.getCommit()) commitText(mRime.getCommitText());
+    else if(!mRime.hasComposingText()) commitText(text);
     updateComposing();
   }
 
