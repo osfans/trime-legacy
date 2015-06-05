@@ -182,6 +182,11 @@ public class Rime {
     return b;
   }
 
+  public void clearComposition() {
+    clear_composition(session_id);
+    getContext();
+  }
+
   public boolean selectCandidate(int index) {
     index += menu_page_no * menu_page_size; //從頭開始
     boolean b = select_candidate(session_id, index);

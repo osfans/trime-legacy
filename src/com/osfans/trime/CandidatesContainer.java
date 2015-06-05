@@ -78,9 +78,9 @@ public class CandidatesContainer extends LinearLayout {
     return candidateView.pickHighlighted(index);
   }
 
-  private void movePage(int direction) {
-    if (direction != 0 ) {
-      mRime.onKey(direction);
+  private void movePage(int keyCode) {
+    if (keyCode != 0 ) {
+      TRIME.getService().onKey(keyCode, null);
       candidateView.highlightDefault(true);
     }
     enableArrow(leftArrow, !mRime.isFirst());

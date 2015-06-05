@@ -46,14 +46,11 @@ public class TRIME extends InputMethodService implements
   private SoundMotionEffect effect;
   private int orientation;
 
-  protected StringBuilder composingText = new StringBuilder();
   private boolean canCompose;
   private boolean enterAsLineBreak;
   private boolean isLeftApo = true;
   private boolean isLeftQuote = true;
 
-  protected int[] keyboardIds;
-  protected int dictionaryId;
   private AlertDialog mOptionsDialog;
   private static TRIME self;
   private Rime mRime;
@@ -65,7 +62,7 @@ public class TRIME extends InputMethodService implements
     dialectDictionary = new Dictionary(this);
     effect = new SoundMotionEffect(this);
     keyboardSwitch = new KeyboardSwitch(this);
-    initDictionary();
+    initKeyboard();
     mRime = Rime.getRime();
 
     orientation = getResources().getConfiguration().orientation;
@@ -86,20 +83,6 @@ public class TRIME extends InputMethodService implements
 
   private void initKeyboard() {
     keyboardSwitch.init(dialectDictionary.getKeyboards());
-  }
-
-  public void initDictionary() {
-    dialectDictionary.init(this);
-    initKeyboard();
-  }
-
-  public void importDatabase(String fn) {
-    dialectDictionary.getHelper().importDatabase(fn);
-    initDictionary();
-  }
-
-  public void exportDatabase(String fn) {
-    dialectDictionary.getHelper().exportDatabase(fn);
   }
 
   @Override
@@ -172,7 +155,6 @@ public class TRIME extends InputMethodService implements
 
   @Override
   public void onFinishInputView(boolean finishingInput) {
-    if (hasComposingText()) commitText(composingText); //退出時上屏
     super.onFinishInputView(finishingInput);
     // Dismiss any pop-ups when the input-view is being finished and hidden.
     inputView.closing();
@@ -258,47 +240,46 @@ public class TRIME extends InputMethodService implements
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
-        clearComposingText(); //返回鍵清屏
-        if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
-            return true;
-        }
+      clearComposingText(); //返回鍵清屏
+      if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
+        return true;
+      }
     }
 
     if (processKey(event)) return true;
     return super.onKeyDown(keyCode, event);
   }
 
-    private boolean processKey(KeyEvent event) {
-        int keyCode = event.getKeyCode();
-        int keyChar = 0;
-        if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
-            keyChar = Keyboard.KEYCODE_MODE_NEXT;
-            onKey(keyChar, null);
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
-            return false;
-        }
-        if (isAsciiMode()) return false;
-
-        char c = (char)event.getUnicodeChar();
-        String s = String.valueOf(c);
-        if(canCompose && event.hasNoModifiers() && s.length() == 1 && isAlphabet(s)) {
-            onText(s);
-            return true;
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_DEL) {
-            keyChar = Keyboard.XK_BackSpace;
-        } else if (s.length() == 1) {
-            keyChar = (int)c;
-        }
-
-        if (0 != keyChar) {
-            onKey(keyChar, null);
-            return true;
-        }
-        return false;
+  private boolean processKey(KeyEvent event) {
+    int keyCode = event.getKeyCode();
+    int keyChar = 0;
+    if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
+      keyChar = Keyboard.KEYCODE_MODE_NEXT;
+      onKey(keyChar, null);
+      return true;
+    } else if (keyCode == KeyEvent.KEYCODE_DEL && !hasComposingText()) {
+      return false;
     }
+
+    char c = (char)event.getUnicodeChar();
+    String s = String.valueOf(c);
+    if(canCompose && event.hasNoModifiers()) {
+      onText(s);
+      return true;
+    }
+
+    if (keyCode == KeyEvent.KEYCODE_DEL) {
+      keyChar = Keyboard.XK_BackSpace;
+    } else if (s.length() == 1) {
+      keyChar = (int)c;
+    }
+
+    if (0 != keyChar) {
+      onKey(keyChar, null);
+      return true;
+    }
+    return false;
+  }
 
   public void onKey(int primaryCode, int[] keyCodes) {
     if (keyboardSwitch.onKey(primaryCode)) {
@@ -308,24 +289,8 @@ public class TRIME extends InputMethodService implements
       if(mRime.getCommit()) commitText(mRime.getCommitText());
       updateComposingText();
     } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
-        || handleEnter(primaryCode) || handleSpace(primaryCode) || handleSelect(primaryCode)
-        || handleClear(primaryCode) || handleDelete(primaryCode)
-        || handleReverse(primaryCode) || handleComposing(primaryCode)) {
+        || handleClear(primaryCode) || handleDelete(primaryCode)) {
     } else handleKey(primaryCode);
-  }
-
-  private boolean isAlphabet(CharSequence s) {
-    return !isAsciiMode() && dialectDictionary.isAlphabet(composingText.toString() + s);
-  }
-
-  private boolean isDelimiter(CharSequence s) {
-    return !isAsciiMode() && hasComposingText() && dialectDictionary.isDelimiter(s);
-  }
-
-  private CharSequence transform(CharSequence text) {
-    boolean up = inputView.isShifted();
-    boolean full = dialectDictionary.getFullShape();
-    return Punct.transform(text, up, full);
   }
 
   public void onText(CharSequence text) {
@@ -382,12 +347,8 @@ public class TRIME extends InputMethodService implements
   }
 
   public void clearComposingText() {
-    if (hasComposingText()) {
-      // Clear composing only when there's composing-text to avoid the selected
-      // text being cleared unexpectedly.
-      composingText.setLength(0);
-      updateComposingText();
-    }
+    mRime.clearComposition();
+    updateComposingText();
   }
 
   private void setCandidates(boolean highlightDefault) {
@@ -399,46 +360,28 @@ public class TRIME extends InputMethodService implements
   }
 
   private boolean handleOption(int keyCode) {
-    if (keyCode == Keyboard.KEYCODE_OPTIONS || keyCode == Keyboard.KEYCODE_SCHEMA_OPTIONS) {
+    if (keyCode == Keyboard.KEYCODE_OPTIONS) {
         // Create a Dialog menu
-        AlertDialog.Builder builder;
-        if (keyCode == Keyboard.KEYCODE_OPTIONS) {
-            builder = new AlertDialog.Builder(this)
-            .setTitle(R.string.ime_name)
-            //.setIcon(android.R.drawable.ic_menu_preferences)
-            .setCancelable(true)
-            .setNegativeButton(R.string.other_ime, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    di.dismiss();
-                    ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
-                }
-            })
-            .setPositiveButton(R.string.set_ime, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    di.dismiss();
-                    Intent iSetting = new Intent();
-                    iSetting.setClass(TRIME.this, ImePreferenceActivity.class);
-                    iSetting.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    startActivity(iSetting);
-                    escape(); //全局設置時清屏
-                }
-            })
-            .setSingleChoiceItems(dialectDictionary.getSchemas(), dialectDictionary.getSchemaId(), "name",
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    di.dismiss();
-                    if (dialectDictionary.setSchemaId(id)) {
-                        initKeyboard();
-                        bindKeyboardToInputView();
-                    }
-                }
-            });
-        } else {
-            builder = new AlertDialog.Builder(this)
-            .setTitle(dialectDictionary.getSchemaTitle())
-            .setPositiveButton(R.string.close, null)
-            .setItems(dialectDictionary.getSchemaInfo(), null);
-        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        .setTitle(R.string.ime_name)
+        //.setIcon(android.R.drawable.ic_menu_preferences)
+        .setCancelable(true)
+        .setNegativeButton(R.string.other_ime, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface di, int id) {
+                di.dismiss();
+                ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).showInputMethodPicker();
+            }
+        })
+        .setPositiveButton(R.string.set_ime, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface di, int id) {
+                di.dismiss();
+                Intent iSetting = new Intent();
+                iSetting.setClass(TRIME.this, ImePreferenceActivity.class);
+                iSetting.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+                startActivity(iSetting);
+                escape(); //全局設置時清屏
+            }
+        });
         mOptionsDialog = builder.create();
         Window window = mOptionsDialog.getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
@@ -466,11 +409,7 @@ public class TRIME extends InputMethodService implements
 
   private boolean handleEnter(int keyCode) {
     if (keyCode == Keyboard.XK_Return) {
-      if (hasComposingText()) {
-        String s = composingText.toString().trim();
-        if (dialectDictionary.hasDelimiter()) s = s.replace(dialectDictionary.getDelimiter(), " ");
-        commitText(s);
-       } else if (enterAsLineBreak) {
+      if (enterAsLineBreak) {
         commitText("\n");
       } else {
         sendKeyChar('\n');
@@ -480,85 +419,12 @@ public class TRIME extends InputMethodService implements
     return false;
   }
 
-  private boolean handleSpace(int keyCode) {
-    if (candidatesContainer != null && keyCode == ' ') {
-      if (!candidatesContainer.pickHighlighted(-1)) {
-        if (hasComposingText()) clearComposingText();
-        else commitText(" ");
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private boolean handleSelect(int keyCode) {
-    if (candidatesContainer != null && keyCode >= '1' && keyCode <= '9' && !isAlphabet(String.valueOf((char)keyCode))) {
-      return candidatesContainer.pickHighlighted(keyCode - '1');
-    }
-    return false;
-  }
-
   private boolean handleDelete(int keyCode) {
     // Handle delete-key only when no composing text. 
-    if ((keyCode == Keyboard.XK_BackSpace)) {
-        if (composingText.length() == 1) {
-            escape();
-        } else if (hasComposingText()) {
-            composingText.deleteCharAt(composingText.length() - 1);
-            onText("");
-        } else {
-            escape();
-            sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
-        }
+    if (keyCode == Keyboard.XK_BackSpace) {
+      escape();
+      sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
       return true;
-    }
-    return false;
-  }
-
-  private boolean handleReverse(int keyCode) {
-    if (keyCode == Keyboard.KEYCODE_REVERSE && !hasComposingText()) {
-      CharSequence s = getLastText();
-      if (s.length() == 0) return true;
-      String[] pys = dialectDictionary.getComment(s);
-      if (pys != null) {
-        AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(this)
-            .setTitle(String.format(getString(R.string.pronunciation), s))
-            .setItems(pys, 
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface di, int id) {
-                    String py = (String)((AlertDialog)di).getListView().getAdapter().getItem(id);
-                    commitText(String.format("(%s)",py));
-                    di.dismiss();
-                }
-            });
-        mOptionsDialog = builder.create();
-        Window window = mOptionsDialog.getWindow();
-        WindowManager.LayoutParams lp = window.getAttributes();
-        if (candidatesContainer != null) lp.token = candidatesContainer.getWindowToken();
-        lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG;
-        window.setAttributes(lp);
-        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
-        mOptionsDialog.show();
-      }
-      return true;
-    }
-    return false;
-  }
-
-    private boolean isAsciiMode() {
-      return dialectDictionary.getAsciiMode() || keyboardSwitch.getAsciiMode();
-    }
-
-  private boolean handleComposing(int keyCode) {
-    if(canCompose && !isAsciiMode()) {
-      String s = String.valueOf((char) keyCode);
-      if (isAlphabet(s) || isDelimiter(s)) {
-        onText(s);
-        return true;
-      } else {
-        if (candidatesContainer != null) candidatesContainer.pickHighlighted(-1);
-      }
     }
     return false;
   }
@@ -568,7 +434,7 @@ public class TRIME extends InputMethodService implements
    * other handling-methods.
    */
   private void handleKey(int keyCode) {
-    commitText(transform(String.valueOf((char) keyCode)));
+    commitText(String.valueOf((char) keyCode));
   }
 
   /**

@@ -50,22 +50,6 @@ public class ImePreferenceActivity extends PreferenceActivity {
       }
     });
 
-    Preference importdb = findPreference("pref_importdb");
-    importdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-      public boolean onPreferenceClick(Preference preference) {
-        openImportDatabase();
-        return true;
-      }
-    });
-
-    Preference exportdb = findPreference("pref_exportdb");
-    exportdb.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-      public boolean onPreferenceClick(Preference preference) {
-        exportDatabase(DictionaryHelper.getExportName());
-        return true;
-      }
-    });
-
     ListPreference candnum = (ListPreference)findPreference("pref_cand_num");
     candnum.setSummary(candnum.getEntry());
     candnum.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -123,31 +107,5 @@ public class ImePreferenceActivity extends PreferenceActivity {
       .setTitle(R.string.ime_name)
       .setView(licenseView)
       .show();
-  }
-
-  private void openImportDatabase() {
-    final String[] files = DictionaryHelper.getImportNames();
-    new AlertDialog.Builder(this)
-      .setTitle(R.string.pref_importdb)
-      .setItems(files,
-      new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface di, int id) {
-          importDatabase(files[id]);
-          di.dismiss();
-        }
-      })
-      .show();
-  }
-
-  private void importDatabase(String fn) {
-    TRIME ime = TRIME.getService();
-    if (ime != null) ime.importDatabase(fn);
-    else new DictionaryHelper(this).importDatabase(fn);
-  }
-
-  private void exportDatabase(String fn) {
-    TRIME ime = TRIME.getService();
-    if (ime != null) ime.exportDatabase(fn);
-    else new DictionaryHelper(this).exportDatabase(fn);
   }
 }
