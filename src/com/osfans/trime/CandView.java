@@ -233,15 +233,13 @@ public class CandView extends View {
   private int getCandidateIndex(int x, int y) {
     Rect r = new Rect();
     int n = mRime.getCandNum();
-    for (int i = 0; i < MAX_CANDIDATE_COUNT; i++) {
-      if (n > 0) {
-        // Enlarge the rectangle to be more responsive to user clicks.
-        r.set(candidateRect[i]);
-        r.inset(0, CANDIDATE_TOUCH_OFFSET);
-        if (r.contains(x, y)) {
-          // Returns -1 if there is no candidate in the hitting rectangle.
-          return (i < n) ? i : -1;
-        }
+    for (int i = 0; i < n; i++) {
+      // Enlarge the rectangle to be more responsive to user clicks.
+      r.set(candidateRect[i]);
+      r.inset(0, CANDIDATE_TOUCH_OFFSET);
+      if (r.contains(x, y)) {
+        // Returns -1 if there is no candidate in the hitting rectangle.
+        return (i < n) ? i : -1;
       }
     }
     return -1;
