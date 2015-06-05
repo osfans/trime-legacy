@@ -54,6 +54,7 @@ public class Trime extends InputMethodService implements
   private AlertDialog mOptionsDialog;
   private static Trime self;
   private Rime mRime;
+  private String TAG = "TRIME";
 
   @Override
   public void onCreate() {
@@ -238,14 +239,14 @@ public class Trime extends InputMethodService implements
   }
 
   @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    Log.e("Trime", "keycode="+keyCode+",event="+event);
+  public boolean onKeyDown(int keyCode, KeyEvent event) { //實體鍵盤
+    Log.e(TAG, "onKeyDown="+keyCode+",event="+event);
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
       clearComposing(); //返回鍵清屏
       if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
         return true;
       }
-      else Log.e("Trime", "inputview not handled");
+      else Log.e(TAG, "inputview not handled");
     }
 
     if (processKey(event)) return true;
@@ -253,6 +254,7 @@ public class Trime extends InputMethodService implements
   }
 
   private boolean processKey(KeyEvent event) {
+    Log.e(TAG,  "processKey="+event);
     int keyCode = event.getKeyCode();
     int keyChar = 0;
     if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
@@ -283,7 +285,8 @@ public class Trime extends InputMethodService implements
     return false;
   }
 
-  public void onKey(int primaryCode, int[] keyCodes) {
+  public void onKey(int primaryCode, int[] keyCodes) { //軟鍵盤
+    Log.e(TAG, "onKey="+primaryCode);
     if (keyboardSwitch.onKey(primaryCode)) {
       bindKeyboardToInputView();
       escape();
@@ -295,7 +298,8 @@ public class Trime extends InputMethodService implements
     } else handleKey(primaryCode);
   }
 
-  public void onText(CharSequence text) {
+  public void onText(CharSequence text) { //軟鍵盤
+    Log.e(TAG, "onText="+text);
     mRime.onText(text);
     if(mRime.getCommit()) commitText(mRime.getCommitText());
     else if(!mRime.hasComposingText()) commitText(text);

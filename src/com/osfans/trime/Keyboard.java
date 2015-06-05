@@ -102,6 +102,7 @@ public class Keyboard {
     public static final int XK_Mode_switch = 0xff7e;  /* Character set switch */
     public static final int XK_Page_Up = 0xff55;
     public static final int XK_Page_Down = 0xff56;
+    public static final int XK_F4 = 0xffc1;
 
     /** Keyboard label **/
     //private CharSequence mLabel;

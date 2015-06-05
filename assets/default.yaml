@@ -209,7 +209,7 @@ trime:
     - {text: n}
     - {text: m}
     - {text: BackSpace, width: 20}
-    - {label: '123', switch: 1, width: 15, text: <switch>, symbol: '...', symbolCode: -10}
+    - {label: '123', switch: 1, width: 15, text: <switch>, symbol: '...', symbolCode: 0xffc1}
     - {symbol: '"', text: "'"}
     - {symbol: '<', text: ','}
     - {text: space, width: 30}

@@ -119,7 +119,7 @@ public class Rime {
     return b;
   }
 
-  public boolean getContext() {
+  public boolean getContexts() {
     boolean b = get_context(session_id);
     Log.e(TAG, "compose="+is_composing+",preview="+commit_text_preview);
     return b;
@@ -128,7 +128,7 @@ public class Rime {
   public boolean onKey(int keycode, int mask) {
     boolean b = process_key(session_id, keycode, mask);
     Log.e(TAG, "b="+b+",keycode="+keycode);
-    getContext();
+    getContexts();
     return b;
   }
 
@@ -140,7 +140,7 @@ public class Rime {
     if(text == null || text.length() == 0) return false;
     boolean b = simulate_key_sequence(session_id, text.toString());
     Log.e(TAG, "b="+b+",input="+text);
-    getContext();
+    getContexts();
     return b;
   }
 
@@ -178,19 +178,19 @@ public class Rime {
 
   public boolean commitComposition() {
     boolean b = commit_composition(session_id);
-    getContext();
+    getContexts();
     return b;
   }
 
   public void clearComposition() {
     clear_composition(session_id);
-    getContext();
+    getContexts();
   }
 
   public boolean selectCandidate(int index) {
     index += menu_page_no * menu_page_size; //從頭開始
     boolean b = select_candidate(session_id, index);
-    getContext();
+    getContexts();
     return b;
   }
 
