@@ -20,6 +20,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.util.Log;
 
@@ -35,6 +36,7 @@ public class CandContainer extends LinearLayout {
   private CandView candidateView;
   private Button leftArrow;
   private Button rightArrow;
+  private TextView text;
   private Rime mRime;
 
   public CandContainer(Context context, AttributeSet attrs) {
@@ -61,6 +63,7 @@ public class CandContainer extends LinearLayout {
         updatePage(Keyboard.XK_Page_Down);
       }
     });
+    text = (TextView) findViewById(R.id.text);
   }
 
   public void setCandViewListener(
@@ -73,6 +76,7 @@ public class CandContainer extends LinearLayout {
       Trime.getService().onKey(keyCode, null);
     }
     candidateView.update();
+    text.setText(mRime.getCompositionText());
     enableArrow(leftArrow, !mRime.isFirst());
     enableArrow(rightArrow, !mRime.isLast());
   }

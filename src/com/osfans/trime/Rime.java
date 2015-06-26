@@ -75,6 +75,11 @@ public class Rime
     return is_composing;
   }
 
+  public String getCompositionText() {
+    if (composition_length > 0) return composition_preedit;
+    else return "";
+  }
+
   public static Rime getRime(){
       if(mRime == null) mRime = new Rime();
       return mRime;

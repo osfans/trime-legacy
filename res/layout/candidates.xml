@@ -20,12 +20,24 @@
 <com.osfans.trime.CandContainer
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/candidates_container"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/candidates_container_bg"
         >
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="16sp" android:layout_weight="1" android:gravity="left">
+    <TextView android:id="@+id/text"
+              android:layout_width="wrap_content"
+              android:layout_height="fill_parent"
+              android:textSize="@dimen/pinyin_text_size"
+              android:ellipsize ="end"/>
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/candidate_view_height">
     <Button
         android:id="@+id/arrow_left"
         android:background="@drawable/arrow_bg"
@@ -52,5 +64,5 @@
         android:layout_height="fill_parent"
         android:clickable="true"
         />
-
+        </LinearLayout>
 </com.osfans.trime.CandContainer>
