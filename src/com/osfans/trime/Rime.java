@@ -15,12 +15,13 @@
  */
 
 package com.osfans.trime;
-import android.util.Log;
+import java.util.logging.Logger;
 
-public class Rime {
+public class Rime
+{
   private int session_id;
-  private String TAG = "RIME";
   private static Rime mRime;
+  private static Logger Log = Logger.getLogger(Rime.class.getSimpleName());
 
   //RimeComposition;
   int composition_length;
@@ -89,19 +90,23 @@ public class Rime {
   }
 
   public Rime() {
-    boolean full_check = false;
-    start(full_check);
-    session_id = create_session();
-    if (session_id == 0) Log.e(TAG, "Error creating rime session");
+    start("/sdcard/rime", "/sdcard/rime");
+    check(true);
+    createSession();
+    if (session_id == 0) Log.severe( "Error creating rime session");
     get_status(session_id);
-    Log.e(TAG,"status name = " + schema_name);
+    Log.info("schema_name = " + schema_name + ",schema_id=" + schema_id);
   }
 
   public void destroy() {
     destroySession();
     finalize1();
   }
-  
+
+  public void createSession() {
+    if (session_id == 0 || !find_session(session_id)) session_id = create_session();
+  }
+
   public void destroySession() {
     if (session_id != 0) {
       destroy_session(session_id);
@@ -115,19 +120,19 @@ public class Rime {
 
   public boolean getCommit() {
     boolean b = get_commit(session_id);
-    Log.e(TAG, "output="+commit_text);
+    Log.info( "output="+commit_text);
     return b;
   }
 
   public boolean getContexts() {
     boolean b = get_context(session_id);
-    Log.e(TAG, "compose="+is_composing+",preview="+commit_text_preview);
+    Log.info( "compose="+is_composing+",preview="+commit_text_preview);
     return b;
   }
 
   public boolean onKey(int keycode, int mask) {
     boolean b = process_key(session_id, keycode, mask);
-    Log.e(TAG, "b="+b+",keycode="+keycode);
+    Log.info( "b="+b+",keycode="+keycode);
     getContexts();
     return b;
   }
@@ -139,7 +144,7 @@ public class Rime {
   public boolean onText(CharSequence text) {
     if(text == null || text.length() == 0) return false;
     boolean b = simulate_key_sequence(session_id, text.toString());
-    Log.e(TAG, "b="+b+",input="+text);
+    Log.info( "b="+b+",input="+text);
     getContexts();
     return b;
   }
@@ -178,18 +183,21 @@ public class Rime {
 
   public boolean commitComposition() {
     boolean b = commit_composition(session_id);
+    Log.info("commitComposition");
     getContexts();
     return b;
   }
 
   public void clearComposition() {
     clear_composition(session_id);
+    Log.info("clearComposition");
     getContexts();
   }
 
   public boolean selectCandidate(int index) {
     index += menu_page_no * menu_page_size; //從頭開始
     boolean b = select_candidate(session_id, index);
+    Log.info("selectCandidate");
     getContexts();
     return b;
   }
@@ -197,7 +205,8 @@ public class Rime {
   // init
   public native final int get_api();
   public native final void set_notification_handler();
-  public native final void start(boolean full_check);
+  public native final void start(String shared_data_dir, String user_data_dir);
+  public native final void check(boolean full_check);
   public native final void finalize1();
 
   // session management

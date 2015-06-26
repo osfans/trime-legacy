@@ -33,6 +33,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.content.Intent;
 
+import java.util.logging.Logger;
+
 /**
  * Abstract class extended by all Dialect IME.
  */
@@ -54,7 +56,7 @@ public class Trime extends InputMethodService implements
   private AlertDialog mOptionsDialog;
   private static Trime self;
   private Rime mRime;
-  private String TAG = "TRIME";
+  private static Logger Log = Logger.getLogger(Trime.class.getSimpleName());
 
   @Override
   public void onCreate() {
@@ -75,7 +77,7 @@ public class Trime extends InputMethodService implements
   public void onDestroy() {
     super.onDestroy();
     self = null;
-    mRime.destroy();
+    //mRime.destroy();
   }
 
   public static Trime getService() {
@@ -146,32 +148,13 @@ public class Trime extends InputMethodService implements
   }
 
   @Override
-  public void onFinishInput() {
-    // Clear composing as any active composing text will be finished, same as in
-    // onFinishInputView, onFinishCandidatesView, and onUnbindInput.
-    clearComposing();
-    //setCandidatesViewShown(false);
-    super.onFinishInput();
-  }
-
-  @Override
   public void onFinishInputView(boolean finishingInput) {
     super.onFinishInputView(finishingInput);
     // Dismiss any pop-ups when the input-view is being finished and hidden.
     inputView.closing();
+    clearComposing();
   }
 
-  @Override
-  public void onFinishCandidatesView(boolean finishingInput) {
-    clearComposing();
-    super.onFinishCandidatesView(finishingInput);
-  }
-
-  @Override
-  public void onUnbindInput() {
-    clearComposing();
-    super.onUnbindInput();
-  }
 
   private void bindKeyboardToInputView() {
     if (inputView != null) {
@@ -240,13 +223,15 @@ public class Trime extends InputMethodService implements
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) { //實體鍵盤
-    Log.e(TAG, "onKeyDown="+keyCode+",event="+event);
+    Log.info("onKeyDown="+keyCode+",event="+event);
+    if(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN || keyCode==KeyEvent.KEYCODE_VOLUME_UP) return false; //不處理音量鍵
     if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
       clearComposing(); //返回鍵清屏
       if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
         return true;
       }
-      else Log.e(TAG, "inputview not handled");
+      else Log.info("inputview not handled");
+      return false;
     }
 
     if (processKey(event)) return true;
@@ -254,7 +239,7 @@ public class Trime extends InputMethodService implements
   }
 
   private boolean processKey(KeyEvent event) {
-    Log.e(TAG,  "processKey="+event);
+    Log.info("processKey="+event);
     int keyCode = event.getKeyCode();
     int keyChar = 0;
     if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
@@ -286,7 +271,7 @@ public class Trime extends InputMethodService implements
   }
 
   public void onKey(int primaryCode, int[] keyCodes) { //軟鍵盤
-    Log.e(TAG, "onKey="+primaryCode);
+    Log.info("onKey="+primaryCode);
     if (keyboardSwitch.onKey(primaryCode)) {
       bindKeyboardToInputView();
       escape();
@@ -299,7 +284,7 @@ public class Trime extends InputMethodService implements
   }
 
   public void onText(CharSequence text) { //軟鍵盤
-    Log.e(TAG, "onText="+text);
+    Log.info("onText="+text);
     mRime.onText(text);
     if(mRime.getCommit()) commitText(mRime.getCommitText());
     else if(!mRime.hasComposingText()) commitText(text);
