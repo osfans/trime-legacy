@@ -35,34 +35,19 @@
               android:ellipsize ="end"/>
     </LinearLayout>
 
+  <HorizontalScrollView android:id="@+id/scroll"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/candidate_view_height"
+    android:fillViewport="true">
     <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="@dimen/candidate_view_height">
-    <Button
-        android:id="@+id/arrow_left"
-        android:background="@drawable/arrow_bg"
-        android:text="◀"
-        android:textSize="33sp"
-        android:layout_width="33dp"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:clickable="true"
-        />
-
-    <com.osfans.trime.CandView
-        android:id="@+id/candidate_view"
-        android:layout_width="fill_parent"
-        android:layout_height="@dimen/candidate_view_height"
-        android:layout_weight="1"
-        />
-
-    <Button
-        android:id="@+id/arrow_right"
-        android:background="@drawable/arrow_bg"
-        android:text="▶"
-        android:textSize="33sp"
-        android:layout_width="33dp"
-        android:layout_height="fill_parent"
-        android:clickable="true"
-        />
-        </LinearLayout>
+        android:orientation="horizontal">
+      <com.osfans.trime.CandView
+          android:id="@+id/candidate_view"
+          android:layout_width="1000sp"
+          android:layout_height="match_parent"
+          />
+    </LinearLayout>
+  </HorizontalScrollView>
 </com.osfans.trime.CandContainer>

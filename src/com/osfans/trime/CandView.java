@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.util.Log;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -54,9 +55,7 @@ public class CandView extends View {
   private Paint paint, paintpy;
 
   private Rect candidateRect[] = new Rect[MAX_CANDIDATE_COUNT];
-  private final String candNumKey = "pref_cand_num";
   private final String candFontSizeKey = "pref_cand_font_size";
-  private final String candMaxPhraseKey = "pref_cand_max_phrase";
   private final SharedPreferences preferences;
 
   public CandView(Context context, AttributeSet attrs) {
@@ -106,8 +105,8 @@ public class CandView extends View {
    * @return {@code false} if no candidate is highlighted and picked.
    */
   public boolean pickHighlighted(int index) {
-    if ((highlightIndex >= 0) && (listener != null)) {
-      listener.onPickCandidate(index < 0 ? highlightIndex : index);
+    if ((highlightIndex != -1) && (listener != null)) {
+      listener.onPickCandidate(index == -1 ? highlightIndex : index);
       return true;
     }
     return false;
@@ -115,7 +114,7 @@ public class CandView extends View {
 
   private boolean updateHighlight(int x, int y) {
     int index = getCandidateIndex(x, y);
-    if (index >= 0) {
+    if (index != -1) {
       highlightIndex = index;
       invalidate();
       return true;
@@ -137,13 +136,12 @@ public class CandView extends View {
   }
 
   private void drawCandidates(Canvas canvas) {
-    final int count = mRime.getCandNum();
-
     float size = getCandFontSize();
     if (size != paint.getTextSize()) {
       paint.setTextSize(size);
     }
 
+    final int count = mRime.getCandNum();
     if (count <= 0) return;
 
     // Draw the separator at the left edge of the first candidate. 
@@ -156,22 +154,49 @@ public class CandView extends View {
 
     final int y =
         (int) (((getHeight() + paintpy.getTextSize() - paint.getTextSize()) / 2) - paint.ascent());
+    int x = 0;
+    int j = 0;
+    
     for (int i = 0; i < count; i++) {
       // Calculate a position where the text could be centered in the rectangle.
-      String candidate = getCandDisplay(mRime.getCandidate(i));
-      float x = (int) ((candidateRect[i].left + candidateRect[i].right - paint.measureText(candidate)) / 2);
+      String candidate = getCandidate(i);
+      x = (int) ((candidateRect[j].left + candidateRect[j].right - paint.measureText(candidate)) / 2);
       canvas.drawText(candidate, x, y, paint);
       String comment = mRime.getComment(i);
       if (comment != null) {
-        float x2 = (int) ((candidateRect[i].left + candidateRect[i].right - paintpy.measureText(comment)) / 2);
+        float x2 = (int) ((candidateRect[j].left + candidateRect[j].right - paintpy.measureText(comment)) / 2);
         canvas.drawText(comment, x2, - paintpy.ascent(), paintpy);
       }
       // Draw the separator at the right edge of each candidate.
       candidateSeparator.setBounds(
-        candidateRect[i].right - candidateSeparator.getIntrinsicWidth(),
-        candidateRect[i].top,
-        candidateRect[i].right,
-        candidateRect[i].bottom);
+        candidateRect[j].right - candidateSeparator.getIntrinsicWidth(),
+        candidateRect[j].top,
+        candidateRect[j].right,
+        candidateRect[j].bottom);
+      candidateSeparator.draw(canvas);
+      j++;
+    }
+    if (!mRime.isFirst()) {
+      String candidate = getCandidate(-4);
+      x = (int) ((candidateRect[j].left + candidateRect[j].right - paint.measureText(candidate)) / 2);
+      canvas.drawText(candidate, x, y, paint);
+      candidateSeparator.setBounds(
+        candidateRect[j].right - candidateSeparator.getIntrinsicWidth(),
+        candidateRect[j].top,
+        candidateRect[j].right,
+        candidateRect[j].bottom);
+      candidateSeparator.draw(canvas);
+      j++;
+    }
+    if (!mRime.isLast()) {
+      String candidate = getCandidate(-5);
+      x = (int) ((candidateRect[j].left + candidateRect[j].right - paint.measureText(candidate)) / 2);
+      canvas.drawText(candidate, x, y, paint);
+      candidateSeparator.setBounds(
+        candidateRect[j].right - candidateSeparator.getIntrinsicWidth(),
+        candidateRect[j].top,
+        candidateRect[j].right,
+        candidateRect[j].bottom);
       candidateSeparator.draw(canvas);
     }
   }
@@ -193,10 +218,16 @@ public class CandView extends View {
 
     // Set the first candidate 1-pixel wider since it'd accommodate two
     // candidate-separators.  
-    candidateRect[0] = new Rect(0, top, getCandidateWidth(0) + 1, bottom);
-    for (int i = 1, x = candidateRect[0].right; i < getCandNum(); i++) {
-      candidateRect[i] = new Rect(x, top, x += getCandidateWidth(i), bottom);
-    }
+    int i = 0;
+    int x = 0;
+    candidateRect[i++] = new Rect(0, top, x += getCandidateWidth(0) + 1, bottom);
+    int count = mRime.getCandNum();
+    for (int j = 1; j < count; j++) candidateRect[i++] = new Rect(x, top, x += getCandidateWidth(j), bottom);
+    if (!mRime.isFirst()) candidateRect[i++] = new Rect(x, top, x += getCandidateWidth(-4), bottom);
+    if (!mRime.isLast()) candidateRect[i++] = new Rect(x, top, x += getCandidateWidth(-5), bottom);
+    LayoutParams params = getLayoutParams();
+    params.width = x;
+    setLayoutParams(params);
   }
 
   @Override
@@ -232,52 +263,62 @@ public class CandView extends View {
    */
   private int getCandidateIndex(int x, int y) {
     Rect r = new Rect();
+
+    int j = 0;
     int n = mRime.getCandNum();
     for (int i = 0; i < n; i++) {
       // Enlarge the rectangle to be more responsive to user clicks.
-      r.set(candidateRect[i]);
+      r.set(candidateRect[j++]);
       r.inset(0, CANDIDATE_TOUCH_OFFSET);
       if (r.contains(x, y)) {
         // Returns -1 if there is no candidate in the hitting rectangle.
         return (i < n) ? i : -1;
       }
     }
+
+    if (!mRime.isFirst()) { //Page Up
+      r.set(candidateRect[j++]);
+      r.inset(0, CANDIDATE_TOUCH_OFFSET);
+      if (r.contains(x, y)) {
+        return -4;
+      }
+    }
+
+    if (!mRime.isLast()) { //Page Down
+      r.set(candidateRect[j++]);
+      r.inset(0, CANDIDATE_TOUCH_OFFSET);
+      if (r.contains(x, y)) {
+        return -5;
+      }
+    }
+
     return -1;
   }
 
-  public float len(String s) {
-    int n = s == null ? 0 : s.codePointCount(0, s.length());
-    int m = getCandMaxPhrase();
-    if ( n > m ) n = m;
-    return n + 0.5f;
-  }
-
   public float getCandFontSize() {
-      int size = Integer.parseInt(preferences.getString(candFontSizeKey, "20"));
-      return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, Resources.getSystem().getDisplayMetrics());
+    int size = Integer.parseInt(preferences.getString(candFontSizeKey, "20"));
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, Resources.getSystem().getDisplayMetrics());
   }
 
-  public int getCandNum() {
-    return Integer.parseInt(preferences.getString(candNumKey, "5"));
-  }
-
-  public int getCandMaxPhrase() {
-    return Integer.parseInt(preferences.getString(candMaxPhraseKey, "8"));
-  }
-
-  public String getCandDisplay(String s) {
-    int n = s == null ? 0 : s.codePointCount(0, s.length());
-    int m = getCandMaxPhrase();
-    if ( n > m) return s.substring(0, m-1) + "…";
+  private String getCandidate(int i) {
+    String s = null;
+    if (i >= 0) s = mRime.getCandidate(i);
+    else if (i == -4) s = "◀ ";
+    else if (i == -5) s = " ▶";
     return s;
   }
 
-  private int getCandidateWidth(int index) {
-    return (int)(len(mRime.getCandidate(index)) * getCandFontSize());
-  }
-
-  public int getCandMaxLen() {
-    int w = getWidth(); //可能爲0
-    return (int)(w/getCandFontSize());
+  private int getCandidateWidth(int i) {
+    String s = getCandidate(i);
+    float n = (s == null ? 0 : s.codePointCount(0, s.length())) + 0.5f;
+    float x0 = n * getCandFontSize();
+    if (i >= 0) {
+      String comment = mRime.getComment(i);
+      if (comment != null) {
+        float x2 = paintpy.measureText(comment);
+        if (x2 > x0) x0 = x2;
+      }
+    }
+    return (int)x0;
   }
 }

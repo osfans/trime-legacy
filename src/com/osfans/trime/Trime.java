@@ -318,7 +318,9 @@ public class Trime extends InputMethodService implements
 
   public void onPickCandidate(int i) {
     // Commit the picked candidate and suggest its following words.
-    if (mRime.selectCandidate(i)) {
+    if (i == -4) onKey(Keyboard.XK_Page_Up, null);
+    else if (i == -5) onKey(Keyboard.XK_Page_Down, null);
+    else if (mRime.selectCandidate(i)) {
       if (mRime.getCommit()) commitText(mRime.getCommitText());
       updateComposing();
     }
@@ -332,7 +334,7 @@ public class Trime extends InputMethodService implements
       ic.setComposingText(s, 1);
     }
     if (candidatesContainer != null) {
-      candidatesContainer.updatePage(0);
+      candidatesContainer.updatePage();
       setCandidatesViewShown(canCompose);
     }
   }

@@ -19,7 +19,7 @@ package com.osfans.trime;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Button;
+import android.view.MotionEvent;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.util.Log;
@@ -34,8 +34,6 @@ public class CandContainer extends LinearLayout {
   private static final int ARROW_ALPHA_DISABLED = 0x40;
 
   private CandView candidateView;
-  private Button leftArrow;
-  private Button rightArrow;
   private TextView text;
   private Rime mRime;
 
@@ -50,20 +48,13 @@ public class CandContainer extends LinearLayout {
 
     candidateView = (CandView) findViewById(R.id.candidate_view);
 
-    leftArrow = (Button) findViewById(R.id.arrow_left);
-    leftArrow.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View v) {
-        updatePage(Keyboard.XK_Page_Up);
-      }
-    });
-
-    rightArrow = (Button) findViewById(R.id.arrow_right);
-    rightArrow.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View v) {
-        updatePage(Keyboard.XK_Page_Down);
-      }
-    });
     text = (TextView) findViewById(R.id.text);
+    text.setOnTouchListener(new View.OnTouchListener() {
+      public boolean onTouch(View v, MotionEvent event) {
+        Log.e("Trime", "n="+text.getOffsetForPosition(event.getX(),event.getY()));
+        return true;
+      }
+    });
   }
 
   public void setCandViewListener(
@@ -71,18 +62,8 @@ public class CandContainer extends LinearLayout {
     candidateView.setCandViewListener(listener);
   }
 
-  public void updatePage(int keyCode) {
-    if (keyCode != 0 ) {
-      Trime.getService().onKey(keyCode, null);
-    }
+  public void updatePage() {
     candidateView.update();
     text.setText(mRime.getCompositionText());
-    enableArrow(leftArrow, !mRime.isFirst());
-    enableArrow(rightArrow, !mRime.isLast());
-  }
-
-  private void enableArrow(Button arrow, boolean enabled) {
-    arrow.setEnabled(enabled);
-    arrow.setAlpha(enabled ? ARROW_ALPHA_ENABLED : ARROW_ALPHA_DISABLED);
   }
 }
