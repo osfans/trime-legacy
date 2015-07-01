@@ -19,6 +19,7 @@ package com.osfans.trime;
 import android.content.Context;
 
 import java.util.Map;
+import java.util.List;
 import java.io.IOException;
 
 import org.yaml.snakeyaml.Yaml;
@@ -29,7 +30,7 @@ public class Schema {
 
   public Schema(Context context) {
     mContext = context;
-    mDefaultSchema = loadPreset("default");
+    mDefaultSchema = loadPreset("trime");
   }
 
   private Map<String,Object> loadPreset(String name) {
@@ -62,8 +63,8 @@ public class Schema {
     return null;
   }
 
-  public Object getKeyboards() {
-    return getValue("trime/keyboard");
+  public List<Object> getKeyboards() {
+    return (List<Object>)getValue("keyboard");
   }
 
 }

@@ -44,7 +44,7 @@ public class KeyboardSwitch {
   }
 
   public void init() {
-    List<Object> keys = (List<Object>)mSchema.getKeyboards();
+    List<Object> keys = mSchema.getKeyboards();
     int n = keys.size();
     keyboards = new Keyboard[n];
     for (int i = 0; i < n; i++ ) {
