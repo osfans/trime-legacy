@@ -35,7 +35,7 @@ keyboard:
   - {text: j}
   - {symbol: ':', text: k}
   - {symbol: ';', text: l}
-  - {text: <shift>}
+  - {code: "Shift_L"}
   - {text: z}
   - {text: x}
   - {text: c}
@@ -43,14 +43,14 @@ keyboard:
   - {text: b}
   - {text: n}
   - {text: m}
-  - {text: BackSpace, width: 20}
-  - {label: '123', switch: 1, width: 15, text: <switch>, symbol: '...', symbolCode: 0xffc1}
+  - {code: BackSpace, width: 20}
+  - {label: '123', switch: 1, width: 15, code: <switch>, symbol: '...', symbolCode: F4}
   - {symbol: '"', text: "'"}
   - {symbol: '<', text: ','}
-  - {text: space, width: 30}
+  - {code: space, width: 30}
   - {symbol: '>', text: '.'}
   - {symbol: '?', text: '/'}
-  - {text: Return, symbol: '???', symbolCode: -12, width: 15}
+  - {code: Return, width: 15}
 - mode: 1
   width: 20
   keys:
@@ -75,7 +75,7 @@ keyboard:
   - {text: '.'}
   - {text: ','}
   - {text: '='}
-  - {text: <switch>, switch: 0}
-  - {text: space}
-  - {text: BackSpace}
-  - {text: Return}
+  - {code: <switch>, switch: 0}
+  - {code: space}
+  - {code: BackSpace}
+  - {code: Return}

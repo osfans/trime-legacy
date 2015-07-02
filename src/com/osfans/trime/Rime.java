@@ -236,4 +236,8 @@ public class Rime
 
   public native final boolean select_candidate(int session_id, int index);
   public native final String get_version();
+
+  // key_table
+  public static native final int get_modifier_by_name(String name);
+  public static native final int get_keycode_by_name(String name);
 }

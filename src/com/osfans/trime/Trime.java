@@ -234,32 +234,13 @@ public class Trime extends InputMethodService implements
       if (keyCode == KeyEvent.KEYCODE_DEL || keyCode == KeyEvent.KEYCODE_ENTER)
       return false;
     }
-
-    int keyChar = 0;
-    if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
-      keyChar = Keyboard.KEYCODE_MODE_NEXT;
-      onKey(keyChar, null);
-      return true;
+    int i = event.getUnicodeChar();
+    if (i >= 0) {
+      if(canCompose && event.hasNoModifiers()) onText(String.valueOf((char)i));
+    } else {
+      onKey(keyCode, null);
     }
-
-    char c = (char)event.getUnicodeChar();
-    String s = String.valueOf(c);
-    if(canCompose && event.hasNoModifiers()) {
-      onText(s);
-      return true;
-    }
-
-    if (keyCode == KeyEvent.KEYCODE_DEL) {
-      keyChar = Keyboard.XK_BackSpace;
-    } else if (s.length() == 1) {
-      keyChar = (int)c;
-    }
-
-    if (0 != keyChar) {
-      onKey(keyChar, null);
-      return true;
-    }
-    return false;
+    return true;
   }
 
   public void onKey(int primaryCode, int[] keyCodes) { //軟鍵盤
@@ -268,16 +249,16 @@ public class Trime extends InputMethodService implements
       Log.info("keyboardSwitch onKey");
       bindKeyboardToInputView();
       escape();
-    } else if(mRime.onKey(primaryCode)) {
+    } else if(mRime.onKey(Keyboard.getRimeKeycode(primaryCode))) {
       Log.info("Rime onKey");
       if (mRime.getCommit()) commitText(mRime.getCommitText());
       updateComposing();
     } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
-        || handleClear(primaryCode) || handleDelete(primaryCode) || handleEnter(primaryCode)) {
+        || handleClear(primaryCode) || handleEnter(primaryCode)) {
           Log.info("Trime onKey");
     } else {
-      Log.info("commit Key");
-      commitText(String.valueOf((char) primaryCode));
+      Log.info("send Key");
+      sendDownUpKeyEvents(primaryCode);
     }
   }
 
@@ -316,8 +297,8 @@ public class Trime extends InputMethodService implements
 
   public void onPickCandidate(int i) {
     // Commit the picked candidate and suggest its following words.
-    if (i == -4) onKey(Keyboard.XK_Page_Up, null);
-    else if (i == -5) onKey(Keyboard.XK_Page_Down, null);
+    if (i == -4) onKey(KeyEvent.KEYCODE_PAGE_UP, null);
+    else if (i == -5) onKey(KeyEvent.KEYCODE_PAGE_DOWN, null);
     else if (mRime.selectCandidate(i)) {
       if (mRime.getCommit()) commitText(mRime.getCommitText());
       updateComposing();
@@ -386,21 +367,12 @@ public class Trime extends InputMethodService implements
   }
 
   private boolean handleEnter(int keyCode) {
-    if (keyCode == Keyboard.XK_Return) {
+    if (keyCode == KeyEvent.KEYCODE_ENTER) {
       if (enterAsLineBreak) {
         commitText("\n");
       } else {
         sendKeyChar('\n');
       }
-      return true;
-    }
-    return false;
-  }
-
-  private boolean handleDelete(int keyCode) {
-    // Handle delete-key only when no composing text. 
-    if (keyCode == Keyboard.XK_BackSpace) {
-      sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
       return true;
     }
     return false;

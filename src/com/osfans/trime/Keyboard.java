@@ -28,9 +28,11 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.util.Xml;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -89,20 +91,268 @@ public class Keyboard {
     public static final int KEYCODE_MODE_NEXT = -22;
     public static final int KEYCODE_MODE_SWITCH = -30;
 
-    public static final int XK_BackSpace = 0xff08;  /* Back space, back char */
-    public static final int XK_Tab = 0xff09;
-    public static final int XK_Linefeed = 0xff0a;  /* Linefeed, LF */
-    public static final int XK_Clear = 0xff0b;
-    public static final int XK_Return = 0xff0d;  /* Return, enter */
-    public static final int XK_Pause = 0xff13;  /* Pause, hold */
-    public static final int XK_Scroll_Lock = 0xff14;
-    public static final int XK_Sys_Req = 0xff15;
-    public static final int XK_Escape = 0xff1b;
-    public static final int XK_Delete = 0xffff;  /* Delete, rubout */
-    public static final int XK_Mode_switch = 0xff7e;  /* Character set switch */
-    public static final int XK_Page_Up = 0xff55;
-    public static final int XK_Page_Down = 0xff56;
-    public static final int XK_F4 = 0xffc1;
+    public static final List<String> keynames = Arrays.asList(new String[] {
+        "Unknown",
+        "Soft_Left",
+        "Soft_Right",
+        "Home",
+        "Back",
+        "Call",
+        "Endcall",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "Star",
+        "Pound",
+        "Dpad_Up",
+        "Dpad_Down",
+        "Dpad_Left",
+        "Dpad_Right",
+        "Dpad_Center",
+        "Volume_Up",
+        "Volume_Down",
+        "Power",
+        "Camera",
+        "Clear",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "comma",
+        "period",
+        "Alt_L",
+        "Alt_R",
+        "Shift_L",
+        "Shift_R",
+        "Tab",
+        "space",
+        "Sym",
+        "Explorer",
+        "Envelope",
+        "Return",
+        "BackSpace",
+        "Grave",
+        "minus",
+        "equal",
+        "Left_Bracket",
+        "Right_Bracket",
+        "Backslash",
+        "Semicolon",
+        "Apostrophe",
+        "Slash",
+        "At",
+        "Num",
+        "Headsethook",
+        "Focus",
+        "Plus",
+        "Menu",
+        "Notification",
+        "Search",
+        "Media_Play_Pause",
+        "Media_Stop",
+        "Media_Next",
+        "Media_Previous",
+        "Media_Rewind",
+        "Media_Fast_Forward",
+        "Mute",
+        "Page_Up",
+        "Page_Down",
+        "Pictsymbols",
+        "Switch_Charset",
+        "Button_A",
+        "Button_B",
+        "Button_C",
+        "Button_X",
+        "Button_Y",
+        "Button_Z",
+        "Button_L1",
+        "Button_R1",
+        "Button_L2",
+        "Button_R2",
+        "Button_Thumbl",
+        "Button_Thumbr",
+        "Button_Start",
+        "Button_Select",
+        "Button_Mode",
+        "Escape",
+        "Delete",
+        "Control_L",
+        "Control_R",
+        "Caps_Lock",
+        "Scroll_Lock",
+        "Meta_L",
+        "Meta_R",
+        "Function",
+        "Sysrq",
+        "Break",
+        "Move_Home",
+        "Move_End",
+        "Insert",
+        "Forward",
+        "Media_Play",
+        "Media_Pause",
+        "Media_Close",
+        "Media_Eject",
+        "Media_Record",
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6",
+        "F7",
+        "F8",
+        "F9",
+        "F10",
+        "F11",
+        "F12",
+        "Num_Lock",
+        "Numpad_0",
+        "Numpad_1",
+        "Numpad_2",
+        "Numpad_3",
+        "Numpad_4",
+        "Numpad_5",
+        "Numpad_6",
+        "Numpad_7",
+        "Numpad_8",
+        "Numpad_9",
+        "Numpad_Divide",
+        "Numpad_Multiply",
+        "Numpad_Subtract",
+        "Numpad_Add",
+        "Numpad_Dot",
+        "Numpad_Comma",
+        "Numpad_Enter",
+        "Numpad_Equals",
+        "Numpad_Left_Paren",
+        "Numpad_Right_Paren",
+        "Volume_Mute",
+        "Info",
+        "Channel_Up",
+        "Channel_Down",
+        "Zoom_In",
+        "Zoom_Out",
+        "Tv",
+        "Window",
+        "Guide",
+        "Dvr",
+        "Bookmark",
+        "Captions",
+        "Settings",
+        "Tv_Power",
+        "Tv_Input",
+        "Stb_Power",
+        "Stb_Input",
+        "Avr_Power",
+        "Avr_Input",
+        "Prog_Red",
+        "Prog_Green",
+        "Prog_Yellow",
+        "Prog_Blue",
+        "App_Switch",
+        "Button_1",
+        "Button_2",
+        "Button_3",
+        "Button_4",
+        "Button_5",
+        "Button_6",
+        "Button_7",
+        "Button_8",
+        "Button_9",
+        "Button_10",
+        "Button_11",
+        "Button_12",
+        "Button_13",
+        "Button_14",
+        "Button_15",
+        "Button_16",
+        "Language_Switch",
+        "Manner_Mode",
+        "3d_Mode",
+        "Contacts",
+        "Calendar",
+        "Music",
+        "Calculator",
+        "Zenkaku_Hankaku",
+        "Eisu",
+        "Muhenkan",
+        "Henkan",
+        "Katakana_Hiragana",
+        "Yen",
+        "Ro",
+        "Kana",
+        "Assist",
+        "Brightness_Down",
+        "Brightness_Up",
+        "Media_Audio_Track",
+        "Sleep",
+        "Wakeup",
+        "Pairing",
+        "Media_Top_Menu",
+        "11",
+        "12",
+        "Last_Channel",
+        "Tv_Data_Service",
+        "Voice_Assist",
+        "Tv_Radio_Service",
+        "Tv_Teletext",
+        "Tv_Number_Entry",
+        "Tv_Terrestrial_Analog",
+        "Tv_Terrestrial_Digital",
+        "Tv_Satellite",
+        "Tv_Satellite_Bs",
+        "Tv_Satellite_Cs",
+        "Tv_Satellite_Service",
+        "Tv_Network",
+        "Tv_Antenna_Cable",
+        "Tv_Input_Hdmi_1",
+        "Tv_Input_Hdmi_2",
+        "Tv_Input_Hdmi_3",
+        "Tv_Input_Hdmi_4",
+        "Tv_Input_Composite_1",
+        "Tv_Input_Composite_2",
+        "Tv_Input_Component_1",
+        "Tv_Input_Component_2",
+        "Tv_Input_Vga_1",
+        "Tv_Audio_Description",
+        "Tv_Audio_Description_Mix_Up",
+        "Tv_Audio_Description_Mix_Down",
+        "Tv_Zoom_Mode",
+        "Tv_Contents_Menu",
+        "Tv_Media_Context_Menu",
+        "Tv_Timer_Programming",
+        "Help"
+    });
 
     /** Keyboard label **/
     //private CharSequence mLabel;
@@ -850,6 +1100,13 @@ public class Keyboard {
     return m.containsKey(k) ? m.get(k) : o;
   }
 
+  public static int getRimeKeycode(int code) {
+    String s = keynames.get(code);
+    int i = Rime.get_keycode_by_name(s);
+    Log.e(TAG, "rime keyName=" + s + ",val=" + i +",code=" + code);
+    return i;
+  }
+
   public Keyboard(Context context, Object o) {
     this(context, R.xml.template);
     Map<String,Object> m = (Map<String,Object>)o;
@@ -879,14 +1136,14 @@ public class Keyboard {
       int gap = (Integer)getValue(m, "horizontalGap", 0) * mDisplayWidth / 100;
       if (gap == 0) gap = defaultHGap;
       int w = (Integer)getValue(mk, "width", 0) * mDisplayWidth / 100;
-      if (w == 0 && mk.containsKey("text")) w = defaultWidth;
+      if (w == 0 && (mk.containsKey("text") || mk.containsKey("code"))) w = defaultWidth;
       if (column >= maxColumns 
               || x + w > mDisplayWidth) {
           x = 0;
           y += mDefaultVerticalGap + mDefaultHeight;
           column = 0;
       }
-      if(!mk.containsKey("text")){
+      if(!(mk.containsKey("text") || mk.containsKey("code"))){
           x += w + gap;
           continue; //縮進
       }
@@ -900,58 +1157,54 @@ public class Keyboard {
       
       key.text = (String)getValue(mk, "text", null);
       key.label = (String)getValue(mk, "label", null);
+
       key.labelPreview = (String)getValue(mk, "preview", null);
       key.symbol = (String)getValue(mk, "symbol", null);
       key.symbolLabel = (String)getValue(mk, "symbolLabel", null);
-      key.symbolCode = (Integer)getValue(mk, "symbolCode", 0);
       key.hint = (String)getValue(mk, "hint", null);
-      
-      String s = (String)key.text;
-      int c = s.codePointAt(0);
+
+      String symbolcode = (String)getValue(mk, "symbolCode", null);
+      if (symbolcode != null) key.symbolCode = keynames.indexOf(symbolcode);
+
+      String s = (String) getValue(mk, "code", ""); 
+      int c = 0;
+      if (!s.isEmpty()) c = keynames.indexOf(s);
       key.codes = new int[]{c};
 
-      if (s.contentEquals("space")){
-        key.codes = new int[] {' '};
+      if (c == KeyEvent.KEYCODE_SPACE){
         if (key.label==null) key.label = "␣";
         key.repeatable = true;
-        key.text = null;
-      } else if(s.contentEquals("<shift>")){
-        key.codes = new int[] {KEYCODE_SHIFT};
+      } else if (c == KeyEvent.KEYCODE_SHIFT_LEFT){
         if (key.label==null) key.label = "⇪";
         key.modifier = true;
         key.sticky = true;
         mShiftKey = key;
         mShiftKeyIndex = mKeys.size()-2;
         mModifierKeys.add(key);
-      } else if(s.contentEquals("BackSpace")){
-        key.codes = new int[] {XK_BackSpace};
+      } else if (c == KeyEvent.KEYCODE_DEL){
         if (key.label==null) key.label = "⌫";
         key.repeatable = true;
-        key.text = null;
-      } else if(s.contentEquals("<clear>")){
-        key.codes = new int[] {KEYCODE_CLEAR};
+      } else if (c == KeyEvent.KEYCODE_CLEAR){
         if (key.label==null) key.label = "⎚";
-      } else if(s.contentEquals("Return")){
-        key.codes = new int[] {XK_Return};
-        key.text = null;
+      } else if (c == KeyEvent.KEYCODE_ENTER){
         if (key.label==null) key.label = "⏎";
       } else if(s.contentEquals("<switch>")){
         key.codes = new int[] {KEYCODE_MODE_SWITCH - (Integer)getValue(mk, "switch", 0)};
-        if (key.label==null)	key.label = "⌨";
+        if (key.label==null) key.label = "⌨";
         if (key.symbolCode == 0) key.symbolCode = KEYCODE_OPTIONS;
       } else if(s.contentEquals("<switch_last>")){
         key.codes = new int[] {KEYCODE_MODE_LAST};
-        if (key.label==null)	key.label = "⟲";
+        if (key.label==null) key.label = "⟲";
       } else if(s.contentEquals("<switch_prev>")){
         key.codes = new int[] {KEYCODE_MODE_PREV};
-        if (key.label==null)	key.label = "⬆";
+        if (key.label==null) key.label = "⬆";
       } else if(s.contentEquals("<switch_next>")){
         key.codes = new int[] {KEYCODE_MODE_NEXT};
-        if (key.label==null)	key.label = "⬇";
+        if (key.label==null) key.label = "⬇";
       }
-      if(key.codes[0]<=' ') key.text = null;
-      else if (key.label == null) key.label = key.text;
-      
+      if (key.label == null) {
+          key.label = (key.text == null && c > 0) ? String.valueOf((char)c) : key.text;
+      }
       if (key.icon != null) {
           key.icon.setBounds(0, 0, key.icon.getIntrinsicWidth(), key.icon.getIntrinsicHeight());
       }
