@@ -18,6 +18,8 @@ package com.osfans.trime;
 
 import android.content.res.Configuration;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.text.InputType;
 import android.util.Log;
@@ -26,12 +28,9 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
-import android.database.Cursor;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.view.Window;
 import android.view.WindowManager;
-import android.content.Intent;
+import android.app.AlertDialog;
 
 import java.util.logging.Logger;
 
@@ -65,7 +64,7 @@ public class Trime extends InputMethodService implements
     mPref = new Pref(this);
     effect = new Effect(this);
     keyboardSwitch = new KeyboardSwitch(this);
-    initKeyboard();
+    keyboardSwitch.init();
     mRime = Rime.getRime();
 
     orientation = getResources().getConfiguration().orientation;
@@ -82,10 +81,6 @@ public class Trime extends InputMethodService implements
 
   public static Trime getService() {
     return self;
-  }
-
-  private void initKeyboard() {
-    keyboardSwitch.init();
   }
 
   @Override
@@ -152,7 +147,7 @@ public class Trime extends InputMethodService implements
     super.onFinishInputView(finishingInput);
     // Dismiss any pop-ups when the input-view is being finished and hidden.
     inputView.closing();
-    clearComposing();
+    escape();
   }
 
 
@@ -223,15 +218,12 @@ public class Trime extends InputMethodService implements
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) { //實體鍵盤
-    Log.info("onKeyDown="+keyCode+",event="+event);
-    if(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN || keyCode==KeyEvent.KEYCODE_VOLUME_UP) return false; //不處理音量鍵
-    if ((keyCode == KeyEvent.KEYCODE_BACK) && (event.getRepeatCount() == 0)) {
-      clearComposing(); //返回鍵清屏
-      if ((inputView != null) && inputView.handleBack()) { //按返回鍵關閉輸入窗
-        return true;
-      }
-      else Log.info("inputview not handled");
-      return false;
+    Log.info("onKeyDown: "+event);
+    if (keyCode==KeyEvent.KEYCODE_VOLUME_DOWN ||
+        keyCode==KeyEvent.KEYCODE_VOLUME_UP ||
+        keyCode == KeyEvent.KEYCODE_BACK) {
+      if (keyCode == KeyEvent.KEYCODE_BACK) escape(); //返回鍵清屏
+      return super.onKeyDown(keyCode, event);
     }
 
     if (processKey(event)) return true;
@@ -280,7 +272,7 @@ public class Trime extends InputMethodService implements
       updateComposing();
     } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
         || handleClear(primaryCode) || handleDelete(primaryCode)) {
-    } else handleKey(primaryCode);
+    } else commitText(String.valueOf((char) primaryCode));
   }
 
   public void onText(CharSequence text) { //軟鍵盤
@@ -337,11 +329,6 @@ public class Trime extends InputMethodService implements
       candidatesContainer.updatePage();
       setCandidatesViewShown(canCompose);
     }
-  }
-
-  public void clearComposing() {
-    mRime.clearComposition();
-    updateComposing();
   }
 
   private boolean handleOption(int keyCode) {
@@ -414,17 +401,12 @@ public class Trime extends InputMethodService implements
   }
 
   /**
-   * Handles input of SoftKeybaord key code that has not been consumed by
-   * other handling-methods.
-   */
-  private void handleKey(int keyCode) {
-    commitText(String.valueOf((char) keyCode));
-  }
-
-  /**
    * Simulates PC Esc-key function by clearing all composing-text or candidates.
    */
   private void escape() {
-    clearComposing();
+    if (mRime.hasComposingText()) {
+      mRime.clearComposition();
+      updateComposing();
+    }
   }
 }
