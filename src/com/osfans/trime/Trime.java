@@ -217,29 +217,29 @@ public class Trime extends InputMethodService implements
   }
 
   @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) { //實體鍵盤
-    Log.info("onKeyDown: "+event);
-    if (keyCode==KeyEvent.KEYCODE_VOLUME_DOWN ||
-        keyCode==KeyEvent.KEYCODE_VOLUME_UP ||
-        keyCode == KeyEvent.KEYCODE_BACK) {
-      if (keyCode == KeyEvent.KEYCODE_BACK) escape(); //返回鍵清屏
-      return super.onKeyDown(keyCode, event);
-    }
-
-    if (processKey(event)) return true;
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (onEvent(event)) return true;
     return super.onKeyDown(keyCode, event);
   }
 
-  private boolean processKey(KeyEvent event) {
-    Log.info("processKey="+event);
+  private boolean onEvent(KeyEvent event) { //實體鍵盤
+    Log.info("onEvent="+event);
     int keyCode = event.getKeyCode();
+    if (keyCode==KeyEvent.KEYCODE_VOLUME_DOWN || keyCode==KeyEvent.KEYCODE_VOLUME_UP) return false;
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      escape(); //返回鍵清屏
+      return false;
+    }
+    if (!mRime.hasComposingText()) {
+      if (keyCode == KeyEvent.KEYCODE_DEL || keyCode == KeyEvent.KEYCODE_ENTER)
+      return false;
+    }
+
     int keyChar = 0;
     if (KeyEvent.KEYCODE_SPACE == keyCode && event.isShiftPressed()) {
       keyChar = Keyboard.KEYCODE_MODE_NEXT;
       onKey(keyChar, null);
       return true;
-    } else if (keyCode == KeyEvent.KEYCODE_DEL && !mRime.hasComposingText()) {
-      return false;
     }
 
     char c = (char)event.getUnicodeChar();
@@ -265,14 +265,20 @@ public class Trime extends InputMethodService implements
   public void onKey(int primaryCode, int[] keyCodes) { //軟鍵盤
     Log.info("onKey="+primaryCode);
     if (keyboardSwitch.onKey(primaryCode)) {
+      Log.info("keyboardSwitch onKey");
       bindKeyboardToInputView();
       escape();
     } else if(mRime.onKey(primaryCode)) {
-      if(mRime.getCommit()) commitText(mRime.getCommitText());
+      Log.info("Rime onKey");
+      if (mRime.getCommit()) commitText(mRime.getCommitText());
       updateComposing();
     } else if (handleOption(primaryCode) || handleCapsLock(primaryCode)
-        || handleClear(primaryCode) || handleDelete(primaryCode)) {
-    } else commitText(String.valueOf((char) primaryCode));
+        || handleClear(primaryCode) || handleDelete(primaryCode) || handleEnter(primaryCode)) {
+          Log.info("Trime onKey");
+    } else {
+      Log.info("commit Key");
+      commitText(String.valueOf((char) primaryCode));
+    }
   }
 
   public void onText(CharSequence text) { //軟鍵盤
