@@ -39,28 +39,13 @@
             android:defaultValue="true"
             android:persistent="true"/>
 
-        <CheckBoxPreference
-            android:key="pref_py_prompt"
-            android:title="@string/pref_py_prompt_title"
-            android:persistent="true"/>
-        <ListPreference
-            android:key="pref_cand_num"
-            android:defaultValue="5"
-            android:title="@string/pref_cand_num"
-            android:entries="@array/pref_cand_num_entries"
-            android:entryValues="@array/pref_cand_num_values" />
         <ListPreference
             android:key="pref_cand_font_size"
             android:defaultValue="22"
             android:title="@string/pref_cand_font_size"
             android:entries="@array/pref_cand_font_size_values"
             android:entryValues="@array/pref_cand_font_size_values" />
-        <ListPreference
-            android:key="pref_cand_max_phrase"
-            android:defaultValue="8"
-            android:title="@string/pref_cand_max_phrase"
-            android:entries="@array/pref_cand_num_entries"
-            android:entryValues="@array/pref_cand_num_values" />
+
         <ListPreference
             android:key="pref_key_font_size"
             android:defaultValue="22"
@@ -74,29 +59,6 @@
         android:title="@string/pref_function">
 
         <CheckBoxPreference
-            android:key="pref_full_py"
-            android:title="@string/pref_full_py_title"
-            android:summary="@string/pref_full_py_summary"
-            android:persistent="true"/>
-
-        <CheckBoxPreference
-            android:key="pref_single"
-            android:title="@string/pref_single_title"
-            android:persistent="true"/>
-
-        <CheckBoxPreference
-            android:key="pref_association"
-            android:title="@string/pref_association_title"
-            android:persistent="true"/>
-
-        <ListPreference
-            android:key="pref_opencc"
-            android:defaultValue=""
-            android:title="@string/pref_opencc_title"
-            android:entries="@array/pref_opencc_entries"
-            android:entryValues="@array/pref_opencc_values" />
-
-        <CheckBoxPreference
             android:key="pref_commit_py"
             android:title="@string/pref_commit_py_title"
             android:summary="@string/pref_commit_py_summary"
@@ -108,25 +70,8 @@
             android:defaultValue="false"
             android:persistent="true"/>
 
-        <ListPreference
-            android:key="pref_invalid_action"
-            android:defaultValue="0"
-            android:title="@string/pref_invalid_action"
-            android:entries="@array/pref_invalid_entries"
-            android:entryValues="@array/pref_invalid_values" />
     </PreferenceCategory>
 
-    <Preference
-        android:key="pref_importdb"
-        android:title="@string/pref_importdb"
-        android:summary="@string/pref_importdb_summary"
-        android:persistent="false"/>
-
-    <Preference
-        android:key="pref_exportdb"
-        android:title="@string/pref_exportdb"
-        android:summary="@string/pref_exportdb_summary"
-        android:persistent="false"/>
 
     <Preference
         android:key="pref_licensing"

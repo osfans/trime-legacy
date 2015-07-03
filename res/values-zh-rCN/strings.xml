@@ -28,54 +28,19 @@
     <string name="pref_sound_title">按键音效</string>
     <string name="pref_keyboard_preview_title">按键提示</string>
     <string name="pref_keyboard_preview_summary">打字速度较快时建议关闭</string>
-    <string name="pref_py_prompt_title">编码提示</string>
-    <string name="pref_cand_num">候选项数</string>
     <string name="pref_cand_font_size">候选字号</string>
-    <string name="pref_cand_max_phrase">候选词长</string>
-    <string name="unlimited">不限</string>
     <string name="pref_key_font_size">键盘字号</string>
 
     <string name="pref_function">功能设置</string>
-    <string name="pref_full_py_title">全码输入</string>
-    <string name="pref_full_py_summary">禁用渐进提示，出字慢时建议开启</string>
-    <string name="pref_single_title">单字模式</string>
-    <string name="pref_association_title">词语联想</string>
-    <string name="pref_opencc_title">简繁转换</string>
-    <string name="nocc">不转换</string>
-    <string name="s2t">简体⇒繁体</string>
-    <string name="s2tw">简体⇒台湾正体</string>
-    <string name="s2twp">简体⇒台湾词汇</string>
-    <string name="s2hk">简体⇒香港繁体</string>
-    <string name="s2jp">简体⇒日本汉字</string>
-    <string name="t2s">繁体⇒简体</string>
-    <string name="tw2s">台湾正体⇒简体</string>
-    <string name="tw2sp">台湾词汇⇒简体</string>
-    <string name="hk2s">香港繁体⇒简体</string>
-
     <string name="pref_embed_first">嵌入首选</string>
-    <string name="pref_invalid_action">空码处理</string>
-    <string name="pref_invalid_deny">禁止空码</string>
-    <string name="pref_invalid_commit">空码上屏</string>
-    <string name="pref_invalid_clear">空码清屏</string>
 
     <string name="pref_commit_py_title">输出编码</string>
     <string name="pref_commit_py_summary">出字时标出编码，如：拼音(pin yin)</string>
-    <string name="pref_importdb">导入码表</string>
-    <string name="pref_importdb_summary">从SD卡根目录导入*.db或.yaml码表</string>
-    <string name="pref_exportdb">导出码表</string>
-    <string name="pref_exportdb_summary">将码表导出至SD卡根目录</string>
 
     <string name="set_ime">全局设置</string>
     <string name="set_schema">设置本方案</string>
     <string name="other_ime">其他输入法</string>
     <string name="pronunciation">【%s】的编码</string>
     <string name="close">关闭</string>
-    <string name="initdb_message">正在初始化码表</string>
-    <string name="importdb_message">正在导入“%s”</string>
-    <string name="importdb_success">码表导入成功</string>
-    <string name="importdb_failure">码表导入失败</string>
-    <string name="exportdb_message">正在导出码表</string>
-    <string name="exportdb_success">码表导出成功</string>
-    <string name="exportdb_failure">码表导出失败</string>
 
 </resources>

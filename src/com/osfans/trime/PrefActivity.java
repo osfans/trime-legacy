@@ -50,17 +50,6 @@ public class PrefActivity extends PreferenceActivity {
       }
     });
 
-    ListPreference candnum = (ListPreference)findPreference("pref_cand_num");
-    candnum.setSummary(candnum.getEntry());
-    candnum.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-      public boolean onPreferenceChange(Preference preference, Object newValue) {
-        ListPreference candnum = (ListPreference)preference;
-        candnum.setValue(newValue.toString());
-        candnum.setSummary(candnum.getEntry());
-        return true;
-      }
-    });
-
     ListPreference candFontSize = (ListPreference)findPreference("pref_cand_font_size");
     candFontSize.setSummary(candFontSize.getValue());
     candFontSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -75,17 +64,6 @@ public class PrefActivity extends PreferenceActivity {
     keyFontSize.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
       public boolean onPreferenceChange(Preference preference, Object newValue) {
         ((ListPreference)preference).setSummary(newValue.toString());
-        return true;
-      }
-    });
-
-    ListPreference canMaxPhrase = (ListPreference)findPreference("pref_cand_max_phrase");
-    canMaxPhrase.setSummary(canMaxPhrase.getEntry());
-    canMaxPhrase.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-      public boolean onPreferenceChange(Preference preference, Object newValue) {
-        ListPreference canMaxPhrase = (ListPreference)preference;
-        canMaxPhrase.setValue(newValue.toString());
-        canMaxPhrase.setSummary(canMaxPhrase.getEntry());
         return true;
       }
     });

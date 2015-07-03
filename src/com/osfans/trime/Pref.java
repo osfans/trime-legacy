@@ -36,40 +36,12 @@ public class Pref {
     return mPref.getString("pref_opencc", "");
   }
 
-  private boolean isFullPy() {
-    return mPref.getBoolean("pref_full_py", false);
-  }
-
   public boolean isKeyboardPreview() {
     return mPref.getBoolean("pref_keyboard_preview", true);
   }
 
-  private boolean isSingle() {
-    return mPref.getBoolean("pref_single", false);
-  }
-
-  private boolean isAssociation() {
-    return mPref.getBoolean("pref_association", false);
-  }
-
-  private String getQueryCol() {
-    return mPref.getBoolean("pref_py_prompt", false) ? "hz, trim(pya || ' ' || pyb || ' ' || pyc || ' ' || pyz) as py" : "hz";
-  }
-
   private boolean isEmbedFirst() {
     return mPref.getBoolean("pref_embed_first", false);
-  }
-
-  public boolean isInvalidCommit() {
-    return mPref.getString("pref_invalid_action", "0").contentEquals("1");
-  }
-
-  public boolean isInvalidClear() {
-    return mPref.getString("pref_invalid_action", "0").contentEquals("2");
-  }
-
-  public boolean isInvalidAction() {
-    return !mPref.getString("pref_invalid_action", "0").contentEquals("0");
   }
 
   public int getCandTextSize() {
