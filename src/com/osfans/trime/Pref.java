@@ -40,7 +40,7 @@ public class Pref {
     return mPref.getBoolean("pref_keyboard_preview", true);
   }
 
-  private boolean isEmbedFirst() {
+  public boolean isEmbedFirst() {
     return mPref.getBoolean("pref_embed_first", false);
   }
 

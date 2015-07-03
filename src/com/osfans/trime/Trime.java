@@ -306,11 +306,13 @@ public class Trime extends InputMethodService implements
   }
 
   private void updateComposing() {
-    InputConnection ic = getCurrentInputConnection();
-    if (ic != null) {
-      // Set cursor position 1 to advance the cursor to the text end.
-      String s = mRime.getComposingText();
-      ic.setComposingText(s, 1);
+    if (mPref.isEmbedFirst()) { //嵌入首選
+      InputConnection ic = getCurrentInputConnection();
+      if (ic != null) {
+        // Set cursor position 1 to advance the cursor to the text end.
+        String s = mRime.getComposingText();
+        ic.setComposingText(s, 1);
+      }
     }
     if (candidatesContainer != null) {
       candidatesContainer.updatePage();
