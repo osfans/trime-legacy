@@ -359,7 +359,7 @@ public class Trime extends InputMethodService implements
   }
 
   private boolean handleClear(int keyCode) {
-    if (keyCode == Keyboard.KEYCODE_CLEAR) {
+    if (keyCode == KeyEvent.KEYCODE_CLEAR) {
       escape();
       return true;
     }

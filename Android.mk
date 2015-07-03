@@ -7,7 +7,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := \
          $(call all-subdir-java-files)
 
-LOCAL_STATIC_JAVA_LIBRARIES := libsnakeyaml android-support-v4
+LOCAL_STATIC_JAVA_LIBRARIES := libsnakeyaml
 
 #LOCAL_AAPT_FLAGS := -0 .db
 

@@ -75,12 +75,11 @@ public class Keyboard {
     public static final int EDGE_BOTTOM = 0x08;
 
     public static final int KEYCODE_SHIFT = -1;
-    //public static final int KEYCODE_MODE_CHANGE = -2;
+    public static final int KEYCODE_MODE_CHANGE = -2;
     public static final int KEYCODE_CANCEL = -3;
     public static final int KEYCODE_DONE = -4;
     public static final int KEYCODE_DELETE = -5;
     public static final int KEYCODE_ALT = -6;
-    public static final int KEYCODE_CLEAR = -7;
 
     public static final int KEYCODE_OPTIONS = -10;
     public static final int KEYCODE_SCHEMA_OPTIONS = -11;
@@ -92,7 +91,7 @@ public class Keyboard {
     public static final int KEYCODE_MODE_SWITCH = -30;
 
     public static final List<String> keynames = Arrays.asList(new String[] {
-        "Unknown",
+        "VoidSymbol",
         "Soft_Left",
         "Soft_Right",
         "Home",
